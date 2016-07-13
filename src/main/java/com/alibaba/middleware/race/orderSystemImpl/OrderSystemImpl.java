@@ -88,6 +88,15 @@ public class OrderSystemImpl implements OrderSystem {
                 e.printStackTrace();
             }
         }
+
+        //对所求结果按照交易时间从大到小排序
+        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
+
+            @Override public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
+                return o2.get("createtime").getValue().compareTo(o1.get("createtime").getValue());
+            }
+        });
         return results.iterator();
     }
 
@@ -119,6 +128,15 @@ public class OrderSystemImpl implements OrderSystem {
                 e.printStackTrace();
             }
         }
+
+        //对所求结果按照交易订单从小到大排序
+        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
+
+            @Override public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
+                return o1.get("amount").getValue().compareTo(o2.get("amount").getValue());
+            }
+        });
 
         return results.iterator();
     }
