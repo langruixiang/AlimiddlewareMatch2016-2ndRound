@@ -13,6 +13,7 @@ import java.util.Collection;
  */
 public class HashFile {
 
+    //读取所有订单文件，按照订单号hash到多个小文件中
     public static void generateOrderIdHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
                                                Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
 

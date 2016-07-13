@@ -21,7 +21,7 @@ public class OrderSystemImpl implements OrderSystem {
 
         HashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
 
-        PageCache.cacheFile(13);
+        PageCache.cacheFile(0);
 
     }
 
@@ -72,8 +72,15 @@ public class OrderSystemImpl implements OrderSystem {
                 if (val.getKeyValues().get("buyerid") != null && val.getKeyValues().get("buyerid").getValue().equals(buyerid)
                         && val.getKeyValues().get("createtime") != null && Long.valueOf(val.getKeyValues().get("createtime").getValue()) >= startTime && Long.valueOf(val.getKeyValues().get("createtime").getValue()) <= endTime) {
                     com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+                    //加入订单的所有属性kv
                     result.setOrderid(key);
                     result.setKeyValues(val.getKeyValues());
+                    //加入对应买家的所有属性kv
+                    Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
+                    result.getKeyValues().putAll(buyer.getKeyValues());
+                    //加入对应商品的所有属性kv
+                    Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
+                    result.getKeyValues().putAll(good.getKeyValues());
                     results.add(result);
                 }
             }
@@ -98,6 +105,7 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
+        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             PageCache.cacheFile(i);
             Iterator iter = PageCache.orderMap.entrySet().iterator();
@@ -106,10 +114,20 @@ public class OrderSystemImpl implements OrderSystem {
                 Long id = (Long) entry.getKey();
                 Order val = (Order) entry.getValue();
                 if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
+
+                    //加入订单信息的所有属性kv
+                    keyValueMap.putAll(val.getKeyValues());
+                    //加入对应买家的所有属性kv
+                    Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
+                    keyValueMap.putAll(buyer.getKeyValues());
+                    //加入对应商品的所有属性kv
+                    Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
+                    keyValueMap.putAll(good.getKeyValues());
+
                     com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
                     for (String key : keys) {
-                        if (val.getKeyValues().containsKey(key)) {
-                            result.getKeyValues().put(key, val.getKeyValues().get(key));
+                        if (keyValueMap.containsKey(key)) {
+                            result.getKeyValues().put(key, keyValueMap.get(key));
                         }
                     }
                     result.setOrderid(id);
@@ -148,6 +166,8 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
+        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
+
         double value = 0;
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             PageCache.cacheFile(i);
@@ -157,7 +177,19 @@ public class OrderSystemImpl implements OrderSystem {
                 Order val = (Order) entry.getValue();
                 if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
                     System.out.println("=============" + val);
-                    value += Double.valueOf(val.getKeyValues().get(key).getValue());
+
+                    //加入订单信息的所有属性kv
+                    keyValueMap.putAll(val.getKeyValues());
+                    //加入对应买家的所有属性kv
+                    Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
+                    keyValueMap.putAll(buyer.getKeyValues());
+                    //加入对应商品的所有属性kv
+                    Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
+                    keyValueMap.putAll(good.getKeyValues());
+
+                    if (keyValueMap.containsKey(key)) {
+                        value += Double.valueOf(keyValueMap.get(key).getValue());
+                    }
                 }
             }
         }

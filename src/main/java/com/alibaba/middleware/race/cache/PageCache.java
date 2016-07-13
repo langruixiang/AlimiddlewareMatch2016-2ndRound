@@ -28,7 +28,7 @@ public class PageCache {
     public static Map<String, Good> goodMap = new HashMap<String, Good>();
 
 
-    //选择一个订单文件加载到内存中, 将用户文件和商品文件全部加载到内存中
+    //选择一个订单文件加载到内存中, 将全部用户文件和商品文件全部加载到内存中
     public static void cacheFile(int index) {
 
         //清空缓存
