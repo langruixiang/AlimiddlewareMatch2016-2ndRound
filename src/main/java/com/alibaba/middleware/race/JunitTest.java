@@ -1,16 +1,16 @@
 package com.alibaba.middleware.race;
 
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-import com.alibaba.middleware.race.orderSystemImpl.OrderSystemImpl;
-import com.alibaba.middleware.race.orderSystemImpl.Result;
-import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
-import org.junit.*;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.Test;
+
+import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.orderSystemImpl.OrderSystemImpl;
+import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 
 /**
  * Created by jiangchao on 2016/7/13.
@@ -74,8 +74,12 @@ public class JunitTest {
 
         List<String> goodFileList = new ArrayList<String>();
         goodFileList.add("good_records.txt");
+        
+        List<String> storeFolderList = new ArrayList<String>();
+        storeFolderList.add(".");
+        
         try {
-            orderSystem.construct(orderFileList, buyerFileList, goodFileList, null);
+            orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);
 
         } catch (IOException e) {
             e.printStackTrace();
