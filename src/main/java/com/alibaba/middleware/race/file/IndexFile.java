@@ -2,6 +2,9 @@ package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.Order;
+import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+
 import java.io.*;
 import java.util.*;
 
@@ -16,29 +19,18 @@ public class IndexFile {
 
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             goodIndex.clear();
-            FileInputStream order_records = null;
-            FileInputStream goodid_index = null;
+
             try {
-                order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + i);
+                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + i);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                goodid_index = new FileInputStream(FileConstant.FILE_INDEXING_BY_GOODID + i);
-                BufferedReader goodidIndex_br = new BufferedReader(new InputStreamReader(goodid_index));
-
                 File file = new File(FileConstant.FILE_INDEXING_BY_GOODID + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
+                FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
                 File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_GOODID + i);
-                FileWriter twoIndexfw = null;
-                twoIndexfw = new FileWriter(twoIndexfile);
+                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
                 BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
-
-                FileOutputStream indexLinePositionfile = new FileOutputStream(FileConstant.FILE_INDEX_LINE_POSITION + i);
-                DataOutputStream lineIndexDO = null;
-                lineIndexDO = new DataOutputStream(indexLinePositionfile);
-
 
                 String str = null;
                 long count = 0;
@@ -62,7 +54,6 @@ public class IndexFile {
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
                 count = 0;
-                long lineByteNums = 0;
                 long position = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
@@ -84,15 +75,8 @@ public class IndexFile {
                     position += content.getBytes().length + 2;
                     bufferedWriter.newLine();
 
-//                    lineIndexDO.writeLong(lineByteNums);
-//                    //lineIndexDO.newLine();
-//                    lineByteNums += content.getBytes().length + 2;
-
                     count++;
                 }
-//                lineIndexDO.writeLong(lineByteNums);
-//                lineIndexDO.flush();
-//                lineIndexDO.close();
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 twoIndexBW.flush();
@@ -115,76 +99,16 @@ public class IndexFile {
         return num;
     }
 
-    public static void testByte() {
-        FileInputStream goodid_index = null;
-        try {
-            goodid_index = new FileInputStream(FileConstant.FILE_INDEX_LINE_POSITION + 0);
-            DataInputStream goodidIndex_br = new DataInputStream(goodid_index);
-            String str = null;
-            byte[] bytes = new byte[16];
-            //System.out.println(goodidIndex_br.read(bytes, 0, 8));
-            //goodidIndex_br.readFully();
-            System.out.println(bytes2Long(bytes));
-            while ((str = goodidIndex_br.readLine()) != null) {
-                System.out.println(str);
-                System.out.println("==========:" + str.getBytes().length);
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static  byte[] getLineBytes(RandomAccessFile raf, long lineNumber) {
-        //File newFile=new File(FileConstant.FILE_INDEX_LINE_POSITION + 0);
-        //RandomAccessFile raf= null;
-        byte[] bytes = new byte[8];
-        try {
-            //raf = new RandomAccessFile(newFile, "rw");
-            raf.seek(8 * lineNumber);
-            raf.read(bytes,0,8);
-            //String str = new String(bytes, "utf-8");
-            System.out.println("==========:" + bytes2Long(bytes));
-            //raf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bytes;
-    }
-
-    public static void testRandomRead(String filePath, long lineNumber) {
-        File newFile=new File(FileConstant.FILE_INDEX_LINE_POSITION + 0);
-        RandomAccessFile raf= null;
-        try {
-            raf = new RandomAccessFile(newFile, "rw");
-            raf.seek(16);
-            byte[] bytes = new byte[8];
-            raf.read(bytes,0,8);
-            //String str = new String(bytes, "utf-8");
-            System.out.println("==========:" + bytes2Long(bytes));
-            raf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static void findByGoodId(String goodId, int index) {
-
-
+    public static List<Order> findByGoodId(String goodId, int index) {
+        System.out.println("==========:"+goodId + " index:" + index);
+        List<Order> orders = new ArrayList<Order>();
         try {
             FileInputStream twoIndexFile = null;
             twoIndexFile = new FileInputStream(FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
             BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
-            File newFile = new File(FileConstant.FILE_INDEX_LINE_POSITION + index);
-            RandomAccessFile raf = new RandomAccessFile(newFile, "rw");
+            File hashFile = new File(FileConstant.FILE_INDEX_BY_GOODID + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
             File indexFile = new File(FileConstant.FILE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
@@ -193,53 +117,62 @@ public class IndexFile {
             //1.查找二·级索引
             long position = 0;
             while ((str = twoIndexBR.readLine()) != null) {
-                String[] keyValues = str.split(":");
-                if (goodId.compareTo(keyValues[0]) < 0) {
+                String[] keyValue = str.split(":");
+                if (goodId.compareTo(keyValue[0]) < 0) {
+                    System.out.println("--------"+keyValue[0]);
                    break;
                 } else {
-                    position = Long.valueOf(keyValues[1]);
+                    position = Long.valueOf(keyValue[1]);
                 }
             }
 
             System.out.println(position);
 
             //2.查找一级索引
-
-            //2.1先读取对应的index_line_position文件找到对应行的偏移位置
-//            byte[] begin = getLineBytes(raf, position);
-//            byte[] end = getLineBytes(raf, position+1);
-//            long beginposition = bytes2Long(begin);
-//            int length = (int) (bytes2Long(end) - beginposition - 2);
-//            raf.close();
             indexRaf.seek(position);
-            String oneIndex = indexRaf.readLine();
-            System.out.println(oneIndex);
-
-            //2.2获取一级索引对应值
-//            indexRaf.seek(beginposition);
-//            byte[] content = new byte[length];
-//            //indexRaf.read(content, 0, length);
-//            String contentStr = indexRaf.readLine();
-//            //String contentStr = new String(content);
-//            System.out.println(contentStr);
+            String oneIndex = null;
+            while ((oneIndex = indexRaf.readLine()) != null) {
+                String[] keyValue = oneIndex.split(":");
+                if (goodId.equals(keyValue[0])) {
+                    break;
+                }
+            }
 
             //3.按行读取内容
+            String[] keyValue = oneIndex.split(":");
+            System.out.println(keyValue[1]);
+            String[] positions = keyValue[1].split("\\|");
+            //System.out.println("======" + positions.length);
+            for (String pos : positions) {
+                System.out.println(pos);
+                hashRaf.seek(Long.valueOf(pos));
+                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                System.out.println(orderContent);
 
-
+                //4.将字符串转成order对象集合
+                Order order = new Order();
+                String[] keyValues = orderContent.split("\t");
+                for (int i = 0; i < keyValues.length; i++) {
+                    String[] strs = keyValues[i].split(":");
+                    KeyValue kv = new KeyValue();
+                    kv.setKey(strs[0]);
+                    kv.setValue(strs[1]);
+                    order.getKeyValues().put(strs[0], kv);
+                }
+                order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                orders.add(order);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        return orders;
     }
 
     public static void main(String args[]) {
 
         //IndexFile.generateGoodIdIndex();
-        //testByte();
-        //testRandomRead(null, 0);
-
-        findByGoodId("aliyun_891ed350-2313-4997-8d72-f0ad0200c0c5", 0);
+        findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }
