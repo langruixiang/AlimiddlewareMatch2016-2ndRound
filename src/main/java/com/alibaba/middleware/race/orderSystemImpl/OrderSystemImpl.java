@@ -3,7 +3,8 @@ package com.alibaba.middleware.race.orderSystemImpl;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.HashFile;
-import com.alibaba.middleware.race.file.IndexFile;
+import com.alibaba.middleware.race.good.GoodIdQuery;
+import com.alibaba.middleware.race.good.IndexFile;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 
@@ -121,7 +122,7 @@ public class OrderSystemImpl implements OrderSystem {
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
         //获取goodid的所有订单信息
-        List<Order> orders = IndexFile.findByGoodId(goodid, hashIndex);
+        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
         Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         for (Order order : orders) {
             //加入订单信息的所有属性kv
@@ -201,7 +202,7 @@ public class OrderSystemImpl implements OrderSystem {
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
-        List<Order> orders = IndexFile.findByGoodId(goodid, hashIndex);
+        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
         double value = 0;
         for (Order order : orders) {
             //加入订单信息的所有属性kv
