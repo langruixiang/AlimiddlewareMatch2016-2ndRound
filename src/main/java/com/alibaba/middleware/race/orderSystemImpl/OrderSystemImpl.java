@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.orderSystemImpl;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.HashFile;
+import com.alibaba.middleware.race.file.IndexFile;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 
@@ -25,6 +26,9 @@ public class OrderSystemImpl implements OrderSystem {
         HashFile.generateBuyerIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
         //按商品ID hash成多个小文件
         HashFile.generateGoodIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+
+        //根据goodid生成一级二级索引
+        IndexFile.generateGoodIdIndex();
 
         //将买家文件记录全部加载到内存
         PageCache.cacheBuyerFile();
@@ -116,34 +120,55 @@ public class OrderSystemImpl implements OrderSystem {
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        //获取goodid的所有订单信息
+        List<Order> orders = IndexFile.findByGoodId(goodid, hashIndex);
         Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
-        PageCache.cacheGoodIdFile(hashIndex);
-        Iterator iter = PageCache.orderMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Long id = (Long) entry.getKey();
-            Order val = (Order) entry.getValue();
-            if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
+        for (Order order : orders) {
+            //加入订单信息的所有属性kv
+            keyValueMap.putAll(order.getKeyValues());
+            //加入对应买家的所有属性kv
+            Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
+            keyValueMap.putAll(buyer.getKeyValues());
+            //加入对应商品的所有属性kv
+            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+            keyValueMap.putAll(good.getKeyValues());
 
-                //加入订单信息的所有属性kv
-                keyValueMap.putAll(val.getKeyValues());
-                //加入对应买家的所有属性kv
-                Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
-                keyValueMap.putAll(buyer.getKeyValues());
-                //加入对应商品的所有属性kv
-                Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
-                keyValueMap.putAll(good.getKeyValues());
-
-                com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
-                for (String key : keys) {
-                    if (keyValueMap.containsKey(key)) {
-                        result.getKeyValues().put(key, keyValueMap.get(key));
-                    }
+            com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+            for (String key : keys) {
+                if (keyValueMap.containsKey(key)) {
+                    result.getKeyValues().put(key, keyValueMap.get(key));
                 }
-                result.setOrderid(id);
-                results.add(result);
             }
+            result.setOrderid(order.getId());
+            results.add(result);
         }
+//        PageCache.cacheGoodIdFile(hashIndex);
+//        Iterator iter = PageCache.orderMap.entrySet().iterator();
+//        while (iter.hasNext()) {
+//            Map.Entry entry = (Map.Entry) iter.next();
+//            Long id = (Long) entry.getKey();
+//            Order val = (Order) entry.getValue();
+//            if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
+//
+//                //加入订单信息的所有属性kv
+//                keyValueMap.putAll(val.getKeyValues());
+//                //加入对应买家的所有属性kv
+//                Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
+//                keyValueMap.putAll(buyer.getKeyValues());
+//                //加入对应商品的所有属性kv
+//                Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
+//                keyValueMap.putAll(good.getKeyValues());
+//
+//                com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+//                for (String key : keys) {
+//                    if (keyValueMap.containsKey(key)) {
+//                        result.getKeyValues().put(key, keyValueMap.get(key));
+//                    }
+//                }
+//                result.setOrderid(id);
+//                results.add(result);
+//            }
+//        }
 
         //对所求结果按照交易订单从小到大排序
         Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
@@ -176,29 +201,44 @@ public class OrderSystemImpl implements OrderSystem {
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        List<Order> orders = IndexFile.findByGoodId(goodid, hashIndex);
         double value = 0;
-        PageCache.cacheGoodIdFile(hashIndex);
-        Iterator iter = PageCache.orderMap.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Order val = (Order) entry.getValue();
-            if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
-                System.out.println("=============" + val);
+        for (Order order : orders) {
+            //加入订单信息的所有属性kv
+            keyValueMap.putAll(order.getKeyValues());
+            //加入对应买家的所有属性kv
+            Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
+            keyValueMap.putAll(buyer.getKeyValues());
+            //加入对应商品的所有属性kv
+            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+            keyValueMap.putAll(good.getKeyValues());
 
-                //加入订单信息的所有属性kv
-                keyValueMap.putAll(val.getKeyValues());
-                //加入对应买家的所有属性kv
-                Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
-                keyValueMap.putAll(buyer.getKeyValues());
-                //加入对应商品的所有属性kv
-                Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
-                keyValueMap.putAll(good.getKeyValues());
-
-                if (keyValueMap.containsKey(key)) {
-                    value += Double.valueOf(keyValueMap.get(key).getValue());
-                }
+            if (keyValueMap.containsKey(key)) {
+                value += Double.valueOf(keyValueMap.get(key).getValue());
             }
         }
+//        PageCache.cacheGoodIdFile(hashIndex);
+//        Iterator iter = PageCache.orderMap.entrySet().iterator();
+//        while (iter.hasNext()) {
+//            Map.Entry entry = (Map.Entry) iter.next();
+//            Order val = (Order) entry.getValue();
+//            if (val.getKeyValues().get("goodid") != null && val.getKeyValues().get("goodid").getValue().equals(goodid)) {
+//                System.out.println("=============" + val);
+//
+//                //加入订单信息的所有属性kv
+//                keyValueMap.putAll(val.getKeyValues());
+//                //加入对应买家的所有属性kv
+//                Buyer buyer = PageCache.buyerMap.get(val.getKeyValues().get("buyerid").getValue());
+//                keyValueMap.putAll(buyer.getKeyValues());
+//                //加入对应商品的所有属性kv
+//                Good good = PageCache.goodMap.get(val.getKeyValues().get("goodid").getValue());
+//                keyValueMap.putAll(good.getKeyValues());
+//
+//                if (keyValueMap.containsKey(key)) {
+//                    value += Double.valueOf(keyValueMap.get(key).getValue());
+//                }
+//            }
+//        }
 
         keyValue.setKey(key);
         keyValue.setValue(String.valueOf(value));
