@@ -1,5 +1,8 @@
 package com.alibaba.middleware.race.constant;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by jiangchao on 2016/7/12.
  */
@@ -21,4 +24,6 @@ public class FileConstant {
     public static String FILE_BUYER_HASH = "buyer_hash_";
 
     public static int FILE_NUMS = 25;
+
+    public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
 }

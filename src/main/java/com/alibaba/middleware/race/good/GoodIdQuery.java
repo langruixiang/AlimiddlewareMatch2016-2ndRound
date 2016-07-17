@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.good;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
+        if (goodId == null) return null;
         System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
@@ -44,10 +46,15 @@ public class GoodIdQuery {
             //2.查找一级索引
             indexRaf.seek(position);
             String oneIndex = null;
+            int count = 0;
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
                     break;
+                }
+                count++;
+                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                    return null;
                 }
             }
 
@@ -72,7 +79,9 @@ public class GoodIdQuery {
                     kv.setValue(strs[1]);
                     order.getKeyValues().put(strs[0], kv);
                 }
-                order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
+                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                }
                 orders.add(order);
             }
         } catch (FileNotFoundException e) {

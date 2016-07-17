@@ -53,6 +53,7 @@ public class IndexFile {
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
+                FileConstant.goodIdIndexRegionSizeMap.put(i, towIndexSize);
                 count = 0;
                 long position = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();
