@@ -19,6 +19,10 @@ public class FileConstant {
 
     public static String FILE_TWO_INDEXING_BY_GOODID = "goodid_two_index_";
 
+    public static String FILE_ONE_INDEXING_BY_BUYERID = "buyerid_index_";
+
+    public static String FILE_TWO_INDEXING_BY_BUYERID = "buyerid_two_index_";
+
     public static String FILE_GOOD_HASH = "good_hash_";
 
     public static String FILE_BUYER_HASH = "buyer_hash_";
@@ -26,4 +30,6 @@ public class FileConstant {
     public static int FILE_NUMS = 25;
 
     public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
+
+    public static Map<Integer, Integer> buyerIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
 }

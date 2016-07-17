@@ -1,9 +1,6 @@
-package com.alibaba.middleware.race.good;
+package com.alibaba.middleware.race.buyer;
 
-import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.model.Order;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
 import java.util.*;
@@ -11,52 +8,59 @@ import java.util.*;
 /**
  * Created by jiangchao on 2016/7/15.
  */
-public class IndexFile {
+public class BuyerIdIndexFile {
 
-    private static Map<String, List<Long>> goodIndex = new TreeMap<String, List<Long>>();
+    private static Map<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
 
-    public static void generateGoodIdIndex() {
+    public static void generateBuyerIdIndex() {
 
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            goodIndex.clear();
+            buyerIndex.clear();
 
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + i);
+                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_BUYERID + i);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FILE_INDEXING_BY_GOODID + i);
+                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_BUYERID + i);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_GOODID + i);
+                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_BUYERID + i);
                 FileWriter twoIndexfw = new FileWriter(twoIndexfile);
                 BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String str = null;
                 long count = 0;
-                String goodid = null;
+
                 while ((str = order_br.readLine()) != null) {
+                    String buyerid = null;
+                    String createtime = null;
                     String[] keyValues = str.split("\t");
                     for (int j = 0; j < keyValues.length; j++) {
                         String[] keyValue = keyValues[j].split(":");
 
-                        if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1];
-                            if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new ArrayList<Long>());
+                        if ("buyerid".equals(keyValue[0])) {
+                            buyerid = keyValue[1];
+                        } else if ("createtime".equals(keyValue[0])) {
+                            createtime = keyValue[1];
+                        }
+                        if (buyerid != null && createtime != null) {
+                            String newKey = buyerid + createtime;
+                            if (!buyerIndex.containsKey(newKey)) {
+                                buyerIndex.put(newKey, new ArrayList<Long>());
                             }
-                            goodIndex.get(goodid).add(count);
+                            buyerIndex.get(newKey).add(count);
                             break;
                         }
                     }
                     count += str.getBytes().length + 2;
                 }
 
-                int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                FileConstant.goodIdIndexRegionSizeMap.put(i, towIndexSize);
+                int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
+                FileConstant.buyerIdIndexRegionSizeMap.put(i, twoIndexSize);
                 count = 0;
                 long position = 0;
-                Iterator iterator = goodIndex.entrySet().iterator();
+                Iterator iterator = buyerIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();
@@ -68,7 +72,7 @@ public class IndexFile {
                     }
                     bufferedWriter.write(content);
 
-                    if (count%towIndexSize == 0) {
+                    if (count%twoIndexSize == 0) {
                         twoIndexBW.write(key+":");
                         twoIndexBW.write(String.valueOf(position));
                         twoIndexBW.newLine();

@@ -5,8 +5,8 @@ import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.BuyerHashFile;
 import com.alibaba.middleware.race.file.GoodHashFile;
 import com.alibaba.middleware.race.file.OrderHashFile;
+import com.alibaba.middleware.race.good.GoodIdIndexFile;
 import com.alibaba.middleware.race.good.GoodIdQuery;
-import com.alibaba.middleware.race.good.IndexFile;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -41,7 +41,7 @@ public class OrderSystemImpl implements OrderSystem {
         BuyerHashFile.generateBuyerHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
 
         //根据goodid生成一级二级索引
-        IndexFile.generateGoodIdIndex();
+        GoodIdIndexFile.generateGoodIdIndex();
 
         //随机选择了按订单号hash的小文件中的0号文件，将里面的订单记录加载到内存
         //PageCache.cacheOrderIdFile(0);

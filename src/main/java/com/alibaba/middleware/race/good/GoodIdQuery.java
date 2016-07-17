@@ -94,7 +94,7 @@ public class GoodIdQuery {
 
     public static void main(String args[]) {
 
-        //IndexFile.generateGoodIdIndex();
+        //GoodIdIndexFile.generateGoodIdIndex();
         findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }
