@@ -29,13 +29,13 @@ public class PageCache {
 
 
 
-    //将全部用户文件全部加载到内存中
-    public static void cacheBuyerFile() {
+    //选择hash后的一个用户文件加载到内存中
+    public static void cacheBuyerFile(int index) {
 
         //清空缓存
         buyerMap.clear();
         try {
-            FileInputStream buyer_records = new FileInputStream("buyer_records.txt");
+            FileInputStream buyer_records = new FileInputStream(FileConstant.FILE_BUYER_HASH + index);
             BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
             String str = null;
@@ -61,13 +61,13 @@ public class PageCache {
         }
     }
 
-    //将全部商品文件全部加载到内存中
-    public static void cacheGoodFile() {
+    //选择hash后的一个商品文件加载到内存中
+    public static void cacheGoodFile(int index) {
 
         //清空缓存
         goodMap.clear();
         try {
-            FileInputStream good_records = new FileInputStream("good_records.txt");
+            FileInputStream good_records = new FileInputStream(FileConstant.FILE_GOOD_HASH + index);
             BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
             String str = null;

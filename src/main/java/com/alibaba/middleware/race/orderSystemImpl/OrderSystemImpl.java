@@ -2,7 +2,9 @@ package com.alibaba.middleware.race.orderSystemImpl;
 
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.file.HashFile;
+import com.alibaba.middleware.race.file.BuyerHashFile;
+import com.alibaba.middleware.race.file.GoodHashFile;
+import com.alibaba.middleware.race.file.OrderHashFile;
 import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.good.IndexFile;
 import com.alibaba.middleware.race.model.*;
@@ -22,21 +24,21 @@ public class OrderSystemImpl implements OrderSystem {
             throws IOException, InterruptedException {
 
         //按订单号hash成多个小文件
-        HashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        OrderHashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
         //按买家ID hash成多个小文件
-        HashFile.generateBuyerIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        OrderHashFile.generateBuyerIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
         //按商品ID hash成多个小文件
-        HashFile.generateGoodIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        OrderHashFile.generateGoodIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        //将商品文件hash成多个小文件
+        GoodHashFile.generateGoodHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        //将买家文件hash成多个小文件
+        BuyerHashFile.generateBuyerHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
 
         //根据goodid生成一级二级索引
         IndexFile.generateGoodIdIndex();
 
-        //将买家文件记录全部加载到内存
-        PageCache.cacheBuyerFile();
-        //将商品文件记录全部加载到内存
-        PageCache.cacheGoodFile();
         //随机选择了按订单号hash的小文件中的0号文件，将里面的订单记录加载到内存
-        PageCache.cacheOrderIdFile(0);
+        //PageCache.cacheOrderIdFile(0);
 
     }
 
@@ -128,9 +130,16 @@ public class OrderSystemImpl implements OrderSystem {
             //加入订单信息的所有属性kv
             keyValueMap.putAll(order.getKeyValues());
             //加入对应买家的所有属性kv
+            if (PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue()) == null) {
+                PageCache.cacheBuyerFile(Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            }
             Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
             keyValueMap.putAll(buyer.getKeyValues());
             //加入对应商品的所有属性kv
+            //加入对应商品的所有属性kv
+            if (PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue()) == null) {
+                PageCache.cacheGoodFile(hashIndex);
+            }
             Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
             keyValueMap.putAll(good.getKeyValues());
 
@@ -207,13 +216,20 @@ public class OrderSystemImpl implements OrderSystem {
         for (Order order : orders) {
             //加入订单信息的所有属性kv
             keyValueMap.putAll(order.getKeyValues());
+
             //加入对应买家的所有属性kv
+            if (PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue()) == null) {
+                PageCache.cacheBuyerFile(Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            }
             Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
             keyValueMap.putAll(buyer.getKeyValues());
-            //加入对应商品的所有属性kv
-            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
-            keyValueMap.putAll(good.getKeyValues());
-
+//            //加入对应商品的所有属性kv
+//            if (PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue()) == null) {
+//                PageCache.cacheGoodFile(hashIndex);
+//            }
+//            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+//            keyValueMap.putAll(good.getKeyValues());
+//
             if (keyValueMap.containsKey(key)) {
                 value += Double.valueOf(keyValueMap.get(key).getValue());
             }

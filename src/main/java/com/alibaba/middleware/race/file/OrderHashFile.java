@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class HashFile {
+public class OrderHashFile {
 
     //读取所有订单文件，按照订单号hash到多个小文件中
     public static void generateOrderIdHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
