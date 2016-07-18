@@ -4,15 +4,25 @@ import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class GoodHashFile {
+public class GoodHashFile extends Thread{
+
+    private Collection<String> goodFiles;
+    private Collection<String> storeFolders;
+    private int                nums;
+
+    public GoodHashFile(Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
+        this.goodFiles = goodFiles;
+        this.storeFolders = storeFolders;
+        this.nums = nums;
+    }
 
     //读取所有商品文件，按照商品号hash到多个小文件中
-    public static void generateGoodHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
-                                               Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
+    public void generateGoodHashFile() {
 
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
@@ -24,8 +34,8 @@ public class GoodHashFile {
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            for (String orderFile : orderFiles) {
-                FileInputStream good_records = new FileInputStream(orderFile);
+            for (String goodFile : goodFiles) {
+                FileInputStream good_records = new FileInputStream(goodFile);
                 BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
                 String str = null;
@@ -54,4 +64,7 @@ public class GoodHashFile {
         }
     }
 
+    public void run(){
+        generateGoodHashFile();
+    }
 }

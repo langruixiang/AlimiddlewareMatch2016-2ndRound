@@ -77,7 +77,8 @@ public class JunitTest {
     public void testBuyeridIndex() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试buyerid生成一级二级索引: ");
-        BuyerIdIndexFile.generateBuyerIdIndex();
+        BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(null, null);
+        buyerIdIndexFile.generateBuyerIdIndex();
         String str = "ap_236ed7ca-dcb9-4562-8b35-072834c45d18";
         int hashIndex = Math.abs(str.hashCode()) % FileConstant.FILE_NUMS;
         BuyerIdQuery.findByBuyerId("ap_236ed7ca-dcb9-4562-8b35-072834c45d18", 1463076523, 1465018171, hashIndex);

@@ -7,15 +7,25 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by jiangchao on 2016/7/15.
  */
-public class GoodIdIndexFile {
+public class GoodIdIndexFile extends Thread{
 
-    private static Map<String, List<Long>> goodIndex = new TreeMap<String, List<Long>>();
+    private Map<String, List<Long>> goodIndex = new TreeMap<String, List<Long>>();
 
-    public static void generateGoodIdIndex() {
+    private CountDownLatch hashDownLatch;
+
+    private CountDownLatch buildIndexCountLatch;
+
+    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch) {
+        this.hashDownLatch = hashDownLatch;
+        this.buildIndexCountLatch = buildIndexCountLatch;
+    }
+
+    public void generateGoodIdIndex() {
 
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             goodIndex.clear();
@@ -91,6 +101,19 @@ public class GoodIdIndexFile {
         }
     }
 
+    public void run(){
+        if (hashDownLatch != null) {
+            try {
+                hashDownLatch.await();//等待上一个任务的完成
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        generateGoodIdIndex();
+        buildIndexCountLatch.countDown();//完成工作，计数减一
+        System.out.println("goodid build index work end!");
+    }
+
 //    public static long bytes2Long(byte[] byteNum) {
 //        long num = 0;
 //        for (int ix = 0; ix < 8; ++ix) {
@@ -99,8 +122,5 @@ public class GoodIdIndexFile {
 //        }
 //        return num;
 //    }
-
-
-
 
 }

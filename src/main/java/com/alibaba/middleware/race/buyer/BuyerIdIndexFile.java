@@ -4,15 +4,25 @@ import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by jiangchao on 2016/7/15.
  */
-public class BuyerIdIndexFile {
+public class BuyerIdIndexFile extends Thread{
 
-    private static TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
+    private TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
 
-    public static void generateBuyerIdIndex() {
+    private CountDownLatch hashDownLatch;
+
+    private CountDownLatch buildIndexCountLatch;
+
+    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch) {
+        this.hashDownLatch = hashDownLatch;
+        this.buildIndexCountLatch = buildIndexCountLatch;
+    }
+
+    public void generateBuyerIdIndex() {
 
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             buyerIndex.clear();
@@ -95,6 +105,19 @@ public class BuyerIdIndexFile {
         }
     }
 
+    public void run(){
+        if (hashDownLatch != null) {
+            try {
+                hashDownLatch.await(); //等待上一个任务的结束
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        generateBuyerIdIndex();
+        buildIndexCountLatch.countDown();
+        System.out.println("buyerid build index work end!");
+    }
+
 //    public static long bytes2Long(byte[] byteNum) {
 //        long num = 0;
 //        for (int ix = 0; ix < 8; ++ix) {
@@ -103,8 +126,5 @@ public class BuyerIdIndexFile {
 //        }
 //        return num;
 //    }
-
-
-
 
 }

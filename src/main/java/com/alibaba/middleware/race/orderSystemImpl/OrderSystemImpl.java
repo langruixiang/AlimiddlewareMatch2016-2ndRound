@@ -15,6 +15,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by jiangchao on 2016/7/11.
@@ -27,26 +28,50 @@ public class OrderSystemImpl implements OrderSystem {
     }
 
     @Override
-    public void construct(Collection<String> orderFiles, Collection<String> buyerFiles,
-                                    Collection<String> goodFiles, Collection<String> storeFolders)
+    public void construct(final Collection<String> orderFiles, final Collection<String> buyerFiles,
+                          final Collection<String> goodFiles, Collection<String> storeFolders)
             throws IOException, InterruptedException {
 
-        //按订单号hash成多个小文件
-        OrderHashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
+        CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
+        CountDownLatch buildIndexLatch = new CountDownLatch(2);
+//        new Thread(new Runnable() {
+//
+//            @Override public void run() {
+//                //按订单号hash成多个小文件
+//                OrderHashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+//            }
+//        }).start();
+
+
         //按买家ID hash成多个小文件
-        OrderHashFile.generateBuyerIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
+        buyerIdHashThread.start();
+
         //按商品ID hash成多个小文件
-        OrderHashFile.generateGoodIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
+        goodIdHashThread.start();
+
+
         //将商品文件hash成多个小文件
-        GoodHashFile.generateGoodHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, null, FileConstant.FILE_NUMS);
+        goodHashFileThread.start();
+
+
         //将买家文件hash成多个小文件
-        BuyerHashFile.generateBuyerHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, null, FileConstant.FILE_NUMS);
+        buyerHashFile.start();
 
         //根据buyerid生成一级二级索引
-        BuyerIdIndexFile.generateBuyerIdIndex();
+        BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch);
+        buyerIdIndexFile.start();
 
         //根据goodid生成一级二级索引
-        GoodIdIndexFile.generateGoodIdIndex();
+        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch);
+        goodIdIndexFile.start();
+
+        buildIndexLatch.await();
+        System.out.println("all work end!!!!!!!");
 
         //随机选择了按订单号hash的小文件中的0号文件，将里面的订单记录加载到内存
         //PageCache.cacheOrderIdFile(0);

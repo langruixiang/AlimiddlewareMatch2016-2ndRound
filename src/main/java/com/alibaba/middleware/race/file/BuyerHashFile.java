@@ -4,15 +4,25 @@ import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class BuyerHashFile {
+public class BuyerHashFile extends Thread{
+
+    private Collection<String> buyerFiles;
+    private Collection<String> storeFolders;
+    private int                nums;
+
+    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums) {
+        this.buyerFiles = buyerFiles;
+        this.storeFolders = storeFolders;
+        this.nums = nums;
+    }
 
     //读取所有买家文件，按照买家号hash到多个小文件中
-    public static void generateBuyerHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
-                                               Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
+    public void generateBuyerHashFile() {
 
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
@@ -52,6 +62,10 @@ public class BuyerHashFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void run(){
+        generateBuyerHashFile();
     }
 
 }
