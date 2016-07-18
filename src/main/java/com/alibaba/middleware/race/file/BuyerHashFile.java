@@ -10,7 +10,7 @@ import java.util.Collection;
  */
 public class BuyerHashFile {
 
-    //读取所有订单文件，按照订单号hash到多个小文件中
+    //读取所有买家文件，按照买家号hash到多个小文件中
     public static void generateBuyerHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
                                                Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
 

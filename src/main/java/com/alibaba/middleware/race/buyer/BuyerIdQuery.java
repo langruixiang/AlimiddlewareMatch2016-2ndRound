@@ -37,7 +37,7 @@ public class BuyerIdQuery {
             long position = 0;
             while ((str = twoIndexBR.readLine()) != null) {
                 String[] keyValue = str.split(":");
-                if (beginKey.compareTo(keyValue[0]) < 0) {
+                if (endKey.compareTo(keyValue[0]) > 0) {
                     System.out.println("--------"+keyValue[0]);
                     break;
                 } else {
@@ -53,9 +53,9 @@ public class BuyerIdQuery {
             List<String> oneIndexs = new ArrayList<String>();
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
-                if (beginKey.compareTo(keyValue[0]) > 0) {
+                if (endKey.compareTo(keyValue[0]) <= 0) {
                     continue;
-                } else if (endKey.compareTo(keyValue[0]) <= 0) {
+                } else if (beginKey.compareTo(keyValue[0]) > 0) {
                     break;
                 }
                 oneIndexs.add(oneIndex);

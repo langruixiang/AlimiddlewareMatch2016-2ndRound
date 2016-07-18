@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class BuyerIdIndexFile {
 
-    private static Map<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
+    private static TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
 
     public static void generateBuyerIdIndex() {
 
@@ -60,7 +60,7 @@ public class BuyerIdIndexFile {
                 FileConstant.buyerIdIndexRegionSizeMap.put(i, twoIndexSize);
                 count = 0;
                 long position = 0;
-                Iterator iterator = buyerIndex.entrySet().iterator();
+                Iterator iterator = buyerIndex.descendingMap().entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();

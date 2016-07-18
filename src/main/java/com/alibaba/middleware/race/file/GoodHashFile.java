@@ -10,7 +10,7 @@ import java.util.Collection;
  */
 public class GoodHashFile {
 
-    //读取所有订单文件，按照订单号hash到多个小文件中
+    //读取所有商品文件，按照商品号hash到多个小文件中
     public static void generateGoodHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
                                                Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
 
