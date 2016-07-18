@@ -121,13 +121,13 @@ public class OrderSystemImpl implements OrderSystem {
         }
 
         //对所求结果按照交易时间从大到小排序
-        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-
-            @Override public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-                return o2.get("createtime").getValue().compareTo(o1.get("createtime").getValue());
-            }
-        });
+//        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
+//
+//            @Override public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+//                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
+//                return o2.get("createtime").getValue().compareTo(o1.get("createtime").getValue());
+//            }
+//        });
 
         for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
             System.out.println(result);
