@@ -9,11 +9,17 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -22,19 +28,15 @@ import java.util.Map.Entry;
  *
  */
 public class OrderIndexBuilder {
-
-    public static final int REGION_SIZE = 1000;
+    public static final String ORDER_KEY_MAP_FILE = "order_key_map.txt";
+    public static final int INIT_KEY_MAP_CAPACITY = 20;
+    public static final String INDEX_SPLITOR = ":";
+    public static final String KEY_SPLITOR = "|";
+    public static final Map<String, Integer> keyMap = new HashMap<String, Integer>(INIT_KEY_MAP_CAPACITY);
     
-    public static final int INIT_SINGLE_REGION_FILE_NUM = 10;
     
-    public static final String ORDER_REGION_PREFIX = "order_region_";
-    
-    public static final String APP_ORDER = "app_order";
-    
-    public static final long INVALID_ORDER_ID = -1;
-    
-    public static Map<String, BufferedWriter> singleRegionWritersMap = new HashMap<String, BufferedWriter>(INIT_SINGLE_REGION_FILE_NUM);
-    public static int curRegionIndex = -1;
+    public static Map<String, RandomAccessFile> singleRegionFilesMap = new HashMap<String, RandomAccessFile>(OrderRegion.INIT_SINGLE_REGION_FILE_NUM);
+    public static long curRegionIndex = -1;
 
     public static void build(Collection<String> orderFiles) {
         try {
@@ -43,44 +45,100 @@ public class OrderIndexBuilder {
 
                 String line = null;
                 while ((line = order_br.readLine()) != null) {
-                    long orderId = INVALID_ORDER_ID;
-                    int regionIndex = -1;
-                    String regionFileName = null;
-                    String appOrderInfo = null;
-                    String[] keyValues = line.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        if ("orderid".equals(keyValue[0])) {
-                            orderId = Long.parseLong(keyValue[1]);
-                            regionIndex = (int) (orderId / REGION_SIZE);
-                        } else if (keyValue[0].startsWith(APP_ORDER)){
-                            if (appOrderInfo == null) {
-                                appOrderInfo = keyValues[i];
-                            } else {
-                                appOrderInfo = appOrderInfo.concat("\t").concat(keyValues[i]);
-                            }
-                        } else {
-                            //TODO make sure regionIndex is valid
-                            regionFileName = ORDER_REGION_PREFIX.concat(String.valueOf(regionIndex)).concat("_").concat(keyValue[0]);
-                            appendContentToRegionFile(regionFileName, regionIndex, orderId, keyValue[1]);
-                        }
-                    }
-                    // write appOrderInfo into file
-                    if (appOrderInfo != null) {
-                        //TODO make sure regionIndex is valid
-                        regionFileName = ORDER_REGION_PREFIX.concat(String.valueOf(regionIndex)).concat("_").concat(APP_ORDER);
-                        appendContentToRegionFile(regionFileName, regionIndex, orderId, appOrderInfo);
-                    }
+                    buildWithOrderLine(line);
                 }
                 order_br.close();
             }
-            for (Entry<String, BufferedWriter> entry : singleRegionWritersMap.entrySet()) {
+            writeKeyMapFile(keyMap);
+            for (Entry<String, RandomAccessFile> entry : singleRegionFilesMap.entrySet()) {
                 entry.getValue().close();
             }
-            singleRegionWritersMap.clear();
+            singleRegionFilesMap.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 
+     */
+    private static void writeKeyMapFile(Map<String, Integer> map) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ORDER_KEY_MAP_FILE), OrderRegion.ENCODING));
+            for (Entry<String, Integer> entry : keyMap.entrySet()) {
+                writer.write(entry.getKey().concat(":").concat(entry.getValue().toString()).concat("\n"));
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
+    /**
+     * @throws IOException 
+     * 
+     */
+    private static void buildWithOrderLine(String orderLine) throws IOException {
+        SimpleOrder order = new SimpleOrder();
+        String[] keyValues = orderLine.split("\t");
+        for (int i = 0; i < keyValues.length; i++) {
+            String[] keyValue = keyValues[i].split(":");
+            if ("orderid".equals(keyValue[0])) {
+                order.setId(Long.parseLong(keyValue[1]));
+                order.setRegionIndex(order.getId() / OrderRegion.REGION_SIZE);
+            } else {
+                order.addKeyValue(keyValue[0], keyValue[1]);
+                if(!keyMap.containsKey(keyValue[0])) {
+                    keyMap.put(keyValue[0], keyMap.size());
+                }
+            }
+        }
+
+        // write region key file
+        String regionFileName = null;
+        Map<String, String> keyValueMap = order.getKeyValueMap();
+        ArrayList<Long> keyPosInfo = new ArrayList<Long>(keyMap.size());
+        for (int i = 0; i < keyMap.size(); ++i) {
+            keyPosInfo.add(-1L);
+        }
+        for (Entry<String, String> entry : keyValueMap.entrySet()) {
+            Integer keyIndex = keyMap.get(entry.getKey());
+            regionFileName = OrderRegion.getFilePathByRegionIndexAndAttributeName(order.getRegionIndex(), entry.getKey());
+            long startPos = writeLineToRegionKeyFile(regionFileName, order.getRegionIndex(), order.getId(), entry.getValue());
+            keyPosInfo.set(keyIndex, startPos);
+        }
+        
+        // write orderIdIndexFile
+        String orderIdIndexFileName = OrderRegion.getOrderIdIndexFilePathByRegionIndex(order.getRegionIndex());
+        StringBuilder indexLineSb = new StringBuilder();
+        indexLineSb.append(order.getId()).append(INDEX_SPLITOR).append(keyPosInfo.get(0));
+        for(int i = 1; i < keyPosInfo.size(); ++i) {
+            indexLineSb.append(KEY_SPLITOR).append(keyPosInfo.get(i));
+        }
+        writeLineToRegionIndexFile(orderIdIndexFileName, order.getRegionIndex(), order.getId(), indexLineSb.toString());
+    }
+
+    /**
+     * 
+     */
+    private static void writeLineToRegionIndexFile(String regionFileName, long regionIndex,
+            long orderId, String content) throws IOException {
+        if (regionIndex != curRegionIndex) {
+            for (Entry<String, RandomAccessFile> entry : singleRegionFilesMap.entrySet()) {
+                entry.getValue().close();
+            }
+            singleRegionFilesMap.clear();
+            curRegionIndex = regionIndex;
+        }
+        long lineIndex = orderId % OrderRegion.REGION_SIZE;
+        RandomAccessFile regionFile = singleRegionFilesMap.get(regionFileName);
+        if (regionFile == null) {
+            regionFile = new RandomAccessFile(regionFileName, "rw");
+            singleRegionFilesMap.put(regionFileName, regionFile);
+        }
+        FileUtil.writeFixedBytesLineWithFile(regionFile, OrderRegion.ENCODING, content,
+                OrderRegion.BYTES_OF_ORDER_ID_INDEX_FILE_LINE, lineIndex);
     }
 
     /**
@@ -89,21 +147,21 @@ public class OrderIndexBuilder {
      * @param string
      * @throws IOException 
      */
-    private static void appendContentToRegionFile(String regionFileName, int regionIndex,
+    private static long writeLineToRegionKeyFile(String regionFileName, long regionIndex,
             long orderId, String content) throws IOException {
         if (regionIndex != curRegionIndex) {
-            for (Entry<String, BufferedWriter> entry : singleRegionWritersMap.entrySet()) {
+            for (Entry<String, RandomAccessFile> entry : singleRegionFilesMap.entrySet()) {
                 entry.getValue().close();
             }
-            singleRegionWritersMap.clear();
+            singleRegionFilesMap.clear();
             curRegionIndex = regionIndex;
         }
-        BufferedWriter writer = singleRegionWritersMap.get(regionFileName);
-        if (writer == null) {
-            writer = new BufferedWriter(new FileWriter(regionFileName));
-            singleRegionWritersMap.put(regionFileName, writer);
+        RandomAccessFile regionFile = singleRegionFilesMap.get(regionFileName);
+        if (regionFile == null) {
+            regionFile = new RandomAccessFile(regionFileName, "rw");
+            singleRegionFilesMap.put(regionFileName, regionFile);
         }
-        writer.write(String.valueOf(orderId).concat("\t").concat(content));
-        writer.newLine();
+        return FileUtil.appendLineWithRandomAccessFile(regionFile, OrderRegion.ENCODING, content);
+//        return FileUtil.appendLineWithRandomAccessFile(regionFile, OrderRegion.ENCODING, String.valueOf(orderId).concat(":") + content);
     }
 }
