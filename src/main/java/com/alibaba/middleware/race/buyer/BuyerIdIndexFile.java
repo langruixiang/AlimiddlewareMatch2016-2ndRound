@@ -45,7 +45,7 @@ public class BuyerIdIndexFile {
                             createtime = keyValue[1];
                         }
                         if (buyerid != null && createtime != null) {
-                            String newKey = buyerid + createtime;
+                            String newKey = buyerid + "_" + createtime;
                             if (!buyerIndex.containsKey(newKey)) {
                                 buyerIndex.put(newKey, new ArrayList<Long>());
                             }

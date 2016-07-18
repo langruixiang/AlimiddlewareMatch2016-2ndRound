@@ -1,5 +1,7 @@
 package com.alibaba.middleware.race.buyer;
 
+
+import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -13,10 +15,10 @@ import java.util.List;
  * Created by jiangchao on 2016/7/17.
  */
 public class BuyerIdQuery {
-    public static List<Order> findByBuyerId(String buyerId, String starttime, String endtime, int index) {
+    public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        String beginKey = buyerId + starttime;
-        String endKey = buyerId + endtime;
+        String beginKey = buyerId + "_" + starttime;
+        String endKey = buyerId + "_" + endtime;
         System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
@@ -53,7 +55,7 @@ public class BuyerIdQuery {
                 String[] keyValue = oneIndex.split(":");
                 if (beginKey.compareTo(keyValue[0]) > 0) {
                     continue;
-                } else if (endKey.compareTo(keyValue[0]) < 0) {
+                } else if (endKey.compareTo(keyValue[0]) <= 0) {
                     break;
                 }
                 oneIndexs.add(oneIndex);

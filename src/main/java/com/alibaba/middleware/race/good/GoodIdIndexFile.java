@@ -24,7 +24,7 @@ public class GoodIdIndexFile {
                 FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + i);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FILE_INDEXING_BY_GOODID + i);
+                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + i);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

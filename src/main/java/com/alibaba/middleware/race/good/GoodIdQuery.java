@@ -25,7 +25,7 @@ public class GoodIdQuery {
             File hashFile = new File(FileConstant.FILE_INDEX_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
-            File indexFile = new File(FileConstant.FILE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
             String str = null;
 

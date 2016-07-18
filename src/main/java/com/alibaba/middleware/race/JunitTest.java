@@ -1,10 +1,12 @@
 package com.alibaba.middleware.race;
 
+import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
+import com.alibaba.middleware.race.buyer.BuyerIdQuery;
+import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.OrderSystemImpl;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
-import org.junit.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -34,8 +36,9 @@ public class JunitTest {
     public void testQueryOrdersByBuyer() {
         //测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录
         System.out.println("\n测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录: ");
-        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463056100, 1463056200, "tb_bd6fd52b-92f0-48ac-91c9-e0bbcbebe6d2");
+        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
         while (resultIterator.hasNext()) {
+            System.out.println("===============");
             Result result2 = resultIterator.next();
             System.out.println(result2.get("orderid").getValue());
         }
@@ -61,6 +64,16 @@ public class JunitTest {
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
         KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
+    }
+
+    @Test
+    public void testBuyeridIndex() {
+        //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
+        System.out.println("\n测试buyerid生成一级二级索引: ");
+        BuyerIdIndexFile.generateBuyerIdIndex();
+        String str = "ap_236ed7ca-dcb9-4562-8b35-072834c45d18";
+        int hashIndex = Math.abs(str.hashCode()) % FileConstant.FILE_NUMS;
+        BuyerIdQuery.findByBuyerId("ap_236ed7ca-dcb9-4562-8b35-072834c45d18", 1463076523, 1465018171, hashIndex);
     }
 
     static {
