@@ -5,6 +5,7 @@
  */
 package com.alibaba.middleware.race.order;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,9 +40,25 @@ public class TestOrderIndexAndQuery {
         keys.add("buyerid");
         keys.add("amount");
         keys.add("app_order_76_0");
-        Result result = (Result) orderQuery.queryOrder(2982138, keys);
+        Result result = (Result) orderQuery.queryOrder(2982138, null);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("app_order_76_0").getValue());
+    }
+    
+    private static void testFileWriter() {
+        // 测试queryOrder接口，按订单号查找某条记录
+        try {
+            String encoding = "UTF-8";
+            FileUtil.writeFixedBytesLine("test.txt", encoding, "记录123", 16, 1);
+            String line = FileUtil.getFixedBytesLine("test.txt", encoding, 16, 1, true);
+            System.out.println(line);
+            System.out.println("记录123".getBytes(encoding).length);
+            System.out.println(line.getBytes(encoding).length);
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println();
     }
 }
