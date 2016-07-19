@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.orderSystemImpl;
+package com.alibaba.middleware.race;
 
 import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
 import com.alibaba.middleware.race.buyer.BuyerIdQuery;
