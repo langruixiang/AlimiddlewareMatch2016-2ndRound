@@ -18,14 +18,13 @@ public class GoodIdQuery {
         System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
-            FileInputStream twoIndexFile = null;
-            twoIndexFile = new FileInputStream(FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
+            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
             BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
-            File hashFile = new File(FileConstant.FILE_INDEX_BY_GOODID + index);
+            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
-            File indexFile = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
             String str = null;
 

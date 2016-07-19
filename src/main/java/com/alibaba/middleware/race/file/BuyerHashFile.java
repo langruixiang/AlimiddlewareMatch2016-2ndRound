@@ -21,16 +21,15 @@ public class BuyerHashFile extends Thread{
         this.nums = nums;
     }
 
-    //读取所有买家文件，按照买家号hash到多个小文件中
+    //读取所有买家文件，按照买家号hash到多个小文件中,生成到第二块磁盘中
     public void generateBuyerHashFile() {
 
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FILE_BUYER_HASH + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
+                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + i);
+                FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 

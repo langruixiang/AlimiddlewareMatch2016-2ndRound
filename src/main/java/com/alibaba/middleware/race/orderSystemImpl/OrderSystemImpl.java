@@ -34,6 +34,13 @@ public class OrderSystemImpl implements OrderSystem {
     public void construct(final Collection<String> orderFiles, final Collection<String> buyerFiles,
                           final Collection<String> goodFiles, Collection<String> storeFolders)
             throws IOException, InterruptedException {
+
+        if (storeFolders != null && storeFolders.size() >= 3) {
+            FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
+            FileConstant.SECOND_DISK_PATH = FileConstant.SECOND_DISK_PATH + storeFolders.toArray()[1];
+            FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
+        }
+
         ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(10);
         ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(10);
 
@@ -42,21 +49,21 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
 
         //按买家ID hash成多个小文件
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
         buyerIdHashThread.start();
 
         //按商品ID hash成多个小文件
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
 
 
         //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, null, FileConstant.FILE_NUMS);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS);
         goodHashFileThread.start();
 
 
         //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, null, FileConstant.FILE_NUMS);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS);
         buyerHashFile.start();
 
         //根据buyerid生成一级二级索引

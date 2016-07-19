@@ -28,20 +28,21 @@ public class GoodIdIndexFile extends Thread{
         this.index = index;
     }
 
+    //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
 
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             goodIndex.clear();
 
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + index);
+                FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
+                File twoIndexfile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
                 FileWriter twoIndexfw = new FileWriter(twoIndexfile);
                 BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
