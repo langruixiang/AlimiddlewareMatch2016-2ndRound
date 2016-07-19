@@ -29,6 +29,8 @@ public class FileConstant {
 
     public static int FILE_NUMS = 25;
 
+    public static int MAX_CONCURRENT = 20;
+
     public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
 
     public static Map<Integer, Integer> buyerIdIndexRegionSizeMap = new HashMap<Integer, Integer>();

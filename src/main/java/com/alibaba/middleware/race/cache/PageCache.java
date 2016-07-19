@@ -8,6 +8,7 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -22,10 +23,19 @@ public class PageCache {
     public static Map<Long, Order> orderMap = new HashMap<Long, Order>();
 
     //存储买家信息
-    public static Map<String, Buyer> buyerMap = new HashMap<String, Buyer>();
-
+    //public static Map<String, Buyer> buyerMap = new HashMap<String, Buyer>();
+    public static volatile Map<Integer, Map<String, Buyer>> buyerMap = new LinkedHashMap<Integer, Map<String, Buyer>>(FileConstant.MAX_CONCURRENT, 1) {
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > FileConstant.MAX_CONCURRENT;
+        }
+    };
     //存储商品信息
-    public static Map<String, Good> goodMap = new HashMap<String, Good>();
+    //public static Map<String, Good> goodMap = new HashMap<String, Good>();
+    public static volatile Map<Integer, Map<String, Good>> goodMap = new LinkedHashMap<Integer, Map<String, Good>>(FileConstant.MAX_CONCURRENT, 1) {
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > FileConstant.MAX_CONCURRENT;
+        }
+    };
 
 
 
@@ -33,7 +43,7 @@ public class PageCache {
     public static void cacheBuyerFile(int index) {
 
         //清空缓存
-        buyerMap.clear();
+        Map<String, Buyer> segmentBuyerMap = new HashMap<String, Buyer>();
         try {
             FileInputStream buyer_records = new FileInputStream(FileConstant.FILE_BUYER_HASH + index);
             BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
@@ -51,9 +61,11 @@ public class PageCache {
                     buyer.getKeyValues().put(strs[0], keyValue);
                 }
                 buyer.setId(buyer.getKeyValues().get("buyerid").getValue());
-                buyerMap.put(buyer.getId(), buyer);
+                segmentBuyerMap.put(buyer.getId(), buyer);
             }
-
+            synchronized (buyerMap) {
+                buyerMap.put(index, segmentBuyerMap);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -65,7 +77,7 @@ public class PageCache {
     public static void cacheGoodFile(int index) {
 
         //清空缓存
-        goodMap.clear();
+        Map<String, Good> segmentGoodMap = new HashMap<String, Good>();
         try {
             FileInputStream good_records = new FileInputStream(FileConstant.FILE_GOOD_HASH + index);
             BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
@@ -83,9 +95,11 @@ public class PageCache {
                     good.getKeyValues().put(strs[0], keyValue);
                 }
                 good.setId(good.getKeyValues().get("goodid").getValue());
-                goodMap.put(good.getId(), good);
+                segmentGoodMap.put(good.getId(), good);
             }
-
+            synchronized (goodMap) {
+                goodMap.put(index, segmentGoodMap);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
