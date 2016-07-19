@@ -23,13 +23,13 @@ public class BuyerIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
             FileInputStream twoIndexFile = null;
-            twoIndexFile = new FileInputStream(FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
+            twoIndexFile = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
             BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
-            File hashFile = new File(FileConstant.FILE_INDEX_BY_BUYERID + index);
+            File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
-            File indexFile = new File(FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+            File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
             String str = null;
 

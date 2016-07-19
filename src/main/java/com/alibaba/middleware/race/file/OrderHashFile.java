@@ -17,19 +17,14 @@ import java.util.concurrent.CountDownLatch;
 public class OrderHashFile extends Thread{
 
     private Collection<String> orderFiles;
-    private Collection<String> buyerFiles;
-    private Collection<String> goodFiles;
     private Collection<String> storeFolders;
     private int nums;
     private String type;
     private CountDownLatch countDownLatch;
 
-    public OrderHashFile(Collection<String> orderFiles, Collection<String> buyerFiles,
-                         Collection<String> goodFiles, Collection<String> storeFolders, int nums, String type,
+    public OrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
                          CountDownLatch countDownLatch) {
         this.orderFiles = orderFiles;
-        this.buyerFiles = buyerFiles;
-        this.goodFiles = goodFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
         this.type = type;
@@ -43,7 +38,7 @@ public class OrderHashFile extends Thread{
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FILE_INDEX_BY_ORDERID + i);
+                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i);
                 FileWriter fw = null;
                 fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
@@ -81,18 +76,12 @@ public class OrderHashFile extends Thread{
 
     //读取所有订单文件，按照订单中的买家ID hash到多个小文件中
     public void generateBuyerIdHashFile() {
-        String writeToFilePath = FileConstant.FILE_INDEX_BY_BUYERID;
-        if (storeFolders != null && storeFolders.size() >= 3) {
-            writeToFilePath = storeFolders.toArray()[2] + writeToFilePath;
-            System.out.println(writeToFilePath);
-        }
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FILE_INDEX_BY_BUYERID + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
+                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i);
+                FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
@@ -128,18 +117,12 @@ public class OrderHashFile extends Thread{
 
     //读取所有订单文件，按照订单中的商品ID hash到多个小文件中
     public void generateGoodIdHashFile() {
-        String writeToFilePath = FileConstant.FILE_INDEX_BY_GOODID;
-        if (storeFolders != null && storeFolders.size() >= 2) {
-            writeToFilePath = storeFolders.toArray()[1] + writeToFilePath;
-            System.out.println(writeToFilePath);
-        }
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FILE_INDEX_BY_GOODID + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
+                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i);
+                FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 

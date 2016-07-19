@@ -34,29 +34,37 @@ public class OrderSystemImpl implements OrderSystem {
     public void construct(final Collection<String> orderFiles, final Collection<String> buyerFiles,
                           final Collection<String> goodFiles, Collection<String> storeFolders)
             throws IOException, InterruptedException {
+        long beginTime = System.currentTimeMillis();
+        if (storeFolders != null && storeFolders.size() >= 3) {
+            FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
+            FileConstant.SECOND_DISK_PATH = FileConstant.SECOND_DISK_PATH + storeFolders.toArray()[1];
+            FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
+        }
+
         ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(10);
         ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(10);
 
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
+        CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
         CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
 
         //按买家ID hash成多个小文件
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
         buyerIdHashThread.start();
 
         //按商品ID hash成多个小文件
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
 
 
         //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, null, FileConstant.FILE_NUMS);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodAndBuyerCountDownLatch);
         goodHashFileThread.start();
 
 
         //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, null, FileConstant.FILE_NUMS);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, goodAndBuyerCountDownLatch);
         buyerHashFile.start();
 
         //根据buyerid生成一级二级索引
@@ -72,7 +80,9 @@ public class OrderSystemImpl implements OrderSystem {
         }
 
         buildIndexLatch.await();
-        System.out.println("all work end!!!!!!!");
+        goodAndBuyerCountDownLatch.await();
+        long endTime = System.currentTimeMillis();
+        System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
     }
 
@@ -80,33 +90,6 @@ public class OrderSystemImpl implements OrderSystem {
     public Result queryOrder(long orderId, Collection<String> keys) {
 
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
-        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
-        int hashIndex = (int) (orderId % 25);
-        PageCache.cacheOrderIdFile(hashIndex);
-        Order order = PageCache.orderMap.get(orderId);
-        if (order == null) {
-            System.out.println("要查询的订单数据不再缓存中");
-        }
-        System.out.println(order);
-        keyValueMap.putAll(order.getKeyValues());
-        String goodid = order.getKeyValues().get("goodid").getValue();
-        String buyerid = order.getKeyValues().get("buyerid").getValue();
-        Good good = null;
-        Buyer buyer = null;
-        if (goodid != null) {
-            good = PageCache.goodMap.get(goodid);
-            keyValueMap.putAll(good.getKeyValues());
-        }
-        if (buyerid != null) {
-            buyer = PageCache.buyerMap.get(buyerid);
-            keyValueMap.putAll(buyer.getKeyValues());
-        }
-        for (String key : keys) {
-            if (keyValueMap.containsKey(key)) {
-                result.getKeyValues().put(key, keyValueMap.get(key));
-            }
-        }
-        result.setOrderid(orderId);
         return result;
     }
 
@@ -122,18 +105,19 @@ public class OrderSystemImpl implements OrderSystem {
         for (Order order : orders) {
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
-            if (PageCache.buyerMap.get(buyerid) == null) {
-                PageCache.cacheBuyerFile(Math.abs(buyerid.hashCode()) % FileConstant.FILE_NUMS);
+            if (PageCache.buyerMap.get(hashIndex) == null) {
+                PageCache.cacheBuyerFile(hashIndex);
             }
-            Buyer buyer = PageCache.buyerMap.get(buyerid);
+            Buyer buyer = PageCache.buyerMap.get(hashIndex).get(buyerid);
             if (buyer != null && buyer.getKeyValues() != null) {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            if (PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue()) == null) {
-                PageCache.cacheGoodFile(hashIndex);
+            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            if (PageCache.goodMap.get(goodIdHashIndex) == null) {
+                PageCache.cacheGoodFile(goodIdHashIndex);
             }
-            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+            Good good = PageCache.goodMap.get(goodIdHashIndex).get(order.getKeyValues().get("goodid").getValue());
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());
             }
@@ -177,18 +161,19 @@ public class OrderSystemImpl implements OrderSystem {
         for (Order order : orders) {
             Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
             //加入对应买家的所有属性kv
-            if (PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue()) == null) {
-                PageCache.cacheBuyerFile(Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
+                PageCache.cacheBuyerFile(buyeridHashIndex);
             }
-            Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
+            Buyer buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             if (buyer != null && buyer.getKeyValues() != null) {
                 keyValueMap.putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            if (PageCache.goodMap.get(goodid) == null) {
+            if (PageCache.goodMap.get(hashIndex) == null) {
                 PageCache.cacheGoodFile(hashIndex);
             }
-            Good good = PageCache.goodMap.get(goodid);
+            Good good = PageCache.goodMap.get(hashIndex).get(goodid);
             if (good != null && good.getKeyValues() != null) {
                 keyValueMap.putAll(good.getKeyValues());
             }
@@ -256,10 +241,11 @@ public class OrderSystemImpl implements OrderSystem {
             }
 
             //加入对应买家的所有属性kv
-            if (PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue()) == null) {
-                PageCache.cacheBuyerFile(Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
+                PageCache.cacheBuyerFile(buyeridHashIndex);
             }
-            Buyer buyer = PageCache.buyerMap.get(order.getKeyValues().get("buyerid").getValue());
+            Buyer buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             if (buyer.getKeyValues().containsKey(key)) {
                 String str = buyer.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {
@@ -270,10 +256,10 @@ public class OrderSystemImpl implements OrderSystem {
                 return null;
             }
             //加入对应商品的所有属性kv
-            if (PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue()) == null) {
+            if (PageCache.goodMap.get(hashIndex) == null) {
                 PageCache.cacheGoodFile(hashIndex);
             }
-            Good good = PageCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+            Good good = PageCache.goodMap.get(hashIndex).get(goodid);
             if (good.getKeyValues().containsKey(key)) {
                 String str = good.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {

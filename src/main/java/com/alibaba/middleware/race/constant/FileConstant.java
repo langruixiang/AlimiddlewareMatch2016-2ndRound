@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.constant;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by jiangchao on 2016/7/12.
@@ -29,7 +30,15 @@ public class FileConstant {
 
     public static int FILE_NUMS = 25;
 
-    public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
+    public static int MAX_CONCURRENT = 20;
 
-    public static Map<Integer, Integer> buyerIdIndexRegionSizeMap = new HashMap<Integer, Integer>();
+    public static String FIRST_DISK_PATH = "";
+
+    public static String SECOND_DISK_PATH = "";
+
+    public static String THIRD_DISK_PATH = "";
+
+    public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new ConcurrentHashMap<Integer, Integer>();
+
+    public static Map<Integer, Integer> buyerIdIndexRegionSizeMap = new ConcurrentHashMap<Integer, Integer>();
 }

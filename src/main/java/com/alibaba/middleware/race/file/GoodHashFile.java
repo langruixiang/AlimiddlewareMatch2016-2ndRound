@@ -14,23 +14,24 @@ public class GoodHashFile extends Thread{
     private Collection<String> goodFiles;
     private Collection<String> storeFolders;
     private int                nums;
+    private CountDownLatch countDownLatch;
 
-    public GoodHashFile(Collection<String> goodFiles, Collection<String> storeFolders, int nums) {
+    public GoodHashFile(Collection<String> goodFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch) {
         this.goodFiles = goodFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
+        this.countDownLatch = countDownLatch;
     }
 
-    //读取所有商品文件，按照商品号hash到多个小文件中
+    //读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
     public void generateGoodHashFile() {
 
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FILE_GOOD_HASH + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
+                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + i);
+                FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
@@ -66,5 +67,7 @@ public class GoodHashFile extends Thread{
 
     public void run(){
         generateGoodHashFile();
+        System.out.println("buyer file hash end~");
+        countDownLatch.countDown();
     }
 }
