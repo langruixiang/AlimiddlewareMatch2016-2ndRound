@@ -39,10 +39,10 @@ public class JunitTest {
     public void testQueryOrdersByBuyer() {
         //测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录
         System.out.println("\n测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录: ");
-        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
+        Iterator<OrderSystem.Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
         while (resultIterator.hasNext()) {
             System.out.println("===============");
-            Result result2 = resultIterator.next();
+            Result result2 = (Result) resultIterator.next();
             System.out.println(result2.get("orderid").getValue());
         }
     }
@@ -54,9 +54,9 @@ public class JunitTest {
         keys.add("buyerid");
         keys.add("amount");
         System.out.println("\n测试queryOrderBySaler接口，查找某个卖家的某个商品的所有记录信息: ");
-        Iterator<Result> resultIterator2 = orderSystem.queryOrdersBySaler("", "goodal_a289ad59-2660-42af-8618-018fd161c391", keys);
+        Iterator<OrderSystem.Result> resultIterator2 = orderSystem.queryOrdersBySaler("", "goodal_a289ad59-2660-42af-8618-018fd161c391", keys);
         while (resultIterator2.hasNext()) {
-            Result result3 = resultIterator2.next();
+            Result result3 = (Result) resultIterator2.next();
             System.out.println(result3.get("buyerid").getValue());
         }
     }
