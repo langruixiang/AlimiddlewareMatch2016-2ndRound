@@ -45,7 +45,7 @@ public class PageCache {
         //清空缓存
         Map<String, Buyer> segmentBuyerMap = new HashMap<String, Buyer>();
         try {
-            FileInputStream buyer_records = new FileInputStream(FileConstant.FILE_BUYER_HASH + index);
+            FileInputStream buyer_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
             BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
             String str = null;
@@ -77,7 +77,7 @@ public class PageCache {
         //清空缓存
         Map<String, Good> segmentGoodMap = new HashMap<String, Good>();
         try {
-            FileInputStream good_records = new FileInputStream(FileConstant.FILE_GOOD_HASH + index);
+            FileInputStream good_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
             BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
             String str = null;
@@ -110,7 +110,7 @@ public class PageCache {
         orderMap.clear();
 
         try {
-            FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_ORDERID + index);
+            FileInputStream order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
             BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
             String str = null;
