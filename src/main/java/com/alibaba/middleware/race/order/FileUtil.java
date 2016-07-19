@@ -176,7 +176,7 @@ public class FileUtil {
                         break;
                     }
                 }
-                if (firstEmptyCharIdx > 0) {
+                if (firstEmptyCharIdx >= 0) {
                     line = new String(lineBuffer, 0, firstEmptyCharIdx, encoding);
                 } else {
                     line = new String(lineBuffer, 0, lineBuffer.length - 1, encoding);

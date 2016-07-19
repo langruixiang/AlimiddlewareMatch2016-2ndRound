@@ -28,18 +28,19 @@ import java.util.Map.Entry;
  *
  */
 public class OrderIndexBuilder {
-    public static final String ORDER_KEY_MAP_FILE = "order_key_map.txt";
+    public static final String ORDER_ID_INDEX_DIR = "order_id_index";
+    public static final String ORDER_KEY_MAP_FILE = ORDER_ID_INDEX_DIR + "/" + "order_key_map.txt";
     public static final int INIT_KEY_MAP_CAPACITY = 20;
     public static final String INDEX_SPLITOR = ":";
     public static final String KEY_SPLITOR = "|";
     public static final Map<String, Integer> keyMap = new HashMap<String, Integer>(INIT_KEY_MAP_CAPACITY);
-    
     
     public static Map<String, RandomAccessFile> singleRegionFilesMap = new HashMap<String, RandomAccessFile>(OrderRegion.INIT_SINGLE_REGION_FILE_NUM);
     public static long curRegionIndex = -1;
 
     public static void build(Collection<String> orderFiles) {
         try {
+            FileUtil.createDir(OrderIndexBuilder.ORDER_ID_INDEX_DIR);
             for (String orderFile : orderFiles) {
                 BufferedReader order_br = new BufferedReader(new FileReader(orderFile));
 
@@ -80,7 +81,7 @@ public class OrderIndexBuilder {
      * 
      */
     private static void buildWithOrderLine(String orderLine) throws IOException {
-        SimpleOrder order = new SimpleOrder();
+        OrderIdIndex order = new OrderIdIndex();
         String[] keyValues = orderLine.split("\t");
         for (int i = 0; i < keyValues.length; i++) {
             String[] keyValue = keyValues[i].split(":");
@@ -104,7 +105,7 @@ public class OrderIndexBuilder {
         }
         for (Entry<String, String> entry : keyValueMap.entrySet()) {
             Integer keyIndex = keyMap.get(entry.getKey());
-            regionFileName = OrderRegion.getFilePathByRegionIndexAndAttributeName(order.getRegionIndex(), entry.getKey());
+            regionFileName = OrderRegion.getFilePathByRegionIndexAndKey(order.getRegionIndex(), entry.getKey());
             long startPos = writeLineToRegionKeyFile(regionFileName, order.getRegionIndex(), order.getId(), entry.getValue());
             keyPosInfo.set(keyIndex, startPos);
         }

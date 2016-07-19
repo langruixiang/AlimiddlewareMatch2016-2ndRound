@@ -7,7 +7,9 @@ package com.alibaba.middleware.race.order;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 
@@ -19,10 +21,8 @@ public class TestOrderIndexAndQuery {
     
     public static void main(String args[]) {
         System.out.println("=============start================");
-
-//        testOrderIndexBuilder();
+        testOrderIndexBuilder();
         testQueryOrder();
-
         System.out.println("=============end================");
     }
 
@@ -40,7 +40,7 @@ public class TestOrderIndexAndQuery {
         keys.add("buyerid");
         keys.add("amount");
         keys.add("app_order_76_0");
-        Result result = (Result) orderQuery.queryOrder(2982138, null);
+        Result result = (Result) orderQuery.queryOrder(2982138, keys);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("app_order_76_0").getValue());

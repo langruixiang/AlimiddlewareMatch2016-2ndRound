@@ -22,27 +22,32 @@ public class OrderQuery {
     public static OrderRegionCache orderRegionCache;
     public static HashMap<String, Integer> keyMap;
     
-    public static final int MAX_CACHE_SIZE = 10;//TODO
+    public static final int MAX_REGION_CACHE_SIZE = 10;//TODO
 
     static {
-        orderRegionCache = new OrderRegionCache(MAX_CACHE_SIZE);
+        orderRegionCache = new OrderRegionCache(MAX_REGION_CACHE_SIZE);
+        
         keyMap = FileUtil.readSIHashMapFromFile(OrderIndexBuilder.ORDER_KEY_MAP_FILE, OrderIndexBuilder.INIT_KEY_MAP_CAPACITY);
     }
 
     public Result queryOrder(long orderId, Collection<String> keys) {
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
 
+        OrderIdIndex orderIdIndex = getOrderIdIndex(orderId, keys);
+        if (orderIdIndex == null) {
+            return null;
+        }
         result.setOrderid(orderId);
         if (keys == null) {
             for (Entry<String, Integer> entry : keyMap.entrySet()) {
                 String key = entry.getKey();
-                result.getKeyValues().put(key, getKeyValueByOrderIdAndKey(orderId, key));
+                result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
             }
         } else if (keys.isEmpty()) {
             return result;
         } else {
             for (String key : keys) {
-                result.getKeyValues().put(key, getKeyValueByOrderIdAndKey(orderId, key));
+                result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
             }
         }
         return result;
@@ -50,22 +55,37 @@ public class OrderQuery {
     
     /**
      * @param orderId
+     * @param keys
+     * @return
+     */
+    private OrderIdIndex getOrderIdIndex(long orderId, Collection<String> keys) {
+        int regionIndex = (int) (orderId / OrderRegion.REGION_SIZE);
+        OrderRegion orderRegion = null;
+        synchronized(orderRegionCache) {
+            orderRegion = orderRegionCache.get(regionIndex);
+            if (orderRegion == null) {
+                if (!OrderRegion.isRegionExist(regionIndex)) {
+                    return null;
+                } else {
+                    orderRegion = OrderRegion.create(regionIndex);
+                    orderRegionCache.put(regionIndex, orderRegion);
+                }
+            }
+        }
+        
+        return orderRegion.getOrderIdIndex(orderId, keys);
+    }
+
+    /**
+     * @param orderIdIndex
      * @param key
      * @return
      */
-    private KeyValue getKeyValueByOrderIdAndKey(long orderId, String key) {
-        int regionIndex = (int) (orderId / OrderRegion.REGION_SIZE);
-        OrderRegion orderRegion = orderRegionCache.get(regionIndex);
-        if (orderRegion == null) {
-            orderRegion = OrderRegion.create(regionIndex);
-            orderRegionCache.put(regionIndex, orderRegion);
-        }
-
-//        String value = orderRegion.getAttributeAndCache(orderId, key);
-        String value = OrderRegion.getAttributeDirectlyFromFile(orderId, key);
-        KeyValue ret = new KeyValue();
-        ret.setKey(key);
-        ret.setValue(value);
-        return ret;
+    private KeyValue getKeyValueByOrderIdIndexAndKey(OrderIdIndex orderIdIndex, String key) {
+        
+        KeyValue keyValue = new KeyValue();
+        keyValue.setKey(key);
+        keyValue.setValue(orderIdIndex.getValueByKey(key));
+        return keyValue;
     }
 }
