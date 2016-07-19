@@ -12,7 +12,6 @@ import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.order.OrderIndexBuilder;
 import com.alibaba.middleware.race.order.OrderQuery;
-import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 
 import org.apache.commons.lang3.math.NumberUtils;
 

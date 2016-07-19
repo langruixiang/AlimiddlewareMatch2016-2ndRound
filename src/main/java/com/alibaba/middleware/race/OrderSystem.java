@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.orderSystemInterface;
+package com.alibaba.middleware.race;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -27,8 +27,8 @@ public interface OrderSystem {
    *          存储文件夹的目录，保证每个目录是有效的，每个目录在不同的磁盘上
    */
   public void construct(Collection<String> orderFiles,
-      Collection<String> buyerFiles, Collection<String> goodFiles,
-      Collection<String> storeFolders) throws IOException, InterruptedException;
+                        Collection<String> buyerFiles, Collection<String> goodFiles,
+                        Collection<String> storeFolders) throws IOException, InterruptedException;
 
   class TypeException extends Exception {
     private static final long serialVersionUID = -5723782756972021205L;

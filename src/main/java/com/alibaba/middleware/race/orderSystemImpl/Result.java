@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.orderSystemImpl;
 
-import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
+
+import com.alibaba.middleware.race.OrderSystem;
 
 import java.util.HashMap;
 import java.util.List;

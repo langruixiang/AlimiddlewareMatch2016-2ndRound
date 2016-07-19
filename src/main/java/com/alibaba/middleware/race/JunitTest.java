@@ -5,7 +5,6 @@ import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
-import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 import org.junit.Test;
 
 import java.io.IOException;
