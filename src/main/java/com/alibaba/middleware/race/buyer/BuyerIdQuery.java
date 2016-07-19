@@ -19,7 +19,7 @@ public class BuyerIdQuery {
         if (buyerId == null || buyerId.isEmpty()) return null;
         String beginKey = buyerId + "_" + starttime;
         String endKey = buyerId + "_" + endtime;
-        System.out.println("==========:"+buyerId + " index:" + index);
+        //System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
             FileInputStream twoIndexFile = null;
@@ -45,7 +45,7 @@ public class BuyerIdQuery {
                 }
             }
 
-            System.out.println(position);
+            //System.out.println(position);
 
             //2.查找一级索引
             indexRaf.seek(position);
@@ -64,14 +64,14 @@ public class BuyerIdQuery {
             //3.按行读取内容
             for (String line : oneIndexs) {
                 String[] keyValue = line.split(":");
-                System.out.println(keyValue[1]);
+                //System.out.println(keyValue[1]);
                 String[] positions = keyValue[1].split("\\|");
                 //System.out.println("======" + positions.length);
                 for (String pos : positions) {
-                    System.out.println(pos);
+                    //System.out.println(pos);
                     hashRaf.seek(Long.valueOf(pos));
                     String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                    System.out.println(orderContent);
+                    //System.out.println(orderContent);
 
                     //4.将字符串转成order对象集合
                     Order order = new Order();

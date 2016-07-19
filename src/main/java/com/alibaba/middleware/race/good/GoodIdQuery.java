@@ -15,7 +15,7 @@ import java.util.List;
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        System.out.println("==========:"+goodId + " index:" + index);
+        //System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
             FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
@@ -33,14 +33,14 @@ public class GoodIdQuery {
             while ((str = twoIndexBR.readLine()) != null) {
                 String[] keyValue = str.split(":");
                 if (goodId.compareTo(keyValue[0]) < 0) {
-                    System.out.println("--------"+keyValue[0]);
+                    //System.out.println("--------"+keyValue[0]);
                     break;
                 } else {
                     position = Long.valueOf(keyValue[1]);
                 }
             }
 
-            System.out.println(position);
+            //System.out.println(position);
 
             //2.查找一级索引
             indexRaf.seek(position);
@@ -63,10 +63,10 @@ public class GoodIdQuery {
             String[] positions = keyValue[1].split("\\|");
             //System.out.println("======" + positions.length);
             for (String pos : positions) {
-                System.out.println(pos);
+                //System.out.println(pos);
                 hashRaf.seek(Long.valueOf(pos));
                 String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                System.out.println(orderContent);
+                //System.out.println(orderContent);
 
                 //4.将字符串转成order对象集合
                 Order order = new Order();
