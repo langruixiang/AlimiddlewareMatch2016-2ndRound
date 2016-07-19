@@ -34,9 +34,14 @@ public class JunitTest {
         List<String> keys = new ArrayList<String>();
         keys.add("buyerid");
         keys.add("amount");
+        keys.add("buyername");
+        keys.add("good_name");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
         Result result = (Result) orderSystem.queryOrder(2982138, keys);
         System.out.println(result.get("buyerid").getValue());
+        System.out.println(result.get("amount").getValue());
+        System.out.println(result.get("buyername").getValue());
+        System.out.println(result.get("good_name").getValue());
     }
 
     @Test
@@ -97,7 +102,9 @@ public class JunitTest {
         goodFileList.add("good_records.txt");
         
         List<String> storeFolderList = new ArrayList<String>();
-        storeFolderList.add(".");
+        storeFolderList.add("./");
+        storeFolderList.add("./");
+        storeFolderList.add("./");
         
         try {
             orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);

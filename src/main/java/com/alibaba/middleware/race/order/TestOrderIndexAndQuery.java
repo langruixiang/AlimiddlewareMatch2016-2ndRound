@@ -27,9 +27,9 @@ public class TestOrderIndexAndQuery {
     }
 
     private static void testOrderIndexBuilder() {
-        List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
-        OrderIndexBuilder.build(orderFileList);
+//        List<String> orderFileList = new ArrayList<String>();
+//        orderFileList.add("order_records.txt");
+//        OrderIndexBuilder.build(orderFileList);
     }
     
     private static void testQueryOrder() {

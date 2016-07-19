@@ -7,6 +7,7 @@ package com.alibaba.middleware.race.order;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -30,23 +31,39 @@ public class OrderQuery {
         keyMap = FileUtil.readSIHashMapFromFile(OrderIndexBuilder.ORDER_KEY_MAP_FILE, OrderIndexBuilder.INIT_KEY_MAP_CAPACITY);
     }
 
-    public Result queryOrder(long orderId, Collection<String> keys) {
+    public com.alibaba.middleware.race.orderSystemImpl.Result queryOrder(long orderId, Collection<String> keys) {
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
 
-        OrderIdIndex orderIdIndex = getOrderIdIndex(orderId, keys);
+        LinkedList<String> filteredKeys = new LinkedList<String>();
+        if (keys == null) {
+            for (Entry<String, Integer> entry : keyMap.entrySet()) {
+                String key = entry.getKey();
+                filteredKeys.add(key);
+            }
+        } else {
+            //TODO remove if buyer and good index are ready
+            for (String key : keys) {
+                if (keyMap.containsKey(key)) {
+                    filteredKeys.add(key);
+                }
+            }
+            if (!filteredKeys.contains("buyerid")) {
+                filteredKeys.add("buyerid");
+            }
+            if (!filteredKeys.contains("goodid")) {
+                filteredKeys.add("goodid");
+            }
+        }
+
+        OrderIdIndex orderIdIndex = getOrderIdIndex(orderId, filteredKeys);
         if (orderIdIndex == null) {
             return null;
         }
         result.setOrderid(orderId);
-        if (keys == null) {
-            for (Entry<String, Integer> entry : keyMap.entrySet()) {
-                String key = entry.getKey();
-                result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
-            }
-        } else if (keys.isEmpty()) {
+        if (filteredKeys.isEmpty()) {
             return result;
         } else {
-            for (String key : keys) {
+            for (String key : filteredKeys) {
                 result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
             }
         }

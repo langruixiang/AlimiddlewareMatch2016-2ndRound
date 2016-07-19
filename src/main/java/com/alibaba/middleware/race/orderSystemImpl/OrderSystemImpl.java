@@ -10,7 +10,10 @@ import com.alibaba.middleware.race.file.OrderHashFile;
 import com.alibaba.middleware.race.good.GoodIdIndexFile;
 import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.*;
+import com.alibaba.middleware.race.order.OrderIndexBuilder;
+import com.alibaba.middleware.race.order.OrderQuery;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -48,6 +51,7 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
         CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
+        CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
 
         //按买家ID hash成多个小文件
         OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
@@ -78,9 +82,14 @@ public class OrderSystemImpl implements OrderSystem {
             GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, i);
             goodIdIndexThreadPool.execute(goodIdIndexFile);
         }
+        
+        //根据orderid建立索引以及文件
+        OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
+        orderIndexBuilder.start();
 
         buildIndexLatch.await();
         goodAndBuyerCountDownLatch.await();
+        orderIndexBuilderCountDownLatch.await();
         long endTime = System.currentTimeMillis();
         System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
@@ -88,8 +97,53 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-
-        com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+        OrderQuery orderQuery = new OrderQuery();
+        com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
+        
+        {
+            String buyerId = result.get("buyerid").getValue();
+            int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
+            //加入对应买家的所有属性kv
+            if (PageCache.buyerMap.get(hashIndex) == null) {
+                PageCache.cacheBuyerFile(hashIndex);
+            }
+            Buyer buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
+            if (buyer != null && buyer.getKeyValues() != null) {
+                if (keys ==  null) {
+                    result.getKeyValues().putAll(buyer.getKeyValues());
+                } else {
+                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> buyerKeyValues = buyer.getKeyValues();
+                    for (String key : keys) {
+                        if (buyerKeyValues.containsKey(key)) {
+                            result.getKeyValues().put(key, buyerKeyValues.get(key));
+                        }
+                    }
+                }
+            }
+        }
+        
+        {
+            String goodId = result.get("goodid").getValue();
+            //加入对应商品的所有属性kv
+            int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
+            if (PageCache.goodMap.get(goodIdHashIndex) == null) {
+                PageCache.cacheGoodFile(goodIdHashIndex);
+            }
+            Good good = PageCache.goodMap.get(goodIdHashIndex).get(goodId);
+            if (good != null && good.getKeyValues() != null) {
+                if (keys ==  null) {
+                    result.getKeyValues().putAll(good.getKeyValues());
+                } else {
+                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
+                    for (String key : keys) {
+                        if (goodKeyValues.containsKey(key)) {
+                            result.getKeyValues().put(key, goodKeyValues.get(key));
+                        }
+                    }
+                }
+            }
+        }
+        
         return result;
     }
 

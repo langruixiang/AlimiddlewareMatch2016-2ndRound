@@ -22,14 +22,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+
+import com.alibaba.middleware.race.constant.FileConstant;
 
 /**
  * @author wangweiwei
  *
  */
-public class OrderIndexBuilder {
-    public static final String ORDER_ID_INDEX_DIR = "order_id_index";
-    public static final String ORDER_KEY_MAP_FILE = ORDER_ID_INDEX_DIR + "/" + "order_key_map.txt";
+public class OrderIndexBuilder extends Thread {
+    public static String ORDER_ID_INDEX_DIR;
+    public static String ORDER_KEY_MAP_FILE = ORDER_ID_INDEX_DIR + "/" + "order_key_map.txt";
     public static final int INIT_KEY_MAP_CAPACITY = 20;
     public static final String INDEX_SPLITOR = ":";
     public static final String KEY_SPLITOR = "|";
@@ -37,8 +40,25 @@ public class OrderIndexBuilder {
     
     public static Map<String, RandomAccessFile> singleRegionFilesMap = new HashMap<String, RandomAccessFile>(OrderRegion.INIT_SINGLE_REGION_FILE_NUM);
     public static long curRegionIndex = -1;
+    
+    private Collection<String> orderFiles;
+    private Collection<String> storeFolders;
+    private CountDownLatch countDownLatch;
+    
+    public OrderIndexBuilder(Collection<String> orderFiles, Collection<String> storeFolders, CountDownLatch countDownLatch) {
+        this.orderFiles = orderFiles;
+        this.storeFolders = storeFolders;
+        this.countDownLatch = countDownLatch;
+        if (FileConstant.THIRD_DISK_PATH.endsWith("/")) {
+            ORDER_ID_INDEX_DIR = FileConstant.THIRD_DISK_PATH + "order_id_index";
+        } else {
+            ORDER_ID_INDEX_DIR = FileConstant.THIRD_DISK_PATH + "/" + "order_id_index";
+        }
+        ORDER_KEY_MAP_FILE = ORDER_ID_INDEX_DIR + "/" + "order_key_map.txt";
+        
+    }
 
-    public static void build(Collection<String> orderFiles) {
+    public void build() {
         try {
             FileUtil.createDir(OrderIndexBuilder.ORDER_ID_INDEX_DIR);
             for (String orderFile : orderFiles) {
@@ -63,7 +83,7 @@ public class OrderIndexBuilder {
     /**
      * 
      */
-    private static void writeKeyMapFile(Map<String, Integer> map) {
+    private void writeKeyMapFile(Map<String, Integer> map) {
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ORDER_KEY_MAP_FILE), OrderRegion.ENCODING));
             for (Entry<String, Integer> entry : keyMap.entrySet()) {
@@ -80,7 +100,7 @@ public class OrderIndexBuilder {
      * @throws IOException 
      * 
      */
-    private static void buildWithOrderLine(String orderLine) throws IOException {
+    private void buildWithOrderLine(String orderLine) throws IOException {
         OrderIdIndex order = new OrderIdIndex();
         String[] keyValues = orderLine.split("\t");
         for (int i = 0; i < keyValues.length; i++) {
@@ -123,7 +143,7 @@ public class OrderIndexBuilder {
     /**
      * 
      */
-    private static void writeLineToRegionIndexFile(String regionFileName, long regionIndex,
+    private void writeLineToRegionIndexFile(String regionFileName, long regionIndex,
             long orderId, String content) throws IOException {
         if (regionIndex != curRegionIndex) {
             for (Entry<String, RandomAccessFile> entry : singleRegionFilesMap.entrySet()) {
@@ -148,7 +168,7 @@ public class OrderIndexBuilder {
      * @param string
      * @throws IOException 
      */
-    private static long writeLineToRegionKeyFile(String regionFileName, long regionIndex,
+    private long writeLineToRegionKeyFile(String regionFileName, long regionIndex,
             long orderId, String content) throws IOException {
         if (regionIndex != curRegionIndex) {
             for (Entry<String, RandomAccessFile> entry : singleRegionFilesMap.entrySet()) {
@@ -164,5 +184,12 @@ public class OrderIndexBuilder {
         }
         return FileUtil.appendLineWithRandomAccessFile(regionFile, OrderRegion.ENCODING, content);
 //        return FileUtil.appendLineWithRandomAccessFile(regionFile, OrderRegion.ENCODING, String.valueOf(orderId).concat(":") + content);
+    }
+    
+    @Override
+    public void run(){
+        build();
+        System.out.println("OrderIndexBuilder build end~");
+        countDownLatch.countDown();
     }
 }
