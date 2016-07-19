@@ -4,7 +4,6 @@ import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
 import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-import com.alibaba.middleware.race.orderSystemImpl.OrderSystemImpl;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 import org.junit.Test;
@@ -13,13 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.junit.Test;
-
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-import com.alibaba.middleware.race.orderSystemImpl.OrderSystemImpl;
-import com.alibaba.middleware.race.orderSystemImpl.Result;
-import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 
 /**
  * Created by jiangchao on 2016/7/13.
