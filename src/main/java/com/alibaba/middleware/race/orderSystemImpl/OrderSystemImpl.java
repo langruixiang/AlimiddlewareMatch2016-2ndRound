@@ -104,10 +104,13 @@ public class OrderSystemImpl implements OrderSystem {
             String buyerId = result.get("buyerid").getValue();
             int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
             //加入对应买家的所有属性kv
-            if (PageCache.buyerMap.get(hashIndex) == null) {
-                PageCache.cacheBuyerFile(hashIndex);
+            Buyer buyer = null;
+            synchronized (PageCache.buyerMap) {
+                if (PageCache.buyerMap.get(hashIndex) == null) {
+                    PageCache.cacheBuyerFile(hashIndex);
+                }
+                buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
             }
-            Buyer buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
             if (buyer != null && buyer.getKeyValues() != null) {
                 if (keys ==  null) {
                     result.getKeyValues().putAll(buyer.getKeyValues());
@@ -126,10 +129,13 @@ public class OrderSystemImpl implements OrderSystem {
             String goodId = result.get("goodid").getValue();
             //加入对应商品的所有属性kv
             int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
-            if (PageCache.goodMap.get(goodIdHashIndex) == null) {
-                PageCache.cacheGoodFile(goodIdHashIndex);
+            Good good = null;
+            synchronized (PageCache.goodMap) {
+                if (PageCache.goodMap.get(goodIdHashIndex) == null) {
+                    PageCache.cacheGoodFile(goodIdHashIndex);
+                }
+                good = PageCache.goodMap.get(goodIdHashIndex).get(goodId);
             }
-            Good good = PageCache.goodMap.get(goodIdHashIndex).get(goodId);
             if (good != null && good.getKeyValues() != null) {
                 if (keys ==  null) {
                     result.getKeyValues().putAll(good.getKeyValues());
@@ -159,19 +165,25 @@ public class OrderSystemImpl implements OrderSystem {
         for (Order order : orders) {
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
-            if (PageCache.buyerMap.get(hashIndex) == null) {
-                PageCache.cacheBuyerFile(hashIndex);
+            Buyer buyer = null;
+            synchronized (PageCache.buyerMap) {
+                if (PageCache.buyerMap.get(hashIndex) == null) {
+                    PageCache.cacheBuyerFile(hashIndex);
+                }
+                buyer = PageCache.buyerMap.get(hashIndex).get(buyerid);
             }
-            Buyer buyer = PageCache.buyerMap.get(hashIndex).get(buyerid);
             if (buyer != null && buyer.getKeyValues() != null) {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_NUMS);
-            if (PageCache.goodMap.get(goodIdHashIndex) == null) {
-                PageCache.cacheGoodFile(goodIdHashIndex);
+            Good good = null;
+            synchronized (PageCache.goodMap) {
+                int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+                if (PageCache.goodMap.get(goodIdHashIndex) == null) {
+                    PageCache.cacheGoodFile(goodIdHashIndex);
+                }
+                good = PageCache.goodMap.get(goodIdHashIndex).get(order.getKeyValues().get("goodid").getValue());
             }
-            Good good = PageCache.goodMap.get(goodIdHashIndex).get(order.getKeyValues().get("goodid").getValue());
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());
             }
@@ -216,18 +228,24 @@ public class OrderSystemImpl implements OrderSystem {
             Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
             //加入对应买家的所有属性kv
             int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
-            if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
-                PageCache.cacheBuyerFile(buyeridHashIndex);
+            Buyer buyer = null;
+            synchronized (PageCache.buyerMap) {
+                if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
+                    PageCache.cacheBuyerFile(buyeridHashIndex);
+                }
+                buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             }
-            Buyer buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             if (buyer != null && buyer.getKeyValues() != null) {
                 keyValueMap.putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            if (PageCache.goodMap.get(hashIndex) == null) {
-                PageCache.cacheGoodFile(hashIndex);
+            Good good = null;
+            synchronized (PageCache.goodMap) {
+                if (PageCache.goodMap.get(hashIndex) == null) {
+                    PageCache.cacheGoodFile(hashIndex);
+                }
+                good = PageCache.goodMap.get(hashIndex).get(goodid);
             }
-            Good good = PageCache.goodMap.get(hashIndex).get(goodid);
             if (good != null && good.getKeyValues() != null) {
                 keyValueMap.putAll(good.getKeyValues());
             }
@@ -296,10 +314,13 @@ public class OrderSystemImpl implements OrderSystem {
 
             //加入对应买家的所有属性kv
             int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
-            if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
-                PageCache.cacheBuyerFile(buyeridHashIndex);
+            Buyer buyer = null;
+            synchronized (PageCache.buyerMap) {
+                if (PageCache.buyerMap.get(buyeridHashIndex) == null) {
+                    PageCache.cacheBuyerFile(buyeridHashIndex);
+                }
+                buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             }
-            Buyer buyer = PageCache.buyerMap.get(buyeridHashIndex).get(order.getKeyValues().get("buyerid").getValue());
             if (buyer.getKeyValues().containsKey(key)) {
                 String str = buyer.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {
@@ -310,10 +331,13 @@ public class OrderSystemImpl implements OrderSystem {
                 return null;
             }
             //加入对应商品的所有属性kv
-            if (PageCache.goodMap.get(hashIndex) == null) {
-                PageCache.cacheGoodFile(hashIndex);
+            Good good = null;
+            synchronized (PageCache.goodMap) {
+                if (PageCache.goodMap.get(hashIndex) == null) {
+                    PageCache.cacheGoodFile(hashIndex);
+                }
+                good = PageCache.goodMap.get(hashIndex).get(goodid);
             }
-            Good good = PageCache.goodMap.get(hashIndex).get(goodid);
             if (good.getKeyValues().containsKey(key)) {
                 String str = good.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {

@@ -63,9 +63,7 @@ public class PageCache {
                 buyer.setId(buyer.getKeyValues().get("buyerid").getValue());
                 segmentBuyerMap.put(buyer.getId(), buyer);
             }
-            synchronized (buyerMap) {
-                buyerMap.put(index, segmentBuyerMap);
-            }
+            buyerMap.put(index, segmentBuyerMap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -97,9 +95,7 @@ public class PageCache {
                 good.setId(good.getKeyValues().get("goodid").getValue());
                 segmentGoodMap.put(good.getId(), good);
             }
-            synchronized (goodMap) {
-                goodMap.put(index, segmentGoodMap);
-            }
+            goodMap.put(index, segmentGoodMap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
