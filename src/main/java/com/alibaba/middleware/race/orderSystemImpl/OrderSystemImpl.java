@@ -13,9 +13,12 @@ import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.orderSystemInterface.OrderSystem;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by jiangchao on 2016/7/11.
@@ -31,18 +34,12 @@ public class OrderSystemImpl implements OrderSystem {
     public void construct(final Collection<String> orderFiles, final Collection<String> buyerFiles,
                           final Collection<String> goodFiles, Collection<String> storeFolders)
             throws IOException, InterruptedException {
+        ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(10);
+        ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(10);
 
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
-        CountDownLatch buildIndexLatch = new CountDownLatch(2);
-//        new Thread(new Runnable() {
-//
-//            @Override public void run() {
-//                //按订单号hash成多个小文件
-//                OrderHashFile.generateOrderIdHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS);
-//            }
-//        }).start();
-
+        CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
 
         //按买家ID hash成多个小文件
         OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, buyerFiles, goodFiles, null, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
@@ -63,18 +60,19 @@ public class OrderSystemImpl implements OrderSystem {
         buyerHashFile.start();
 
         //根据buyerid生成一级二级索引
-        BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch);
-        buyerIdIndexFile.start();
+        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+            BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, i);
+            buyerIdIndexThreadPool.execute(buyerIdIndexFile);
+        }
 
         //根据goodid生成一级二级索引
-        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch);
-        goodIdIndexFile.start();
+        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+            GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, i);
+            goodIdIndexThreadPool.execute(goodIdIndexFile);
+        }
 
         buildIndexLatch.await();
         System.out.println("all work end!!!!!!!");
-
-        //随机选择了按订单号hash的小文件中的0号文件，将里面的订单记录加载到内存
-        //PageCache.cacheOrderIdFile(0);
 
     }
 

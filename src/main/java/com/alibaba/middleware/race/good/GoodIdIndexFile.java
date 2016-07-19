@@ -20,25 +20,28 @@ public class GoodIdIndexFile extends Thread{
 
     private CountDownLatch buildIndexCountLatch;
 
-    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch) {
+    private int index;
+
+    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
+        this.index = index;
     }
 
     public void generateGoodIdIndex() {
 
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             goodIndex.clear();
 
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + i);
+                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + i);
+                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_GOODID + i);
+                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
                 FileWriter twoIndexfw = new FileWriter(twoIndexfile);
                 BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
@@ -63,7 +66,7 @@ public class GoodIdIndexFile extends Thread{
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                FileConstant.goodIdIndexRegionSizeMap.put(i, towIndexSize);
+                FileConstant.goodIdIndexRegionSizeMap.put(index, towIndexSize);
                 count = 0;
                 long position = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();
@@ -99,7 +102,7 @@ public class GoodIdIndexFile extends Thread{
             }
 
         }
-    }
+    //}
 
     public void run(){
         if (hashDownLatch != null) {
@@ -111,7 +114,7 @@ public class GoodIdIndexFile extends Thread{
         }
         generateGoodIdIndex();
         buildIndexCountLatch.countDown();//完成工作，计数减一
-        System.out.println("goodid build index work end!");
+        System.out.println("goodid build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {

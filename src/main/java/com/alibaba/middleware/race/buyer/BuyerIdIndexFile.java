@@ -17,25 +17,28 @@ public class BuyerIdIndexFile extends Thread{
 
     private CountDownLatch buildIndexCountLatch;
 
-    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch) {
+    private int index;
+
+    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
+        this.index = index;
     }
 
     public void generateBuyerIdIndex() {
 
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             buyerIndex.clear();
 
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_BUYERID + i);
+                FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_BUYERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_BUYERID + i);
+                File file = new File(FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_BUYERID + i);
+                File twoIndexfile = new File(FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
                 FileWriter twoIndexfw = new FileWriter(twoIndexfile);
                 BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
@@ -67,7 +70,7 @@ public class BuyerIdIndexFile extends Thread{
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
-                FileConstant.buyerIdIndexRegionSizeMap.put(i, twoIndexSize);
+                FileConstant.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 count = 0;
                 long position = 0;
                 Iterator iterator = buyerIndex.descendingMap().entrySet().iterator();
@@ -103,7 +106,7 @@ public class BuyerIdIndexFile extends Thread{
             }
 
         }
-    }
+    //}
 
     public void run(){
         if (hashDownLatch != null) {
@@ -115,7 +118,7 @@ public class BuyerIdIndexFile extends Thread{
         }
         generateBuyerIdIndex();
         buildIndexCountLatch.countDown();
-        System.out.println("buyerid build index work end!");
+        System.out.println("buyerid build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {
