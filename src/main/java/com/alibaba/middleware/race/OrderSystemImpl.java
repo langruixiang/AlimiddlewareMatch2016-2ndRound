@@ -203,9 +203,9 @@ public class OrderSystemImpl implements OrderSystem {
 //            }
 //        });
 
-        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-            System.out.println(result);
-        }
+//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+//            System.out.println(result);
+//        }
 
         return results.iterator();
     }
@@ -287,9 +287,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
         });
 
-        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-            System.out.println(result);
-        }
+//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+//            System.out.println(result);
+//        }
 
         return results.iterator();
     }
