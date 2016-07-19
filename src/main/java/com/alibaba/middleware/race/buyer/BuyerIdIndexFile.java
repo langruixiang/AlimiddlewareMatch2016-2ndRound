@@ -67,7 +67,7 @@ public class BuyerIdIndexFile extends Thread{
                             break;
                         }
                     }
-                    count += str.getBytes().length + 2;
+                    count += str.getBytes().length + 1;
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
@@ -84,15 +84,15 @@ public class BuyerIdIndexFile extends Thread{
                     for (Long num : val) {
                         content = content + num + "|";
                     }
-                    bufferedWriter.write(content);
+                    bufferedWriter.write(content + '\n');
 
                     if (count%twoIndexSize == 0) {
                         twoIndexBW.write(key+":");
-                        twoIndexBW.write(String.valueOf(position));
-                        twoIndexBW.newLine();
+                        twoIndexBW.write(String.valueOf(position) + '\n');
+                        //twoIndexBW.newLine();
                     }
-                    position += content.getBytes().length + 2;
-                    bufferedWriter.newLine();
+                    position += content.getBytes().length + 1;
+                    //bufferedWriter.newLine();
 
                     count++;
                 }

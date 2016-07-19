@@ -58,8 +58,8 @@ public class OrderHashFile extends Thread{
                         if ("orderid".equals(keyValue[0])) {
                             orderid = Long.valueOf(keyValue[1]);
                             hashFileIndex = (int) (orderid % nums);
-                            bufferedWriters[hashFileIndex].write(str);
-                            bufferedWriters[hashFileIndex].newLine();
+                            bufferedWriters[hashFileIndex].write(str + '\n');
+                            //bufferedWriters[hashFileIndex].newLine();
                             break;
                         }
                     }
@@ -99,8 +99,8 @@ public class OrderHashFile extends Thread{
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];
                             hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
-                            bufferedWriters[hashFileIndex].write(str);
-                            bufferedWriters[hashFileIndex].newLine();
+                            bufferedWriters[hashFileIndex].write(str + '\n');
+                            //bufferedWriters[hashFileIndex].newLine();
                             break;
                         }
                     }
@@ -140,8 +140,8 @@ public class OrderHashFile extends Thread{
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
                             hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
-                            bufferedWriters[hashFileIndex].write(str);
-                            bufferedWriters[hashFileIndex].newLine();
+                            bufferedWriters[hashFileIndex].write(str + '\n');
+                            //bufferedWriters[hashFileIndex].newLine();
                             break;
                         }
                     }

@@ -49,8 +49,8 @@ public class BuyerHashFile extends Thread{
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1].hashCode();
                             hashFileIndex = (int) (Math.abs(buyerid) % nums);
-                            bufferedWriters[hashFileIndex].write(str);
-                            bufferedWriters[hashFileIndex].newLine();
+                            bufferedWriters[hashFileIndex].write(str + '\n');
+                            //bufferedWriters[hashFileIndex].newLine();
                             break;
                         }
                     }

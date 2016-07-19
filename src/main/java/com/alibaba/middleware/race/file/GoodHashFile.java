@@ -49,8 +49,8 @@ public class GoodHashFile extends Thread{
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1].hashCode();
                             hashFileIndex = (int) (Math.abs(goodid) % nums);
-                            bufferedWriters[hashFileIndex].write(str);
-                            bufferedWriters[hashFileIndex].newLine();
+                            bufferedWriters[hashFileIndex].write(str + '\n');
+                            //bufferedWriters[hashFileIndex].newLine();
                             break;
                         }
                     }

@@ -63,7 +63,7 @@ public class GoodIdIndexFile extends Thread{
                             break;
                         }
                     }
-                    count += str.getBytes().length + 2;
+                    count += str.getBytes().length + 1;
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
@@ -80,15 +80,15 @@ public class GoodIdIndexFile extends Thread{
                     for (Long num : val) {
                         content = content + num + "|";
                     }
-                    bufferedWriter.write(content);
+                    bufferedWriter.write(content + '\n');
 
                     if (count%towIndexSize == 0) {
                         twoIndexBW.write(key+":");
-                        twoIndexBW.write(String.valueOf(position));
-                        twoIndexBW.newLine();
+                        twoIndexBW.write(String.valueOf(position) + '\n');
+                        //twoIndexBW.newLine();
                     }
-                    position += content.getBytes().length + 2;
-                    bufferedWriter.newLine();
+                    position += content.getBytes().length + 1;
+                    //bufferedWriter.newLine();
 
                     count++;
                 }
