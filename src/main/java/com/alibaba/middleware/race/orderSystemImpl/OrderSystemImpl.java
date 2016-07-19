@@ -34,7 +34,7 @@ public class OrderSystemImpl implements OrderSystem {
     public void construct(final Collection<String> orderFiles, final Collection<String> buyerFiles,
                           final Collection<String> goodFiles, Collection<String> storeFolders)
             throws IOException, InterruptedException {
-
+        long beginTime = System.currentTimeMillis();
         if (storeFolders != null && storeFolders.size() >= 3) {
             FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
             FileConstant.SECOND_DISK_PATH = FileConstant.SECOND_DISK_PATH + storeFolders.toArray()[1];
@@ -46,6 +46,7 @@ public class OrderSystemImpl implements OrderSystem {
 
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
+        CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
         CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
 
         //按买家ID hash成多个小文件
@@ -58,12 +59,12 @@ public class OrderSystemImpl implements OrderSystem {
 
 
         //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodAndBuyerCountDownLatch);
         goodHashFileThread.start();
 
 
         //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, goodAndBuyerCountDownLatch);
         buyerHashFile.start();
 
         //根据buyerid生成一级二级索引
@@ -79,7 +80,9 @@ public class OrderSystemImpl implements OrderSystem {
         }
 
         buildIndexLatch.await();
-        System.out.println("all work end!!!!!!!");
+        goodAndBuyerCountDownLatch.await();
+        long endTime = System.currentTimeMillis();
+        System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
     }
 

@@ -14,11 +14,13 @@ public class BuyerHashFile extends Thread{
     private Collection<String> buyerFiles;
     private Collection<String> storeFolders;
     private int                nums;
+    private CountDownLatch countDownLatch;
 
-    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums) {
+    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch) {
         this.buyerFiles = buyerFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
+        this.countDownLatch = countDownLatch;
     }
 
     //读取所有买家文件，按照买家号hash到多个小文件中,生成到第二块磁盘中
@@ -65,6 +67,8 @@ public class BuyerHashFile extends Thread{
 
     public void run(){
         generateBuyerHashFile();
+        System.out.println("good file hash end~");
+        countDownLatch.countDown();
     }
 
 }
