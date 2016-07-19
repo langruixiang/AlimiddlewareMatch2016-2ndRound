@@ -15,6 +15,7 @@ import com.alibaba.middleware.race.order.OrderQuery;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -152,8 +153,8 @@ public class OrderSystemImpl implements OrderSystem {
     }
 
     @Override
-    public Iterator<Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        List<Result> results = new ArrayList<Result>();
+    public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
+        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_NUMS);
 
         //获取goodid的所有订单信息
@@ -200,15 +201,15 @@ public class OrderSystemImpl implements OrderSystem {
 //            }
 //        });
 
-//        for (Result result : results) {
-//            System.out.println(result);
-//        }
+        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+            System.out.println(result);
+        }
 
         return results.iterator();
     }
 
     @Override
-    public Iterator<Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
+    public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         //flag为1表示查询所有字段
         int flag = 0;
         if (keys == null) {
@@ -216,7 +217,7 @@ public class OrderSystemImpl implements OrderSystem {
         } else if (goodid == null || keys.size() == 0) {
             return null;
         }
-        List<Result> results = new ArrayList<Result>();
+        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
@@ -264,10 +265,11 @@ public class OrderSystemImpl implements OrderSystem {
             results.add(result);
         }
         //对所求结果按照交易订单从小到大排序
-        Collections.sort(results, new Comparator<Result>() {
+        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
 
             @Override
-            public int compare(Result o1, Result o2) {
+            public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
                 double diff = 0;
                 try {
                     diff = (o1.get("amount").valueAsDouble() - o2.get("amount").valueAsDouble());
@@ -281,9 +283,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
         });
 
-//        for (Result result : results) {
-//            System.out.println(result);
-//        }
+        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+            System.out.println(result);
+        }
 
         return results.iterator();
     }
