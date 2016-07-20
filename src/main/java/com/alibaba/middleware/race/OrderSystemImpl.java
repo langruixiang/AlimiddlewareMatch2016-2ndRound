@@ -99,9 +99,14 @@ public class OrderSystemImpl implements OrderSystem {
         System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys.toString());
         OrderQuery orderQuery = new OrderQuery();
         com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
-        
+        if (result == null) {
+            return null;
+        }
         {
             String buyerId = result.get("buyerid").getValue();
+            if (keys != null && !keys.contains("buyerid")) {
+                result.remove("buyerid");
+            }
             int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
             //加入对应买家的所有属性kv
             Buyer buyer = null;
@@ -127,6 +132,9 @@ public class OrderSystemImpl implements OrderSystem {
         
         {
             String goodId = result.get("goodid").getValue();
+            if (keys != null && !keys.contains("goodid")) {
+                result.remove("goodid");
+            }
             //加入对应商品的所有属性kv
             int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
             Good good = null;

@@ -32,13 +32,16 @@ public class OrderQuery {
 
     public com.alibaba.middleware.race.orderSystemImpl.Result queryOrder(long orderId, Collection<String> keys) {
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
-
         LinkedList<String> filteredKeys = new LinkedList<String>();
         if (keys == null) {
             for (Entry<String, Integer> entry : keyMap.entrySet()) {
                 String key = entry.getKey();
                 filteredKeys.add(key);
             }
+            filteredKeys.add("orderid");
+        } else if (keys.isEmpty()) {
+            result.setOrderid(orderId);
+            return result;
         } else {
             //TODO remove if buyer and good index are ready
             for (String key : keys) {
@@ -52,15 +55,13 @@ public class OrderQuery {
             if (!filteredKeys.contains("goodid")) {
                 filteredKeys.add("goodid");
             }
+            if (keys.contains("orderid")) {
+                filteredKeys.add("orderid");
+            }
         }
-
         OrderIdIndex orderIdIndex = getOrderIdIndex(orderId, filteredKeys);
         if (orderIdIndex == null) {
             return null;
-        }
-        result.setOrderid(orderId);
-        if (filteredKeys.isEmpty()) {
-            return result;
         } else {
             for (String key : filteredKeys) {
                 result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
@@ -74,7 +75,7 @@ public class OrderQuery {
      * @param keys
      * @return
      */
-    private OrderIdIndex getOrderIdIndex(long orderId, Collection<String> keys) {
+    private OrderIdIndex getOrderIdIndex(long orderId, Collection<String> filteredKeys) {
         int regionIndex = (int) (orderId / OrderRegion.REGION_SIZE);
         OrderRegion orderRegion = null;
         synchronized(orderRegionCache) {
@@ -89,7 +90,7 @@ public class OrderQuery {
             }
         }
         
-        return orderRegion.getOrderIdIndex(orderId, keys);
+        return orderRegion.getOrderIdIndex(orderId, filteredKeys);
     }
 
     /**

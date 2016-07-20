@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 import java.util.LinkedList;
+
+import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 /**
  * @author wangweiwei
  *
@@ -115,15 +117,19 @@ public class OrderRegion {
         }
         LinkedList<String> needLoadKeys = orderIdIndex.getNeedLoadKeys(keys);
         for (String key : needLoadKeys) {
-            String regionKeyFilePath = getFilePathByRegionIndexAndKey(regionIndex, key);
-            RandomAccessFile rf = null;
-            try {
-                rf = new RandomAccessFile(regionKeyFilePath, "r");
-                Integer keyIndex = OrderQuery.keyMap.get(key);
-                orderIdIndex.loadKeyValue(keyIndex, key, rf);
-                rf.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (key.equals("orderid")) {
+                orderIdIndex.addKeyValue("orderid", String.valueOf(orderIdIndex.getId()));
+            } else {
+                String regionKeyFilePath = getFilePathByRegionIndexAndKey(regionIndex, key);
+                RandomAccessFile rf = null;
+                try {
+                    rf = new RandomAccessFile(regionKeyFilePath, "r");
+                    Integer keyIndex = OrderQuery.keyMap.get(key);
+                    orderIdIndex.loadKeyValue(keyIndex, key, rf);
+                    rf.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return orderIdIndex;

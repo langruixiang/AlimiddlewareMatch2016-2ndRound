@@ -63,7 +63,6 @@ public class OrderIdIndex {
         idIndex.setRegionIndex(parsedId / OrderRegion.REGION_SIZE);
         String[] parsedKeysPos = splitOfLine[1].split("\\|");
         idIndex.setKeysPos(parsedKeysPos);
-        idIndex.setKeyValueMap(new HashMap<String, String>());
         return idIndex;
     }
     
@@ -76,6 +75,9 @@ public class OrderIdIndex {
      * @param keys
      */
     public void loadKeyValue(int keyIndex, String key, RandomAccessFile file) {
+        if (keyValueMap == null) {
+            keyValueMap = new HashMap<String, String>();
+        }
         if (keyIndex < keysPos.length) {
             long keyPos = Integer.parseInt(keysPos[keyIndex]);
             if (keyPos >= 0) {
@@ -94,11 +96,8 @@ public class OrderIdIndex {
      * @return
      */
     public LinkedList<String> getNeedLoadKeys(Collection<String> keys) {
-        if (keys == null) {
-            keys = new LinkedList<String>();
-            for (Entry<String, Integer> entry : OrderQuery.keyMap.entrySet()) {
-                keys.add(entry.getKey());
-            }
+        if (keyValueMap == null) {
+            keyValueMap = new HashMap<String, String>();
         }
         LinkedList<String> ret= new LinkedList<String>();
         for (String key : keys) {

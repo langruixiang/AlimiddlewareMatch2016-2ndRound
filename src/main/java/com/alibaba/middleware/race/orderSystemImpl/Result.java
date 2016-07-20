@@ -31,6 +31,10 @@ public class Result implements OrderSystem.Result{
     public void setKeyValues(Map<String, KeyValue> keyValues) {
         this.keyValues = keyValues;
     }
+    
+    public void remove(String key) {
+        this.keyValues.remove(key);
+    }
 
     @Override
     public KeyValue get(String key) {
