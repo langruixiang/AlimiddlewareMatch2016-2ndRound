@@ -313,14 +313,22 @@ public class OrderSystemImpl implements OrderSystem {
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
         if (orders == null || orders.size() == 0) return null;
         double value = 0;
+        long longValue = 0;
         int count = 0;
+        //flag=0表示Long类型，1表示Double类型
+        int flag = 0;
         for (Order order : orders) {
             //System.out.println("sum goodid:"+ goodid +" : " + order.toString());
             //加入订单信息的所有属性kv
             if (order.getKeyValues().containsKey(key)) {
                 String str = order.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {
-                    value += Double.valueOf(str);
+                    if (flag == 0) {
+                        longValue += Long.valueOf(str);
+                        value += Double.valueOf(str);
+                    } else {
+                        value += Double.valueOf(str);
+                    }
                     count++;
                     continue;
                 }
@@ -339,7 +347,12 @@ public class OrderSystemImpl implements OrderSystem {
             if (buyer.getKeyValues().containsKey(key)) {
                 String str = buyer.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {
-                    value += Double.valueOf(str);
+                    if (flag == 0) {
+                        longValue += Long.valueOf(str);
+                        value += Double.valueOf(str);
+                    } else {
+                        value += Double.valueOf(str);
+                    }
                     count++;
                     continue;
                 }
@@ -356,7 +369,12 @@ public class OrderSystemImpl implements OrderSystem {
             if (good.getKeyValues().containsKey(key)) {
                 String str = good.getKeyValues().get(key).getValue();
                 if (NumberUtils.isNumber(str)) {
-                    value += Double.valueOf(str);
+                    if (flag == 0) {
+                        longValue += Long.valueOf(str);
+                        value += Double.valueOf(str);
+                    } else {
+                        value += Double.valueOf(str);
+                    }
                     count++;
                     continue;
                 }
@@ -367,8 +385,13 @@ public class OrderSystemImpl implements OrderSystem {
             return null;
         }
         keyValue.setKey(key);
-        keyValue.setValue(String.valueOf(value));
-        System.out.println("sum goodid:"+ goodid +" : " + value);
+        if (flag == 0) {
+            keyValue.setValue(String.valueOf(longValue));
+            System.out.println("sum goodid:"+ goodid +" : " + longValue);
+        } else {
+            keyValue.setValue(String.valueOf(value));
+            System.out.println("sum goodid:"+ goodid +" : " + value);
+        }
         return keyValue;
     }
 
