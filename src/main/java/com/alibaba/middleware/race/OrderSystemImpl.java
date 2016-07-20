@@ -326,6 +326,9 @@ public class OrderSystemImpl implements OrderSystem {
             //加入订单信息的所有属性kv
             if (order.getKeyValues().containsKey(key)) {
                 String str = order.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
+                }
                 if (NumberUtils.isNumber(str)) {
                     if (flag == 0) {
                         longValue += Long.valueOf(str);
@@ -350,6 +353,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
             if (buyer.getKeyValues().containsKey(key)) {
                 String str = buyer.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
+                }
                 if (NumberUtils.isNumber(str)) {
                     if (flag == 0) {
                         longValue += Long.valueOf(str);
@@ -372,6 +378,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
             if (good.getKeyValues().containsKey(key)) {
                 String str = good.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
+                }
                 if (NumberUtils.isNumber(str)) {
                     if (flag == 0) {
                         longValue += Long.valueOf(str);
