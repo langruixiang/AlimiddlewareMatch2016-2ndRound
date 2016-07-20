@@ -93,7 +93,7 @@ public class OrderSystemImpl implements OrderSystem {
         System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
         orderIndexBuilderCountDownLatch.await();
         long endTime = System.currentTimeMillis();
-        System.out.println("second parse need time :" + (endTime - secondParseTime));
+        System.out.println("second end is :" + endTime + " second parse need time :" + (endTime - secondParseTime));
         System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
     }
@@ -243,7 +243,7 @@ public class OrderSystemImpl implements OrderSystem {
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
         if (orders == null || orders.size() == 0) return results.iterator();
-        if (keys.size() == 0) {
+        if (keys != null && keys.size() == 0) {
             for (Order order : orders) {
                 com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
                 result.setOrderid(order.getId());
