@@ -163,7 +163,7 @@ public class OrderSystemImpl implements OrderSystem {
         if (orders == null || orders.size() == 0) return null;
         //Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         for (Order order : orders) {
-            System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order.toString());
+            //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order.toString());
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
             Buyer buyer = null;
@@ -203,9 +203,9 @@ public class OrderSystemImpl implements OrderSystem {
 //            }
 //        });
 
-//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-//            System.out.println(result);
-//        }
+        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+            System.out.println(buyerid + result);
+        }
 
         return results.iterator();
     }
@@ -227,7 +227,7 @@ public class OrderSystemImpl implements OrderSystem {
         if (orders == null || orders.size() == 0) return null;
 
         for (Order order : orders) {
-            System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order.toString());
+            //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order.toString());
             Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
             //加入对应买家的所有属性kv
             int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
@@ -287,9 +287,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
         });
 
-//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-//            System.out.println(result);
-//        }
+        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+            System.out.println(goodid + ":" + result);
+        }
 
         return results.iterator();
     }
@@ -305,7 +305,7 @@ public class OrderSystemImpl implements OrderSystem {
         double value = 0;
         int count = 0;
         for (Order order : orders) {
-            System.out.println("sum goodid:"+ goodid +" : " + order.toString());
+            //System.out.println("sum goodid:"+ goodid +" : " + order.toString());
             //加入订单信息的所有属性kv
             if (order.getKeyValues().containsKey(key)) {
                 String str = order.getKeyValues().get(key).getValue();
@@ -358,6 +358,7 @@ public class OrderSystemImpl implements OrderSystem {
         }
         keyValue.setKey(key);
         keyValue.setValue(String.valueOf(value));
+        System.out.println("sum goodid:"+ goodid +" : " + value);
         return keyValue;
     }
 

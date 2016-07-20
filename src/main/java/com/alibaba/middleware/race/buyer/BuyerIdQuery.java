@@ -38,7 +38,7 @@ public class BuyerIdQuery {
             while ((str = twoIndexBR.readLine()) != null) {
                 String[] keyValue = str.split(":");
                 if (endKey.compareTo(keyValue[0]) > 0) {
-                    System.out.println("--------"+keyValue[0]);
+                    //System.out.println("--------"+keyValue[0]);
                     break;
                 } else {
                     position = Long.valueOf(keyValue[1]);
