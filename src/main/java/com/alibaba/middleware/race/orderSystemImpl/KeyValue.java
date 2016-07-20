@@ -39,7 +39,7 @@ public class KeyValue implements OrderSystem.KeyValue{
 
     @Override
     public long valueAsLong() throws OrderSystem.TypeException {
-        return Double.valueOf(getValue()).longValue();
+        return Long.valueOf(value);
     }
 
     @Override
