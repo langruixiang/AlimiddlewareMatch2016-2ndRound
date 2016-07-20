@@ -236,14 +236,20 @@ public class OrderSystemImpl implements OrderSystem {
         int flag = 0;
         if (keys == null) {
             flag = 1;
-        } else if (goodid == null || keys.size() == 0) {
+        } else if (goodid == null) {
             return results.iterator();
         }
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
         if (orders == null || orders.size() == 0) return results.iterator();
-
+        if (keys.size() == 0) {
+            for (Order order : orders) {
+                com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+                result.setOrderid(order.getId());
+            }
+            return results.iterator();
+        }
         for (Order order : orders) {
             //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order.toString());
             Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
