@@ -81,15 +81,19 @@ public class OrderSystemImpl implements OrderSystem {
             GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, i);
             goodIdIndexThreadPool.execute(goodIdIndexFile);
         }
-        
+
+        long secondParseTime = System.currentTimeMillis();
         //根据orderid建立索引以及文件
         OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
         orderIndexBuilder.start();
 
         buildIndexLatch.await();
         goodAndBuyerCountDownLatch.await();
+        long midTime = System.currentTimeMillis();
+        System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
         orderIndexBuilderCountDownLatch.await();
         long endTime = System.currentTimeMillis();
+        System.out.println("second parse need time :" + (endTime - secondParseTime));
         System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
     }
