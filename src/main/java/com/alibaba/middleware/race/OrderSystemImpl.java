@@ -96,6 +96,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
+        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys.toString());
         OrderQuery orderQuery = new OrderQuery();
         com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
         
@@ -148,7 +149,9 @@ public class OrderSystemImpl implements OrderSystem {
                 }
             }
         }
-        
+        if (result != null) {
+            System.out.println(orderId + ": " + result.toString());
+        }
         return result;
     }
 
