@@ -40,8 +40,6 @@ public class OrderQuery {
             }
             filteredKeys.add("orderid");
         } else if (keys.isEmpty()) {
-            result.setOrderid(orderId);
-            return result;
         } else {
             //TODO remove if buyer and good index are ready
             for (String key : keys) {
@@ -63,6 +61,7 @@ public class OrderQuery {
         if (orderIdIndex == null) {
             return null;
         } else {
+            result.setOrderid(orderId);
             for (String key : filteredKeys) {
                 result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
             }

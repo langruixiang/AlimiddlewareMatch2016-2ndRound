@@ -102,6 +102,9 @@ public class OrderSystemImpl implements OrderSystem {
         if (result == null) {
             return null;
         }
+        if (keys != null && keys.isEmpty()) {
+            return result;
+        }
         {
             String buyerId = result.get("buyerid").getValue();
             if (keys != null && !keys.contains("buyerid")) {
