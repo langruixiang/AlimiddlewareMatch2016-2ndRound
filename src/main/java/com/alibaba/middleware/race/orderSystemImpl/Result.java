@@ -45,7 +45,7 @@ public class Result implements OrderSystem.Result{
 
     @Override
     public long orderId() {
-        return Long.valueOf(orderId());
+        return orderid;
     }
 
     @Override public String toString() {

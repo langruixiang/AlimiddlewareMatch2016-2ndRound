@@ -160,7 +160,7 @@ public class OrderSystemImpl implements OrderSystem {
 
         //获取goodid的所有订单信息
         List<Order> orders = BuyerIdQuery.findByBuyerId(buyerid, startTime, endTime, hashIndex);
-        if (orders == null || orders.size() == 0) return null;
+        if (orders == null || orders.size() == 0) return results.iterator();
         //Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         for (Order order : orders) {
             //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order.toString());
@@ -213,18 +213,18 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys.toString());
+        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         //flag为1表示查询所有字段
         int flag = 0;
         if (keys == null) {
             flag = 1;
         } else if (goodid == null || keys.size() == 0) {
-            return null;
+            return results.iterator();
         }
-        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
-        if (orders == null || orders.size() == 0) return null;
+        if (orders == null || orders.size() == 0) return results.iterator();
 
         for (Order order : orders) {
             //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order.toString());
@@ -274,12 +274,8 @@ public class OrderSystemImpl implements OrderSystem {
             @Override
             public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
                                          com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-                double diff = 0;
-                try {
-                    diff = (o1.get("amount").valueAsDouble() - o2.get("amount").valueAsDouble());
-                } catch (TypeException e) {
-                    e.printStackTrace();
-                }
+                long diff = 0;
+                diff = (o1.getOrderid() - o2.getOrderid());
                 if (diff > 0) {
                     return 1;
                 }
