@@ -96,7 +96,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys.toString());
+        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         OrderQuery orderQuery = new OrderQuery();
         com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
         if (result == null) {
@@ -226,7 +226,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
-        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys.toString());
+        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         //flag为1表示查询所有字段
         int flag = 0;
