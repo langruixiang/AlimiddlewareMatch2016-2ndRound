@@ -114,7 +114,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
+        //System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
@@ -123,7 +123,7 @@ public class OrderSystemImpl implements OrderSystem {
         }
         if (keys != null && keys.isEmpty()) {
             result.setOrderid(orderId);
-            System.out.println(orderId + ": " + result);
+            //System.out.println(orderId + ": " + result);
             return result;
         }
         {
@@ -185,9 +185,9 @@ public class OrderSystemImpl implements OrderSystem {
             }
         }
         result.setOrderid(orderId);
-        if (result != null) {
-            System.out.println(orderId + ": " + result);
-        }
+//        if (result != null) {
+//            System.out.println(orderId + ": " + result);
+//        }
         return result;
     }
 
@@ -265,7 +265,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
+        //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_NUMS);
 
@@ -314,16 +314,16 @@ public class OrderSystemImpl implements OrderSystem {
 //            }
 //        });
 
-        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-            System.out.println(buyerid + result);
-        }
+//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+//            System.out.println(buyerid + result);
+//        }
 
         return results.iterator();
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
-        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
+        //System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         //flag为1表示查询所有字段
         int flag = 0;
@@ -415,16 +415,16 @@ public class OrderSystemImpl implements OrderSystem {
             }
         });
 
-        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-            System.out.println(goodid + ":" + result);
-        }
+//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
+//            System.out.println(goodid + ":" + result);
+//        }
 
         return results.iterator();
     }
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
-        System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
+        //System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
@@ -514,10 +514,10 @@ public class OrderSystemImpl implements OrderSystem {
         keyValue.setKey(key);
         if (flag == 0) {
             keyValue.setValue(String.valueOf(longValue));
-            System.out.println("sum goodid:"+ goodid +" : " + longValue);
+            //System.out.println("sum goodid:"+ goodid +" : " + longValue);
         } else {
             keyValue.setValue(String.valueOf(value));
-            System.out.println("sum goodid:"+ goodid +" : " + value);
+            //System.out.println("sum goodid:"+ goodid +" : " + value);
         }
         return keyValue;
     }
