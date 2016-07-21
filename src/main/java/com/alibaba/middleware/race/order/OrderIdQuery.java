@@ -77,6 +77,9 @@ public class OrderIdQuery {
                 order.getKeyValues().put(strs[0], kv);
             }
             order.setId(orderId);
+            twoIndexBR.close();
+            hashRaf.close();
+            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

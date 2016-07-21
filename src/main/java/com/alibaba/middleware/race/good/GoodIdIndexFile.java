@@ -96,6 +96,7 @@ public class GoodIdIndexFile extends Thread{
                 bufferedWriter.close();
                 twoIndexBW.flush();
                 twoIndexBW.close();
+                order_br.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {

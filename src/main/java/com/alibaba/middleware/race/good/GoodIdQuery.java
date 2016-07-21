@@ -83,6 +83,9 @@ public class GoodIdQuery {
                 }
                 orders.add(order);
             }
+            twoIndexBR.close();
+            hashRaf.close();
+            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

@@ -59,6 +59,7 @@ public class GoodHashFile extends Thread{
             }
 
             for (int i = 0; i < nums; i++) {
+                bufferedWriters[i].flush();
                 bufferedWriters[i].close();
             }
         } catch (IOException e) {

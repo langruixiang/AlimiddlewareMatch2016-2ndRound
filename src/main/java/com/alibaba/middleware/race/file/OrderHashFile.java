@@ -151,6 +151,7 @@ public class OrderHashFile extends Thread{
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
+                bufferedWriters[i].close();
             }
         } catch (IOException e) {
             e.printStackTrace();
