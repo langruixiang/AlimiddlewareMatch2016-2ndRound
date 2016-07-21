@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
@@ -46,12 +47,12 @@ public class BuyerHashFile extends Thread{
                     String[] keyValues = str.split("\t");
                     for (int i = 0; i < keyValues.length; i++) {
                         String[] keyValue = keyValues[i].split(":");
+                        KeyCache.buyerKeyCache.add(keyValue[0]);
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1].hashCode();
                             hashFileIndex = (int) (Math.abs(buyerid) % nums);
                             bufferedWriters[hashFileIndex].write(str + '\n');
                             //bufferedWriters[hashFileIndex].newLine();
-                            break;
                         }
                     }
                 }
