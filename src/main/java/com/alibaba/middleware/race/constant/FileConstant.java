@@ -33,7 +33,7 @@ public class FileConstant {
 
     public static int FILE_NUMS = 200;
 
-    public static int MAX_CONCURRENT = 200;
+    public static int MAX_CONCURRENT = 2000;
 
     public static String FIRST_DISK_PATH = "";
 
