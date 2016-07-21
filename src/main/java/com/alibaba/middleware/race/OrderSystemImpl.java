@@ -376,19 +376,19 @@ public class OrderSystemImpl implements OrderSystem {
                 results.add(result);
             }
             //对所求结果按照交易订单从小到大排序
-            Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-
-                @Override
-                public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-                                   com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-                    long diff = 0;
-                    diff = (o1.getOrderid() - o2.getOrderid());
-                    if (diff > 0) {
-                        return 1;
-                    }
-                    return -1;
-                }
-            });
+//            Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
+//
+//                @Override
+//                public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+//                                   com.alibaba.middleware.race.orderSystemImpl.Result o2) {
+//                    long diff = 0;
+//                    diff = (o1.getOrderid() - o2.getOrderid());
+//                    if (diff > 0) {
+//                        return 1;
+//                    }
+//                    return -1;
+//                }
+//            });
             return results.iterator();
         }
         for (Order order : orders) {
@@ -457,19 +457,19 @@ public class OrderSystemImpl implements OrderSystem {
             results.add(result);
         }
         //对所求结果按照交易订单从小到大排序
-        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-
-            @Override
-            public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-                long diff = 0;
-                diff = (o1.getOrderid() - o2.getOrderid());
-                if (diff > 0) {
-                    return 1;
-                }
-                return -1;
-            }
-        });
+//        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
+//
+//            @Override
+//            public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
+//                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
+//                long diff = 0;
+//                diff = (o1.getOrderid() - o2.getOrderid());
+//                if (diff > 0) {
+//                    return 1;
+//                }
+//                return -1;
+//            }
+//        });
 
 //        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
 //            System.out.println(goodid + ":" + result);

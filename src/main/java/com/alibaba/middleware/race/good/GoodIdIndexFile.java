@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class GoodIdIndexFile extends Thread{
 
-    private Map<String, List<Long>> goodIndex = new TreeMap<String, List<Long>>();
+    private Map<String, TreeMap<String, Long>> goodIndex = new TreeMap<String, TreeMap<String, Long>>();
 
     private CountDownLatch hashDownLatch;
 
@@ -48,19 +48,23 @@ public class GoodIdIndexFile extends Thread{
 
                 String str = null;
                 long count = 0;
-                String goodid = null;
                 while ((str = order_br.readLine()) != null) {
+                    String orderid = null;
+                    String goodid = null;
                     String[] keyValues = str.split("\t");
                     for (int j = 0; j < keyValues.length; j++) {
                         String[] keyValue = keyValues[j].split(":");
 
-                        if ("goodid".equals(keyValue[0])) {
+                        if ("orderid".equals(keyValue[0])) {
+                            orderid = keyValue[1];
+                        } else if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
                             if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new ArrayList<Long>());
+                                goodIndex.put(goodid, new TreeMap<String, Long>());
                             }
-                            goodIndex.get(goodid).add(count);
-                            break;
+                        }
+                        if (orderid != null && goodid != null) {
+                            goodIndex.get(goodid).put(orderid, count);
                         }
                     }
                     count += str.getBytes().length + 1;
@@ -75,11 +79,15 @@ public class GoodIdIndexFile extends Thread{
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    List<Long> val = (List<Long>) entry.getValue();
+                    Map<String, Long> val = (Map<String, Long>) entry.getValue();
                     String content = key + ":";
-                    for (Long num : val) {
-                        content = content + num + "|";
+                    Iterator iteratorOrders = val.entrySet().iterator();
+                    while (iteratorOrders.hasNext()) {
+                        Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
+                        Long pos = (Long)orderEntry.getValue();
+                        content = content + pos + "|";
                     }
+
                     bufferedWriter.write(content + '\n');
 
                     if (count%towIndexSize == 0) {

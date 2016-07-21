@@ -49,6 +49,7 @@ public class GoodIdQuery {
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
+                    System.out.println(oneIndex);
                     break;
                 }
                 count++;
@@ -81,6 +82,7 @@ public class GoodIdQuery {
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
+                //System.out.println(order);
                 orders.add(order);
             }
             twoIndexBR.close();
