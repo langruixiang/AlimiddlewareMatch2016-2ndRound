@@ -31,9 +31,9 @@ public class FileConstant {
 
     public static String FILE_BUYER_HASH = "buyer_hash_";
 
-    public static int FILE_NUMS = 2000;
+    public static int FILE_NUMS = 300;
 
-    public static int MAX_CONCURRENT = 2000;
+    public static int MAX_CONCURRENT = 300;
 
     public static String FIRST_DISK_PATH = "";
 
