@@ -3,13 +3,11 @@
  * Copyright 2016 escenter@zju.edu.cn, all rights reserved.
  * any form of usage is subject to approval.
  */
-package com.alibaba.middleware.race.order;
+package com.alibaba.middleware.race.order_old;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 

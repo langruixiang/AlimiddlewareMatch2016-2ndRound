@@ -3,14 +3,13 @@
  * Copyright 2016 escenter@zju.edu.cn, all rights reserved.
  * any form of usage is subject to approval.
  */
-package com.alibaba.middleware.race.order;
+package com.alibaba.middleware.race.order_old;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 /**
  * @author wangweiwei
  *

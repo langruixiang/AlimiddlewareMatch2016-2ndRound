@@ -15,6 +15,9 @@ public class FileConstant {
 
     public static String FILE_INDEX_BY_GOODID = "goodid_hash_";
 
+    public static String FILE_ONE_INDEXING_BY_ORDERID = "orderid_index_";
+
+    public static String FILE_TWO_INDEXING_BY_ORDERID = "orderid_two_index_";
 
     public static String FILE_ONE_INDEXING_BY_GOODID = "goodid_index_";
 
@@ -41,4 +44,6 @@ public class FileConstant {
     public static Map<Integer, Integer> goodIdIndexRegionSizeMap = new ConcurrentHashMap<Integer, Integer>();
 
     public static Map<Integer, Integer> buyerIdIndexRegionSizeMap = new ConcurrentHashMap<Integer, Integer>();
+
+    public static Map<Integer, Integer> orderIdIndexRegionSizeMap = new ConcurrentHashMap<Integer, Integer>();
 }

@@ -10,12 +10,14 @@ import com.alibaba.middleware.race.file.OrderHashFile;
 import com.alibaba.middleware.race.good.GoodIdIndexFile;
 import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.*;
-import com.alibaba.middleware.race.order.OrderIndexBuilder;
-import com.alibaba.middleware.race.order.OrderQuery;
+import com.alibaba.middleware.race.order.OrderIdIndexFile;
+import com.alibaba.middleware.race.order.OrderIdQuery;
+import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.order_old.OrderIndexBuilder;
+import com.alibaba.middleware.race.order_old.OrderQuery;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -43,14 +45,16 @@ public class OrderSystemImpl implements OrderSystem {
             FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
         }
 
+        ExecutorService orderIdIndexThreadPool = Executors.newFixedThreadPool(10);
         ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(10);
         ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(10);
 
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
+        CountDownLatch orderIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
-        CountDownLatch buildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
-        CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
+        CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_NUMS);
+        //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
 
         //按买家ID hash成多个小文件
         OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
@@ -59,6 +63,10 @@ public class OrderSystemImpl implements OrderSystem {
         //按商品ID hash成多个小文件
         OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
+
+        //按订单ID hash成多个小文件
+        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", orderIdCountDownLatch);
+        orderIdHashThread.start();
 
 
         //将商品文件hash成多个小文件
@@ -69,6 +77,12 @@ public class OrderSystemImpl implements OrderSystem {
         //将买家文件hash成多个小文件
         BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, goodAndBuyerCountDownLatch);
         buyerHashFile.start();
+
+        //根据orderid生成一级二级索引
+        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, i);
+            orderIdIndexThreadPool.execute(orderIdIndexFile);
+        }
 
         //根据buyerid生成一级二级索引
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
@@ -82,18 +96,18 @@ public class OrderSystemImpl implements OrderSystem {
             goodIdIndexThreadPool.execute(goodIdIndexFile);
         }
 
-        long secondParseTime = System.currentTimeMillis();
+        //long secondParseTime = System.currentTimeMillis();
         //根据orderid建立索引以及文件
-        OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
-        orderIndexBuilder.start();
+        //OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
+        //orderIndexBuilder.start();
 
         buildIndexLatch.await();
         goodAndBuyerCountDownLatch.await();
-        long midTime = System.currentTimeMillis();
-        System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
-        orderIndexBuilderCountDownLatch.await();
+        //long midTime = System.currentTimeMillis();
+        //System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
+        //orderIndexBuilderCountDownLatch.await();
         long endTime = System.currentTimeMillis();
-        System.out.println("second end is :" + endTime + " second parse need time :" + (endTime - secondParseTime));
+        //System.out.println("second end is :" + endTime + " second parse need time :" + (endTime - secondParseTime));
         System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
 
     }
@@ -101,27 +115,27 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
         System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
-        OrderQuery orderQuery = new OrderQuery();
-        com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
-        if (result == null) {
+        com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+        int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
+        Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
+        if (order == null) {
             return null;
         }
         if (keys != null && keys.isEmpty()) {
+            result.setOrderid(orderId);
+            System.out.println(orderId + ": " + result);
             return result;
         }
         {
-            String buyerId = result.get("buyerid").getValue();
-            if (keys != null && !keys.contains("buyerid")) {
-                result.remove("buyerid");
-            }
-            int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
+            String buyerId = order.getKeyValues().get("buyerid").getValue();
+            int buyerHashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
             //加入对应买家的所有属性kv
             Buyer buyer = null;
             synchronized (PageCache.buyerMap) {
-                if (PageCache.buyerMap.get(hashIndex) == null) {
-                    PageCache.cacheBuyerFile(hashIndex);
+                if (PageCache.buyerMap.get(buyerHashIndex) == null) {
+                    PageCache.cacheBuyerFile(buyerHashIndex);
                 }
-                buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
+                buyer = PageCache.buyerMap.get(buyerHashIndex).get(buyerId);
             }
             if (buyer != null && buyer.getKeyValues() != null) {
                 if (keys ==  null) {
@@ -136,12 +150,9 @@ public class OrderSystemImpl implements OrderSystem {
                 }
             }
         }
-        
+
         {
-            String goodId = result.get("goodid").getValue();
-            if (keys != null && !keys.contains("goodid")) {
-                result.remove("goodid");
-            }
+            String goodId = order.getKeyValues().get("goodid").getValue();
             //加入对应商品的所有属性kv
             int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
             Good good = null;
@@ -164,11 +175,93 @@ public class OrderSystemImpl implements OrderSystem {
                 }
             }
         }
+        if (keys == null) {
+            result.getKeyValues().putAll(order.getKeyValues());
+        } else {
+            for (String key : keys) {
+                if (order.getKeyValues().containsKey(key)) {
+                    result.getKeyValues().put(key, order.getKeyValues().get(key));
+                }
+            }
+        }
+        result.setOrderid(orderId);
         if (result != null) {
-            System.out.println(orderId + ": " + result.toString());
+            System.out.println(orderId + ": " + result);
         }
         return result;
     }
+
+//    @Override
+//    public Result queryOrder(long orderId, Collection<String> keys) {
+//        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
+//        OrderQuery orderQuery = new OrderQuery();
+//        com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
+//        if (result == null) {
+//            return null;
+//        }
+//        if (keys != null && keys.isEmpty()) {
+//            return result;
+//        }
+//        {
+//            String buyerId = result.get("buyerid").getValue();
+//            if (keys != null && !keys.contains("buyerid")) {
+//                result.remove("buyerid");
+//            }
+//            int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
+//            //加入对应买家的所有属性kv
+//            Buyer buyer = null;
+//            synchronized (PageCache.buyerMap) {
+//                if (PageCache.buyerMap.get(hashIndex) == null) {
+//                    PageCache.cacheBuyerFile(hashIndex);
+//                }
+//                buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
+//            }
+//            if (buyer != null && buyer.getKeyValues() != null) {
+//                if (keys ==  null) {
+//                    result.getKeyValues().putAll(buyer.getKeyValues());
+//                } else {
+//                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> buyerKeyValues = buyer.getKeyValues();
+//                    for (String key : keys) {
+//                        if (buyerKeyValues.containsKey(key)) {
+//                            result.getKeyValues().put(key, buyerKeyValues.get(key));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        {
+//            String goodId = result.get("goodid").getValue();
+//            if (keys != null && !keys.contains("goodid")) {
+//                result.remove("goodid");
+//            }
+//            //加入对应商品的所有属性kv
+//            int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
+//            Good good = null;
+//            synchronized (PageCache.goodMap) {
+//                if (PageCache.goodMap.get(goodIdHashIndex) == null) {
+//                    PageCache.cacheGoodFile(goodIdHashIndex);
+//                }
+//                good = PageCache.goodMap.get(goodIdHashIndex).get(goodId);
+//            }
+//            if (good != null && good.getKeyValues() != null) {
+//                if (keys ==  null) {
+//                    result.getKeyValues().putAll(good.getKeyValues());
+//                } else {
+//                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
+//                    for (String key : keys) {
+//                        if (goodKeyValues.containsKey(key)) {
+//                            result.getKeyValues().put(key, goodKeyValues.get(key));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        if (result != null) {
+//            System.out.println(orderId + ": " + result.toString());
+//        }
+//        return result;
+//    }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
@@ -181,7 +274,7 @@ public class OrderSystemImpl implements OrderSystem {
         if (orders == null || orders.size() == 0) return results.iterator();
         //Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
         for (Order order : orders) {
-            //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order.toString());
+            //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order_old.toString());
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
             Buyer buyer = null;
@@ -266,7 +359,7 @@ public class OrderSystemImpl implements OrderSystem {
             return results.iterator();
         }
         for (Order order : orders) {
-            //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order.toString());
+            //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order_old.toString());
             Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
             //加入对应买家的所有属性kv
             int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
@@ -343,7 +436,7 @@ public class OrderSystemImpl implements OrderSystem {
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
         for (Order order : orders) {
-            //System.out.println("sum goodid:"+ goodid +" : " + order.toString());
+            //System.out.println("sum goodid:"+ goodid +" : " + order_old.toString());
             //加入订单信息的所有属性kv
             if (order.getKeyValues().containsKey(key)) {
                 String str = order.getKeyValues().get(key).getValue();

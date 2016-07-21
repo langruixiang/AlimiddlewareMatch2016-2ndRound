@@ -3,12 +3,11 @@
  * Copyright 2016 escenter@zju.edu.cn, all rights reserved.
  * any form of usage is subject to approval.
  */
-package com.alibaba.middleware.race.order;
+package com.alibaba.middleware.race.order_old;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
