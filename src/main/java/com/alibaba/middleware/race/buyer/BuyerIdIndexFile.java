@@ -85,7 +85,7 @@ public class BuyerIdIndexFile extends Thread{
                         content = content + num + "|";
                     }
                     bufferedWriter.write(content + '\n');
-
+                    val.clear();
                     if (count%twoIndexSize == 0) {
                         twoIndexBW.write(key+":");
                         twoIndexBW.write(String.valueOf(position) + '\n');
@@ -96,6 +96,7 @@ public class BuyerIdIndexFile extends Thread{
 
                     count++;
                 }
+                buyerIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 twoIndexBW.flush();

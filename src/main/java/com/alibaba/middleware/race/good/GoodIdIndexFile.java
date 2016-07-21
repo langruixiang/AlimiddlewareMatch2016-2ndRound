@@ -87,6 +87,7 @@ public class GoodIdIndexFile extends Thread{
                         Long pos = (Long)orderEntry.getValue();
                         content = content + pos + "|";
                     }
+                    val.clear();
 
                     bufferedWriter.write(content + '\n');
 
@@ -100,6 +101,7 @@ public class GoodIdIndexFile extends Thread{
 
                     count++;
                 }
+                goodIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 twoIndexBW.flush();
