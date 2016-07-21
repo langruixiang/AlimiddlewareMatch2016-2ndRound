@@ -59,7 +59,7 @@ public class GoodIdQuery {
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
-            System.out.println(keyValue[1]);
+            //System.out.println(keyValue[1]);
             String[] positions = keyValue[1].split("\\|");
             //System.out.println("======" + positions.length);
             for (String pos : positions) {

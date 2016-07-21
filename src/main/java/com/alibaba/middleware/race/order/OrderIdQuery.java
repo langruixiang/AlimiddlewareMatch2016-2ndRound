@@ -31,7 +31,7 @@ public class OrderIdQuery {
             long position = 0;
             while ((str = twoIndexBR.readLine()) != null) {
                 String[] keyValue = str.split(":");
-                System.out.println(keyValue[0]);
+                //System.out.println(keyValue[0]);
                 if (orderId < Long.valueOf(keyValue[0])) {
                     //System.out.println("--------"+keyValue[0]);
                     break;
