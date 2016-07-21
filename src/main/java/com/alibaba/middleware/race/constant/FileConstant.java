@@ -31,7 +31,7 @@ public class FileConstant {
 
     public static String FILE_BUYER_HASH = "buyer_hash_";
 
-    public static int FILE_NUMS = 200;
+    public static int FILE_NUMS = 2000;
 
     public static int MAX_CONCURRENT = 2000;
 
