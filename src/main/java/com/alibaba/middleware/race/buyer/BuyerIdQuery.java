@@ -2,7 +2,6 @@ package com.alibaba.middleware.race.buyer;
 
 
 import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
-import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -23,9 +22,9 @@ public class BuyerIdQuery {
         //System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
-//            FileInputStream twoIndexFile = null;
-//            twoIndexFile = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
-//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
+            FileInputStream twoIndexFile = null;
+            twoIndexFile = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
+            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
             File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -35,16 +34,16 @@ public class BuyerIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
-//            while ((str = twoIndexBR.readLine()) != null) {
-//                String[] keyValue = str.split(":");
-//                if (endKey.compareTo(keyValue[0]) > 0) {
-//                    //System.out.println("--------"+keyValue[0]);
-//                    break;
-//                } else {
-//                    position = Long.valueOf(keyValue[1]);
-//                }
-//            }
+            long position = 0;
+            while ((str = twoIndexBR.readLine()) != null) {
+                String[] keyValue = str.split(":");
+                if (endKey.compareTo(keyValue[0]) > 0) {
+                    //System.out.println("--------"+keyValue[0]);
+                    break;
+                } else {
+                    position = Long.valueOf(keyValue[1]);
+                }
+            }
 
             //System.out.println(position);
 
@@ -90,7 +89,7 @@ public class BuyerIdQuery {
                     orders.add(order);
                 }
             }
-//            twoIndexBR.close();
+            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {

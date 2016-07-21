@@ -1,7 +1,6 @@
 package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.cache.PageCache;
-import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -14,6 +13,8 @@ import java.util.concurrent.CountDownLatch;
  * Created by jiangchao on 2016/7/15.
  */
 public class GoodIdIndexFile extends Thread{
+
+    private Map<String, TreeMap<String, Long>> goodIndex = new TreeMap<String, TreeMap<String, Long>>();
 
     private CountDownLatch hashDownLatch;
 
@@ -29,9 +30,10 @@ public class GoodIdIndexFile extends Thread{
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
-        Map<String, TreeMap<String, Long>> goodIndex = new TreeMap<String, TreeMap<String, Long>>();
+
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
+            goodIndex.clear();
+
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -40,9 +42,9 @@ public class GoodIdIndexFile extends Thread{
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-//                File twoIndexfile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
+                File twoIndexfile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
+                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
+                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String str = null;
                 long count = 0;
@@ -90,18 +92,20 @@ public class GoodIdIndexFile extends Thread{
                     bufferedWriter.write(content + '\n');
 
                     if (count%towIndexSize == 0) {
-//                        twoIndexBW.write(key+":");
-//                        twoIndexBW.write(String.valueOf(position) + '\n');
-                        twoIndexMap.put(key, position);
+                        twoIndexBW.write(key+":");
+                        twoIndexBW.write(String.valueOf(position) + '\n');
+                        //twoIndexBW.newLine();
                     }
                     position += content.getBytes().length + 1;
+                    //bufferedWriter.newLine();
+
                     count++;
                 }
-                TwoIndexCache.goodIdTwoIndexCache.put(index, twoIndexMap);
+                goodIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
-//                twoIndexBW.flush();
-//                twoIndexBW.close();
+                twoIndexBW.flush();
+                twoIndexBW.close();
                 order_br.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

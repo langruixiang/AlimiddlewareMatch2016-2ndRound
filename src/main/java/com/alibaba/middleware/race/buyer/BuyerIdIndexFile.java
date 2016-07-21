@@ -1,6 +1,5 @@
 package com.alibaba.middleware.race.buyer;
 
-import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
@@ -11,6 +10,8 @@ import java.util.concurrent.CountDownLatch;
  * Created by jiangchao on 2016/7/15.
  */
 public class BuyerIdIndexFile extends Thread{
+
+    private TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
 
     private CountDownLatch hashDownLatch;
 
@@ -26,9 +27,10 @@ public class BuyerIdIndexFile extends Thread{
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
-        TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
+
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
+            buyerIndex.clear();
+
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -37,9 +39,9 @@ public class BuyerIdIndexFile extends Thread{
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-//                File twoIndexfile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
+                File twoIndexfile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
+                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
+                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String str = null;
                 long count = 0;
@@ -85,18 +87,20 @@ public class BuyerIdIndexFile extends Thread{
                     bufferedWriter.write(content + '\n');
                     val.clear();
                     if (count%twoIndexSize == 0) {
-//                        twoIndexBW.write(key+":");
-//                        twoIndexBW.write(String.valueOf(position) + '\n');
-                        twoIndexMap.put(key, position);
+                        twoIndexBW.write(key+":");
+                        twoIndexBW.write(String.valueOf(position) + '\n');
+                        //twoIndexBW.newLine();
                     }
                     position += content.getBytes().length + 1;
+                    //bufferedWriter.newLine();
+
                     count++;
                 }
-                TwoIndexCache.buyerIdTwoIndexCache.put(index, twoIndexMap);
+                buyerIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
-//                twoIndexBW.flush();
-//                twoIndexBW.close();
+                twoIndexBW.flush();
+                twoIndexBW.close();
                 order_br.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
