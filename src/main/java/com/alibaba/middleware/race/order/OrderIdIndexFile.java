@@ -84,6 +84,7 @@ public class OrderIdIndexFile extends Thread{
 
                     count++;
                 }
+                orderIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 twoIndexBW.flush();
