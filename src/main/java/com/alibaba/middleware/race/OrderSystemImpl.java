@@ -480,7 +480,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
-        //System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
+        System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
@@ -575,10 +575,10 @@ public class OrderSystemImpl implements OrderSystem {
         keyValue.setKey(key);
         if (flag == 0) {
             keyValue.setValue(String.valueOf(longValue));
-            //System.out.println("sum goodid:"+ goodid +" : " + longValue);
+            System.out.println("sum goodid:"+ goodid +" : " + longValue);
         } else {
             keyValue.setValue(String.valueOf(value));
-            //System.out.println("sum goodid:"+ goodid +" : " + value);
+            System.out.println("sum goodid:"+ goodid +" : " + value);
         }
         return keyValue;
     }
