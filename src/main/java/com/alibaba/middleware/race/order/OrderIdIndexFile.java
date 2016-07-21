@@ -1,5 +1,7 @@
 package com.alibaba.middleware.race.order;
 
+import com.alibaba.middleware.race.cache.PageCache;
+import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
@@ -10,8 +12,6 @@ import java.util.concurrent.CountDownLatch;
  * Created by jiangchao on 2016/7/15.
  */
 public class OrderIdIndexFile extends Thread{
-
-    private Map<String, Long> orderIndex = new TreeMap<String, Long>();
 
     private CountDownLatch hashDownLatch;
 
@@ -27,10 +27,9 @@ public class OrderIdIndexFile extends Thread{
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateOrderIdIndex() {
-
+        Map<String, Long> orderIndex = new TreeMap<String, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            orderIndex.clear();
-
+            Map<Long, Long> twoIndexMap = new LinkedHashMap<Long, Long>();
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -39,9 +38,9 @@ public class OrderIdIndexFile extends Thread{
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
-                File twoIndexfile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
-                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
+//                File twoIndexfile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
+//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
+//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String str = null;
                 long count = 0;
@@ -75,20 +74,19 @@ public class OrderIdIndexFile extends Thread{
                     bufferedWriter.write(content + '\n');
 
                     if (count%towIndexSize == 0) {
-                        twoIndexBW.write(key+":");
-                        twoIndexBW.write(String.valueOf(position) + '\n');
-                        //twoIndexBW.newLine();
+//                        twoIndexBW.write(key+":");
+//                        twoIndexBW.write(String.valueOf(position) + '\n');
+                        twoIndexMap.put(Long.valueOf(key), position);
                     }
                     position += content.getBytes().length + 1;
-                    //bufferedWriter.newLine();
-
                     count++;
                 }
+                TwoIndexCache.orderIdTwoIndexCache.put(index, twoIndexMap);
                 orderIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
-                twoIndexBW.flush();
-                twoIndexBW.close();
+//                twoIndexBW.flush();
+//                twoIndexBW.close();
                 order_br.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

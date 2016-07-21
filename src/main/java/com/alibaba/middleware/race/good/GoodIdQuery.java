@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.good;
 
+import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -18,8 +19,8 @@ public class GoodIdQuery {
         System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
-            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
-            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
+//            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
+//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
             File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -29,16 +30,18 @@ public class GoodIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long position = 0;
-            while ((str = twoIndexBR.readLine()) != null) {
-                String[] keyValue = str.split(":");
-                if (goodId.compareTo(keyValue[0]) < 0) {
-                    //System.out.println("--------"+keyValue[0]);
-                    break;
-                } else {
-                    position = Long.valueOf(keyValue[1]);
-                }
-            }
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+//            while ((str = twoIndexBR.readLine()) != null) {
+//                String[] keyValue = str.split(":");
+//                if (goodId.compareTo(keyValue[0]) < 0) {
+//                    //System.out.println("--------"+keyValue[0]);
+//                    break;
+//                } else {
+//                    position = Long.valueOf(keyValue[1]);
+//                }
+//            }
+
+
 
             //System.out.println(position);
 
@@ -85,7 +88,7 @@ public class GoodIdQuery {
                 //System.out.println(order);
                 orders.add(order);
             }
-            twoIndexBR.close();
+//            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
