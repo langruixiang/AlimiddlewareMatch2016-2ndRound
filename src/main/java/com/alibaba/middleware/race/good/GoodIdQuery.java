@@ -15,7 +15,7 @@ import java.util.List;
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        //System.out.println("==========:"+goodId + " index:" + index);
+        System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
             FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
@@ -49,6 +49,7 @@ public class GoodIdQuery {
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
+                    System.out.println(oneIndex);
                     break;
                 }
                 count++;
@@ -59,7 +60,7 @@ public class GoodIdQuery {
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
-            System.out.println(keyValue[1]);
+            //System.out.println(keyValue[1]);
             String[] positions = keyValue[1].split("\\|");
             //System.out.println("======" + positions.length);
             for (String pos : positions) {
@@ -81,8 +82,12 @@ public class GoodIdQuery {
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
+                //System.out.println(order);
                 orders.add(order);
             }
+            twoIndexBR.close();
+            hashRaf.close();
+            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -93,7 +98,7 @@ public class GoodIdQuery {
 
     public static void main(String args[]) {
 
-        //GoodIdIndexFile.generateGoodIdIndex();
+        //OrderIdIndexFile.generateGoodIdIndex();
         findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import com.alibaba.middleware.race.order.OrderIdQuery;
 import com.alibaba.middleware.race.order.OrderQuery;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.util.FileUtil;

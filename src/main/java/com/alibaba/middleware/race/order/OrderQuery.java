@@ -8,7 +8,6 @@ package com.alibaba.middleware.race.order;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;

@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -137,18 +138,19 @@ public class OrderHashFile extends Thread{
                     String[] keyValues = str.split("\t");
                     for (int i = 0; i < keyValues.length; i++) {
                         String[] keyValue = keyValues[i].split(":");
+                        KeyCache.orderKeyCache.add(keyValue[0]);
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
                             hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
                             bufferedWriters[hashFileIndex].write(str + '\n');
                             //bufferedWriters[hashFileIndex].newLine();
-                            break;
                         }
                     }
                 }
             }
 
             for (int i = 0; i < nums; i++) {
+                bufferedWriters[i].close();
                 bufferedWriters[i].close();
             }
         } catch (IOException e) {

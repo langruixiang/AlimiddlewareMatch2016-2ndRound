@@ -23,13 +23,13 @@ public class JunitTest {
     public void testQueryOrder() {
         //测试queryOrder接口，按订单号查找某条记录
         List<String> keys = new ArrayList<String>();
-        keys.add("buyerid");
-        keys.add("amount");
-        keys.add("buyername");
-        keys.add("good_name");
+        //keys.add("buyerid");
+        //keys.add("amount");
+        //keys.add("buyername");
+        //keys.add("good_name");
         keys.add("orderid");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
-        Result result = (Result) orderSystem.queryOrder(2982138, keys);
+        Result result = (Result) orderSystem.queryOrder(2982139, null);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("buyername").getValue());
