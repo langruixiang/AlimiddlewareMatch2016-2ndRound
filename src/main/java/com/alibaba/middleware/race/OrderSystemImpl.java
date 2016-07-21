@@ -13,9 +13,8 @@ import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.order.OrderIdQuery;
+import com.alibaba.middleware.race.order.OrderQuery;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
-import com.alibaba.middleware.race.order_old.OrderIndexBuilder;
-import com.alibaba.middleware.race.order_old.OrderQuery;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
