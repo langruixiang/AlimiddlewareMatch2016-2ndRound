@@ -5,6 +5,8 @@ import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.util.FileUtil;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -23,10 +25,10 @@ public class JunitTest {
     public void testQueryOrder() {
         //测试queryOrder接口，按订单号查找某条记录
         List<String> keys = new ArrayList<String>();
-        //keys.add("buyerid");
-        //keys.add("amount");
-        //keys.add("buyername");
-        //keys.add("good_name");
+        keys.add("buyerid");
+        keys.add("amount");
+        keys.add("buyername");
+        keys.add("good_name");
         keys.add("orderid");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
         Result result = (Result) orderSystem.queryOrder(2982139, null);
@@ -95,9 +97,12 @@ public class JunitTest {
         goodFileList.add("good_records.txt");
         
         List<String> storeFolderList = new ArrayList<String>();
-        storeFolderList.add("./");
-        storeFolderList.add("./");
-        storeFolderList.add("./");
+        FileUtil.createDir("s1");
+        FileUtil.createDir("s2");
+        FileUtil.createDir("s3");
+        storeFolderList.add("./s1/");
+        storeFolderList.add("./s2/");
+        storeFolderList.add("./s3/");
         
         try {
             orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);

@@ -49,6 +49,9 @@ public class StringIndexRegion {
     }
 
     public static boolean isRegionExist(String regionRootFolder, int regionId) {
+        if (!regionRootFolder.endsWith("/")) {
+            regionRootFolder = regionRootFolder.concat("/");
+        }
         return FileUtil.isFileExist(StringIndexRegion
                 .getRegionKeyMapFilePath(regionRootFolder, regionId));
     }

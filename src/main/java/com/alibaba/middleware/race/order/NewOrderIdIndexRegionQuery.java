@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.stringindex.StringIndex;
 import com.alibaba.middleware.stringindex.StringIndexHash;
 import com.alibaba.middleware.stringindex.StringIndexRegion;
@@ -19,20 +20,23 @@ import com.alibaba.middleware.stringindex.StringIndexRegionQuery;
  * @author wangweiwei
  *
  */
-public class OrderIdIndexRegionQuery extends StringIndexRegionQuery {
-    public static final int INIT_KEY_MAP_CAPACITY = 20;// TODO
-    public static final int MAX_INDEX_CACHE_SIZE = 1000;// TODO
-    public static final int CACHE_NUM_PER_MISS = 100;// TODO
+public class NewOrderIdIndexRegionQuery extends StringIndexRegionQuery {
 
-    public OrderIdIndexRegionQuery(String regionRootFolder, int regionId) {
-        super(regionRootFolder, "orderid", regionId, INIT_KEY_MAP_CAPACITY, MAX_INDEX_CACHE_SIZE, CACHE_NUM_PER_MISS);
+    public NewOrderIdIndexRegionQuery(String regionRootFolder, int regionId) {
+        super(regionRootFolder, "orderid", regionId,
+                NewOrderIdIndexConfig.INIT_KEY_MAP_CAPACITY,
+                NewOrderIdIndexConfig.MAX_INDEX_CACHE_SIZE,
+                NewOrderIdIndexConfig.CACHE_NUM_PER_MISS);
+        if (!regionRootFolder.endsWith("/")) {
+            regionRootFolder = regionRootFolder.concat("/");
+        }
         this.regionRootFolder = regionRootFolder;
-        maxIndexCacheSize = MAX_INDEX_CACHE_SIZE;
-        cacheNumPerMiss = CACHE_NUM_PER_MISS;
+        maxIndexCacheSize = NewOrderIdIndexConfig.MAX_INDEX_CACHE_SIZE;
+        cacheNumPerMiss = NewOrderIdIndexConfig.CACHE_NUM_PER_MISS;
     }
 
-    public com.alibaba.middleware.race.orderSystemImpl.Result queryOrder(long orderId, Collection<String> keys) {
-        com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+    public Result queryOrder(long orderId, Collection<String> keys) {
+        Result result = new Result();
         LinkedList<String> filteredKeys = new LinkedList<String>();
         if (keys == null) {
             for (Entry<String, Integer> entry : keyMap.entrySet()) {
