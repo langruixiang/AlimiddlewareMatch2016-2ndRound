@@ -33,7 +33,7 @@ public class StringIndexBuilder extends Thread {
     private String regionRootFolder;
     private CountDownLatch countDownLatch;
     private String indexIdName;
-    private String regionId;
+    private int regionId;
     private TreeMap<String, String> indexLineMap;
     
     public static final int INIT_KEY_MAP_CAPACITY = 20; 
@@ -44,7 +44,7 @@ public class StringIndexBuilder extends Thread {
     private BufferedReader regionKeyValuesFileBR;
     
     public StringIndexBuilder(String regionRootFolder,
-            String regionId, String indexIdName, CountDownLatch countDownLatch) {
+            int regionId, String indexIdName, CountDownLatch countDownLatch) {
         if (!regionRootFolder.endsWith("/")) {
             regionRootFolder = regionRootFolder.concat("/");
         }

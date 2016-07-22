@@ -27,13 +27,13 @@ public class StringIndexRegionQuery {
     protected HashMap<String, Integer> keyMap;
     protected StringIndexCache stringIndexCache;
     protected String regionRootFolder;
-    protected String regionId;
+    protected int regionId;
     protected String indexIdName;
     
     protected int maxIndexCacheSize = DEFAULT_MAX_INDEX_CACHE_SIZE;
     protected int cacheNumPerMiss = DEFAULT_CACHE_NUM_PER_MISS;
 
-    public StringIndexRegionQuery (String regionRootFolder, String indexIdName, String regionId, int initKeyMapCapacity) {
+    public StringIndexRegionQuery (String regionRootFolder, String indexIdName, int regionId, int initKeyMapCapacity) {
         this.regionRootFolder = regionRootFolder;
         this.indexIdName = indexIdName;
         this.regionId = regionId;

@@ -18,44 +18,44 @@ public class StringIndexRegion {
     public static final String REGION_KEY_MAP_FILE_NAME = "regionKeyMap.txt";
     public static final String REGION_KEY_VALUES_FILE_NAME = "regionKeyValues.txt";
 
-    private String regionId;
+    private int regionId;
     private String regionRootFolder;
 
     private StringIndexRegion() {
     };
 
-    public static StringIndexRegion create(String regionRootFolder, String regionId) {
+    public static StringIndexRegion create(String regionRootFolder, int regionId) {
         StringIndexRegion ret = new StringIndexRegion();
         ret.regionId = regionId;
         ret.regionRootFolder = regionRootFolder;
         return ret;
     }
 
-    public static String getRegionIdByIndexId(String indexId, int regionNumber) {
-        return String.valueOf(Math.abs(indexId.hashCode()) % regionNumber);
+    public static int getRegionIdByIndexId(String indexId, int regionNumber) {
+        return Math.abs(indexId.hashCode()) % regionNumber;
     }
 
-    public static String getRegionFilesPrefix(String regionRootFolder, String regionId) {
+    public static String getRegionFilesPrefix(String regionRootFolder, int regionId) {
         return regionRootFolder.concat(StringIndexRegion.REGION_PREFIX)
-                .concat(regionId).concat("_");
+                .concat(String.valueOf(regionId)).concat("_");
     }
 
-    public static String getRegionIndexFilePath(String regionRootFolder, String regionId, String indexIdName) {
+    public static String getRegionIndexFilePath(String regionRootFolder, int regionId, String indexIdName) {
         return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
                 .concat(StringIndexRegion.REGION_INDEX_FILE_PREFIX).concat(indexIdName).concat(".txt");
     }
 
-    public static String getRegionKeyMapFilePath(String regionRootFolder, String regionId) {
+    public static String getRegionKeyMapFilePath(String regionRootFolder, int regionId) {
         return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
                 .concat(StringIndexRegion.REGION_KEY_MAP_FILE_NAME);
     }
 
-    public static String getRegionKeyValuesFilePath(String regionRootFolder, String regionId) {
+    public static String getRegionKeyValuesFilePath(String regionRootFolder, int regionId) {
         return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
                 .concat(StringIndexRegion.REGION_KEY_VALUES_FILE_NAME);
     }
 
-    public static boolean isRegionExist(String regionRootFolder, String regionId) {
+    public static boolean isRegionExist(String regionRootFolder, int regionId) {
         return FileUtil.isFileExist(StringIndexRegion
                 .getRegionKeyMapFilePath(regionRootFolder, regionId));
     }

@@ -23,7 +23,7 @@ public class OrderIdIndexRegionQuery extends StringIndexRegionQuery {
     public static final int MAX_INDEX_CACHE_SIZE = 1000;// TODO
     public static final int CACHE_NUM_PER_MISS = 100;// TODO
 
-    public OrderIdIndexRegionQuery(String regionRootFolder, String regionId) {
+    public OrderIdIndexRegionQuery(String regionRootFolder, int regionId) {
         super(regionRootFolder, "orderid", regionId, INIT_KEY_MAP_CAPACITY);
         this.regionRootFolder = regionRootFolder;
         maxIndexCacheSize = MAX_INDEX_CACHE_SIZE;
@@ -68,11 +68,11 @@ public class OrderIdIndexRegionQuery extends StringIndexRegionQuery {
         return result;
     }
     
-    public static String getRegionIdByOrderId(long orderId, int regionNumber) {
+    public static int getRegionIdByOrderId(long orderId, int regionNumber) {
         return StringIndexRegion.getRegionIdByIndexId(String.valueOf(orderId), regionNumber);
     }
     
-    public static boolean isRegionExist(String regionRootFolder, String regionId) {
+    public static boolean isRegionExist(String regionRootFolder, int regionId) {
         return StringIndexRegion.isRegionExist(regionRootFolder, regionId);
     }
 }

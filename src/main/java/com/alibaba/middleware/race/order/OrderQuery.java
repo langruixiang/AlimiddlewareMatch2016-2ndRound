@@ -30,12 +30,12 @@ public class OrderQuery {
         this.regionNumber = regionNumber;
         regionQueryMap = new HashMap<String, OrderIdIndexRegionQuery>(regionNumber);
         for (int i = 0; i < regionNumber; ++i) {
-            regionQueryMap.put(String.valueOf(i), new OrderIdIndexRegionQuery(regionRootFolder, String.valueOf(i)));
+            regionQueryMap.put(String.valueOf(i), new OrderIdIndexRegionQuery(regionRootFolder, i));
         }
     }
 
     public com.alibaba.middleware.race.orderSystemImpl.Result queryOrder(long orderId, Collection<String> keys) {
-        String regionId = OrderIdIndexRegionQuery.getRegionIdByOrderId(orderId, regionNumber);
+        int regionId = OrderIdIndexRegionQuery.getRegionIdByOrderId(orderId, regionNumber);
         if (!OrderIdIndexRegionQuery.isRegionExist(regionRootFolder, regionId)) {
             return null;
         }

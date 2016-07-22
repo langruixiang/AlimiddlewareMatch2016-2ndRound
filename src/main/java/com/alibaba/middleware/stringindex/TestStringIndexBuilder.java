@@ -29,13 +29,34 @@ public class TestStringIndexBuilder {
     public static final int REGION_NUMBER = 10;// TODO
 
     public static void main(String args[]) {
-        System.out.println("=============start================");
-//        testHashAndIndexBuilder();
-//        testIndexBuilder();
-        testQueryOrder();
-        System.out.println("=============end================");
+        try {
+            System.out.println("=============start================");
+            testStringIndexRegionHash();
+//          testHashAndIndexBuilder();
+//          testIndexBuilder();
+//          testQueryOrder();
+          System.out.println("=============end================");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
     
+    /**
+     * @throws InterruptedException 
+     * 
+     */
+    private static void testStringIndexRegionHash() throws InterruptedException {
+        List<String> orderFileList = new ArrayList<String>();
+        orderFileList.add("order_records.txt");
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        StringIndexRegionHash sirh = new StringIndexRegionHash(
+                orderFileList, REGION_ROOT_DIR, REGION_NUMBER,
+                HASH_INDEX_INDEX_ID_NAME, countDownLatch);
+        sirh.start();
+        countDownLatch.await();
+    }
+
     private static void testIndexBuilder() {
         List<String> orderFileList = new ArrayList<String>();
         orderFileList.add("order_records.txt");
@@ -53,34 +74,9 @@ public class TestStringIndexBuilder {
         
         CountDownLatch countDownLatch = new CountDownLatch(1);
         StringIndexBuilder sib = new StringIndexBuilder(
-                storeFolderList.get(0), "0",
+                storeFolderList.get(0), 0,
                 HASH_INDEX_INDEX_ID_NAME, countDownLatch);
         sib.start();
-    }
-    
-    private static void testHashAndIndexBuilder() {
-        List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
-
-        List<String> buyerFileList = new ArrayList<String>();
-        buyerFileList.add("buyer_records.txt");
-
-        List<String> goodFileList = new ArrayList<String>();
-        goodFileList.add("good_records.txt");
-        
-        List<String> storeFolderList = new ArrayList<String>();
-        storeFolderList.add(REGION_ROOT_DIR);
-        storeFolderList.add(REGION_ROOT_DIR);
-        storeFolderList.add(REGION_ROOT_DIR);
-        
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        StringHashAndIndexBuilder sib = new StringHashAndIndexBuilder(
-                orderFileList, storeFolderList.get(0), REGION_NUMBER,
-                HASH_INDEX_INDEX_ID_NAME, countDownLatch);
-        sib.start();
-//        List<String> orderFileList = new ArrayList<String>();
-//        orderFileList.add("order_records.txt");
-//        OrderIndexBuilder.build(orderFileList);
     }
     
     private static void testQueryOrder() {
