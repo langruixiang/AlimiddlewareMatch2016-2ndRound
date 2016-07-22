@@ -12,7 +12,6 @@ public class StringIndex {
 
     //UTF_8("UTF-8"), GB2312("GB2312"), GBK("GBK");
     public static final String ENCODING = "UTF-8";//TODO
-    public static final int BYTES_OF_INDEX_FILE_LINE = 1000;//TODO
 
     public static final String INDEX_SPLITOR = ":";
     public static final String KEY_SPLITOR = "|";
@@ -65,12 +64,12 @@ public class StringIndex {
         if (line == null || line.isEmpty()) {
             return StringIndex.NULL;
         }
-        StringIndex generalIndex = new StringIndex();
+        StringIndex stringIndex = new StringIndex();
         String[] splitOfLine = line.split(StringIndex.INDEX_SPLITOR_REX);
-        generalIndex.setIndexId(splitOfLine[0]);
+        stringIndex.setIndexId(splitOfLine[0]);
         String[] parsedKeysPos = splitOfLine[1].split(StringIndex.KEY_SPLITOR_REX);
-        generalIndex.setKeysPos(parsedKeysPos);
-        return generalIndex;
+        stringIndex.setKeysPos(parsedKeysPos);
+        return stringIndex;
     }
 
     public String getValueByKey(String key) {

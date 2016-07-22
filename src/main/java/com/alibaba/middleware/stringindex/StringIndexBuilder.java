@@ -5,24 +5,12 @@
  */
 package com.alibaba.middleware.stringindex;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import com.alibaba.middleware.race.util.FileUtil;
 
 /**
  * @author wangweiwei
@@ -31,113 +19,49 @@ import com.alibaba.middleware.race.util.FileUtil;
 public class StringIndexBuilder extends Thread {
 
     private String regionRootFolder;
-    private CountDownLatch countDownLatch;
+    private int regionNumber;
     private String indexIdName;
-    private int regionId;
-    private TreeMap<String, String> indexLineMap;
+    private int initKeyMapCapacity;
+    private CountDownLatch countDownLatch;
     
-    public static final int INIT_KEY_MAP_CAPACITY = 20; 
-    private Map<String, Integer> keyMap;
-    
-    private RandomAccessFile regionIndexFile;
-    
-    private BufferedReader regionKeyValuesFileBR;
-    
-    public StringIndexBuilder(String regionRootFolder,
-            int regionId, String indexIdName, CountDownLatch countDownLatch) {
+    private int regionBuilderThreadPoolSize;
+    private ExecutorService regionBuilderThreadPool;
+    private Map<Integer, StringIndexRegionBuilder> regionBuilders;
+    private CountDownLatch regionBuilderCountDownLatch;
+
+    public StringIndexBuilder(String regionRootFolder, int regionNumber, String indexIdName, int initKeyMapCapacity, CountDownLatch countDownLatch, int regionBuilderThreadPoolSize) {
         if (!regionRootFolder.endsWith("/")) {
             regionRootFolder = regionRootFolder.concat("/");
         }
         this.regionRootFolder = regionRootFolder;
-        this.countDownLatch = countDownLatch;
+        this.regionNumber = regionNumber;
+        this.initKeyMapCapacity = initKeyMapCapacity;
         this.indexIdName = indexIdName;
-        this.regionId = regionId;
-    }
-
-    public void build() {
-        try {
-            keyMap = FileUtil.readSIHashMapFromFile(StringIndexRegion
-                    .getRegionKeyMapFilePath(regionRootFolder, regionId),
-                    INIT_KEY_MAP_CAPACITY);
-            FileInputStream fis = new FileInputStream(StringIndexRegion.getRegionKeyValuesFilePath(
-                    regionRootFolder, regionId));
-            InputStreamReader isr = new InputStreamReader(fis, StringIndex.ENCODING); 
-            regionKeyValuesFileBR = new BufferedReader(isr); 
-            String line = null;
-            long startByteNo = 0;
-            while ((line = regionKeyValuesFileBR.readLine()) != null) {
-                buildWithLine(line, startByteNo);
-                startByteNo += line.concat("\n").getBytes(StringIndex.ENCODING).length;
-            }
-            regionKeyValuesFileBR.close();
-            writeIndexsToFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @throws IOException 
-     * 
-     */
-    private void writeIndexsToFile() throws IOException {
-        regionIndexFile = new RandomAccessFile(
-                StringIndexRegion.getRegionIndexFilePath(regionRootFolder,
-                        regionId, indexIdName), "rw");
-        Iterator<Entry<String, String>> iterator = indexLineMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Entry<String, String> entry = iterator.next();
-            FileUtil.appendFixedBytesLineWithRandomAccessFile(regionIndexFile,
-                    StringIndex.ENCODING, entry.getValue().toString(),
-                    StringIndex.BYTES_OF_INDEX_FILE_LINE);
-        }
-        
-        regionIndexFile.close();
-    }
-    
-    private void buildWithLine(String line, long startByteNo) throws IOException {
-        StringIndex stringIndex = new StringIndex();
-        ArrayList<String> keyPosInfo = new ArrayList<String>(keyMap.size());
-        for (int i = 0; i < keyMap.size(); ++i) {
-            keyPosInfo.add("0");
-        }
-        String[] keyValues = line.split("\t");
-        long offset = startByteNo;
-        long length = 0;
-        for (int i = 0; i < keyValues.length; i++) {
-            String[] keyValue = keyValues[i].split(":");
-            if (indexIdName.equals(keyValue[0])) {
-                stringIndex.setIndexIdName(keyValue[0]);
-                stringIndex.setIndexId(keyValue[1]);
-            }
-            stringIndex.addKeyValue(keyValue[0], keyValue[1]);
-            offset += keyValue[0].concat(":").getBytes(StringIndex.ENCODING).length;
-            length = keyValue[1].getBytes(StringIndex.ENCODING).length;
-            Integer keyIndex = keyMap.get(keyValue[0]);
-            keyPosInfo.set(keyIndex,
-                    String.valueOf(offset).concat(StringIndex.POS_SPLITOR)
-                            .concat(String.valueOf(length)));
-            offset += (length + "\t".getBytes(StringIndex.ENCODING).length);
-        }
-        
-        // write regionIndex
-        StringBuilder indexLineSb = new StringBuilder();
-        indexLineSb.append(stringIndex.getIndexId())
-                .append(StringIndex.INDEX_SPLITOR).append(keyPosInfo.get(0));
-        for (int i = 1; i < keyPosInfo.size(); ++i) {
-            indexLineSb.append(StringIndex.KEY_SPLITOR).append(
-                    keyPosInfo.get(i));
-        }
-        indexLineMap.put(stringIndex.getIndexId(), indexLineSb.toString());
+        this.countDownLatch = countDownLatch;
+        this.regionBuilderThreadPoolSize = regionBuilderThreadPoolSize;
     }
 
     @Override
     public void run(){
-        if (StringIndexRegion.isRegionExist(regionRootFolder, regionId)) {
-            this.indexLineMap = new TreeMap<String, String>();
-            build();
+        prepare();
+        try {
+            regionBuilderCountDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+        regionBuilderThreadPool.shutdown();
+        countDownLatch.countDown();//完成工作，计数器减一
         System.out.println("StringIndexBuilder build end~");
-        countDownLatch.countDown();
+    }
+    
+    private void prepare() {
+        this.regionBuilders = new HashMap<Integer, StringIndexRegionBuilder>(regionNumber, 1);
+        this.regionBuilderCountDownLatch = new CountDownLatch(regionNumber);
+        regionBuilderThreadPool = Executors.newFixedThreadPool(regionBuilderThreadPoolSize);
+        for (int i = 0; i < regionNumber; i++) {
+            StringIndexRegionBuilder regionBuilder = new StringIndexRegionBuilder(regionRootFolder, i, indexIdName, initKeyMapCapacity, regionBuilderCountDownLatch);
+            regionBuilders.put(i, regionBuilder);
+            regionBuilderThreadPool.execute(regionBuilder);
+        }
     }
 }

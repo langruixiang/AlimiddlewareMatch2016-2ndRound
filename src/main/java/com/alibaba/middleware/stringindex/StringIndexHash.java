@@ -22,20 +22,21 @@ import com.alibaba.middleware.race.util.FileUtil;
  * @author wangweiwei
  *
  */
-public class StringIndexRegionHash extends Thread {
-    public static final int HASH_WRITER_THREAD_POOL_SIZE = 10;
+public class StringIndexHash extends Thread {
     private Collection<String> srcFiles;
     private String regionRootFolder;
     private int regionNumber;
     private String hashIdName;
+    private int initKeyMapCapacity;
     private CountDownLatch countDownLatch;
     
+    private int hashWriterThreadPoolSize;
     private ExecutorService hashWriterThreadPool;
     private Map<Integer, StringIndexRegionHashWriter> hashWriters;
     private CountDownLatch hashWriterCountDownLatch;
 
-    public StringIndexRegionHash(Collection<String> srcFiles,  String regionRootFolder, int regionNumber, String hashIdName,
-            CountDownLatch countDownLatch) {
+    public StringIndexHash(Collection<String> srcFiles,  String regionRootFolder, int regionNumber, String hashIdName,
+            int initKeyMapCapacity, CountDownLatch countDownLatch, int hashWriterThreadPoolSize) {
         this.srcFiles = srcFiles;
         if (!regionRootFolder.endsWith("/")) {
             regionRootFolder = regionRootFolder.concat("/");
@@ -43,7 +44,9 @@ public class StringIndexRegionHash extends Thread {
         this.regionRootFolder = regionRootFolder;
         this.regionNumber = regionNumber;
         this.hashIdName = hashIdName;
+        this.initKeyMapCapacity = initKeyMapCapacity;
         this.countDownLatch = countDownLatch;
+        this.hashWriterThreadPoolSize = hashWriterThreadPoolSize;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class StringIndexRegionHash extends Thread {
         }
         hashWriterThreadPool.shutdown();
         countDownLatch.countDown();//完成工作，计数器减一
+        System.out.println("StringIndexHash end~");
     }
     
     /**
@@ -77,9 +81,9 @@ public class StringIndexRegionHash extends Thread {
     private void createAllHashWriters () {
         this.hashWriters = new HashMap<Integer, StringIndexRegionHashWriter>(regionNumber, 1);
         this.hashWriterCountDownLatch = new CountDownLatch(regionNumber);
-        hashWriterThreadPool = Executors.newFixedThreadPool(HASH_WRITER_THREAD_POOL_SIZE);
+        hashWriterThreadPool = Executors.newFixedThreadPool(hashWriterThreadPoolSize);
         for (int i = 0; i < regionNumber; i++) {
-            StringIndexRegionHashWriter hashWriter = new StringIndexRegionHashWriter(regionRootFolder, hashWriterCountDownLatch, i);
+            StringIndexRegionHashWriter hashWriter = new StringIndexRegionHashWriter(regionRootFolder, initKeyMapCapacity, hashWriterCountDownLatch, i);
             hashWriters.put(i, hashWriter);
             hashWriterThreadPool.execute(hashWriter);
         }
@@ -120,7 +124,7 @@ public class StringIndexRegionHash extends Thread {
             return;
         }
         String hashId = line.substring(hashIdStartIndex, hashIdEndIndex);
-        int regionId = StringIndexRegionHash.getRegionIdByHashId(hashId, regionNumber);
+        int regionId = StringIndexHash.getRegionIdByHashId(hashId, regionNumber);
 
         StringIndexRegionHashWriter hashWriter = hashWriters.get(regionId);
         hashWriter.sendLine(line);

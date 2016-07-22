@@ -7,13 +7,9 @@ package com.alibaba.middleware.stringindex;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import com.alibaba.middleware.race.order.OrderIdQuery;
 import com.alibaba.middleware.race.order.OrderQuery;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.util.FileUtil;
@@ -27,37 +23,39 @@ public class TestStringIndexBuilder {
     public static final String REGION_ROOT_DIR = "StringIndexRegion/";
     public static final String HASH_INDEX_INDEX_ID_NAME = "orderid";// TODO
     public static final int REGION_NUMBER = 10;// TODO
+    public static final int HASH_WRITER_THREAD_POOL_SIZE = 10;
+    public static final int REGION_INDEX_BUILDER_THREAD_POOL_SIZE = 10;
+    public static final int INIT_KEY_MAP_CAPACITY = 20;
 
     public static void main(String args[]) {
         try {
             System.out.println("=============start================");
-            testStringIndexRegionHash();
-//          testHashAndIndexBuilder();
-//          testIndexBuilder();
+//            testStringIndexHash();
+//            testIndexBuilder();
 //          testQueryOrder();
           System.out.println("=============end================");
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
     
     /**
      * @throws InterruptedException 
      * 
      */
-    private static void testStringIndexRegionHash() throws InterruptedException {
+    private static void testStringIndexHash() throws InterruptedException {
         List<String> orderFileList = new ArrayList<String>();
         orderFileList.add("order_records.txt");
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        StringIndexRegionHash sirh = new StringIndexRegionHash(
+        StringIndexHash sirh = new StringIndexHash(
                 orderFileList, REGION_ROOT_DIR, REGION_NUMBER,
-                HASH_INDEX_INDEX_ID_NAME, countDownLatch);
+                HASH_INDEX_INDEX_ID_NAME, INIT_KEY_MAP_CAPACITY,
+                countDownLatch, HASH_WRITER_THREAD_POOL_SIZE);
         sirh.start();
         countDownLatch.await();
     }
 
-    private static void testIndexBuilder() {
+    private static void testIndexBuilder() throws InterruptedException {
         List<String> orderFileList = new ArrayList<String>();
         orderFileList.add("order_records.txt");
 
@@ -74,9 +72,11 @@ public class TestStringIndexBuilder {
         
         CountDownLatch countDownLatch = new CountDownLatch(1);
         StringIndexBuilder sib = new StringIndexBuilder(
-                storeFolderList.get(0), 0,
-                HASH_INDEX_INDEX_ID_NAME, countDownLatch);
+                storeFolderList.get(0), REGION_NUMBER,
+                HASH_INDEX_INDEX_ID_NAME, INIT_KEY_MAP_CAPACITY,
+                countDownLatch, REGION_INDEX_BUILDER_THREAD_POOL_SIZE);
         sib.start();
+        countDownLatch.await();
     }
     
     private static void testQueryOrder() {
@@ -91,21 +91,5 @@ public class TestStringIndexBuilder {
         Result result = orderQuery.queryOrder(2982270, keys);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
-    }
-
-    private static void testFileWriter() {
-        // 测试queryOrder接口，按订单号查找某条记录
-        try {
-            String encoding = "UTF-8";
-            FileUtil.writeFixedBytesLine("test.txt", encoding, "记录123", 16, 1);
-            String line = FileUtil.getFixedBytesLine("test.txt", encoding, 16, 1, true);
-            System.out.println(line);
-            System.out.println("记录123".getBytes(encoding).length);
-            System.out.println(line.getBytes(encoding).length);
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        System.out.println();
     }
 }

@@ -17,7 +17,10 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
  *
  */
 public class OrderQuery {
-    private HashMap<String, OrderIdIndexRegionQuery> regionQueryMap;
+    public static final int DEFAULT_MAX_INDEX_CACHE_SIZE = 1000;
+    public static final int DEFAULT_CACHE_NUM_PER_MISS = 100;
+    
+    private HashMap<Integer, OrderIdIndexRegionQuery> regionQueryMap;
     
     public static final int REGION_NUM = 10;
     
@@ -28,9 +31,9 @@ public class OrderQuery {
     public OrderQuery(String regionRootFolder, int regionNumber) {
         this.regionRootFolder = regionRootFolder;
         this.regionNumber = regionNumber;
-        regionQueryMap = new HashMap<String, OrderIdIndexRegionQuery>(regionNumber);
+        regionQueryMap = new HashMap<Integer, OrderIdIndexRegionQuery>(regionNumber);
         for (int i = 0; i < regionNumber; ++i) {
-            regionQueryMap.put(String.valueOf(i), new OrderIdIndexRegionQuery(regionRootFolder, i));
+            regionQueryMap.put(i, new OrderIdIndexRegionQuery(regionRootFolder, i));
         }
     }
 

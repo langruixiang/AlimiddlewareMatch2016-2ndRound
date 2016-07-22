@@ -221,20 +221,23 @@ public class FileUtil {
      */
     public static long appendLineWithRandomAccessFile(RandomAccessFile openedFile,
             String encoding, String content) {
-        long fileBytesNum = 0;
+        long length = 0;
         try {
-            fileBytesNum = openedFile.length();
+            content = content.concat("\n");
+            long fileBytesNum = openedFile.length();
             openedFile.seek(fileBytesNum);
-            openedFile.write(content.concat("\n").getBytes(encoding));
+            byte[] bytes = content.toString().getBytes(encoding);
+            length = bytes.length;
+            openedFile.write(bytes);
         } catch (final IOException e) {
             e.printStackTrace();
         }
-        return fileBytesNum;
+        return length;
     }
     
     public static long appendFixedBytesLineWithRandomAccessFile(RandomAccessFile openedFile,
             String encoding, String content, int bytesOfLine) {
-        long fileBytesNum = 0;
+        long length = 0;
         try {
             StringBuilder sb = new StringBuilder(content);
             {
@@ -250,13 +253,15 @@ public class FileUtil {
                 }
                 sb.append("\n");
             }
-            fileBytesNum = openedFile.length();
+            long fileBytesNum = openedFile.length();
             openedFile.seek(fileBytesNum);
-            openedFile.write(sb.toString().getBytes(encoding));
+            byte[] bytes = sb.toString().getBytes(encoding);
+            length = bytes.length;
+            openedFile.write(bytes);
         } catch (final IOException e) {
             e.printStackTrace();
         }
-        return fileBytesNum;
+        return length;
     }
 
     public static HashMap<String, Integer> readSIHashMapFromFile(
@@ -271,6 +276,30 @@ public class FileUtil {
                     String[] splitOfLine = line.split(":");
                     if (splitOfLine.length == 2) {
                         retMap.put(splitOfLine[0].trim(), Integer.parseInt(splitOfLine[1].trim()));
+                    } else {
+                        throw new IOException("This line is not valid! : " + line);
+                    }
+                }
+            } finally {
+                bufferedReader.close();
+            }
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
+        return retMap;
+    }
+    
+    public static TreeMap<String, String> readSSTreeMapFromFile(String pathname) {
+        TreeMap<String, String> retMap = new TreeMap<String, String>();
+        BufferedReader bufferedReader;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(pathname));
+            String line = null;
+            try {
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] splitOfLine = line.split(":");
+                    if (splitOfLine.length == 2) {
+                        retMap.put(splitOfLine[0].trim(),splitOfLine[1].trim());
                     } else {
                         throw new IOException("This line is not valid! : " + line);
                     }

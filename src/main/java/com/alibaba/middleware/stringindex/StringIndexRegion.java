@@ -14,25 +14,13 @@ import com.alibaba.middleware.race.util.FileUtil;
 public class StringIndexRegion {
 
     public static final String REGION_PREFIX = "region_";
-    public static final String REGION_INDEX_FILE_PREFIX = "regionIndex_";
+    public static final String REGION_FIRST_INDEX_FILE_PREFIX = "regionIndex_1_";
+    public static final String REGION_SECOND_INDEX_FILE_PREFIX = "regionIndex_2_";
     public static final String REGION_KEY_MAP_FILE_NAME = "regionKeyMap.txt";
     public static final String REGION_KEY_VALUES_FILE_NAME = "regionKeyValues.txt";
 
-    private int regionId;
-    private String regionRootFolder;
-
-    private StringIndexRegion() {
-    };
-
-    public static StringIndexRegion create(String regionRootFolder, int regionId) {
-        StringIndexRegion ret = new StringIndexRegion();
-        ret.regionId = regionId;
-        ret.regionRootFolder = regionRootFolder;
-        return ret;
-    }
-
     public static int getRegionIdByIndexId(String indexId, int regionNumber) {
-        return Math.abs(indexId.hashCode()) % regionNumber;
+        return StringIndexHash.getRegionIdByHashId(indexId, regionNumber);
     }
 
     public static String getRegionFilesPrefix(String regionRootFolder, int regionId) {
@@ -40,9 +28,14 @@ public class StringIndexRegion {
                 .concat(String.valueOf(regionId)).concat("_");
     }
 
-    public static String getRegionIndexFilePath(String regionRootFolder, int regionId, String indexIdName) {
+    public static String getRegionFirstIndexFilePath(String regionRootFolder, int regionId, String indexIdName) {
         return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
-                .concat(StringIndexRegion.REGION_INDEX_FILE_PREFIX).concat(indexIdName).concat(".txt");
+                .concat(StringIndexRegion.REGION_FIRST_INDEX_FILE_PREFIX).concat(indexIdName).concat(".txt");
+    }
+    
+    public static String getRegionSecondIndexFilePath(String regionRootFolder, int regionId, String indexIdName) {
+        return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
+                .concat(StringIndexRegion.REGION_SECOND_INDEX_FILE_PREFIX).concat(indexIdName).concat(".txt");
     }
 
     public static String getRegionKeyMapFilePath(String regionRootFolder, int regionId) {

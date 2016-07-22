@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.stringindex.StringIndex;
+import com.alibaba.middleware.stringindex.StringIndexHash;
 import com.alibaba.middleware.stringindex.StringIndexRegion;
 import com.alibaba.middleware.stringindex.StringIndexRegionQuery;
 
@@ -24,7 +25,7 @@ public class OrderIdIndexRegionQuery extends StringIndexRegionQuery {
     public static final int CACHE_NUM_PER_MISS = 100;// TODO
 
     public OrderIdIndexRegionQuery(String regionRootFolder, int regionId) {
-        super(regionRootFolder, "orderid", regionId, INIT_KEY_MAP_CAPACITY);
+        super(regionRootFolder, "orderid", regionId, INIT_KEY_MAP_CAPACITY, MAX_INDEX_CACHE_SIZE, CACHE_NUM_PER_MISS);
         this.regionRootFolder = regionRootFolder;
         maxIndexCacheSize = MAX_INDEX_CACHE_SIZE;
         cacheNumPerMiss = CACHE_NUM_PER_MISS;
@@ -69,7 +70,7 @@ public class OrderIdIndexRegionQuery extends StringIndexRegionQuery {
     }
     
     public static int getRegionIdByOrderId(long orderId, int regionNumber) {
-        return StringIndexRegion.getRegionIdByIndexId(String.valueOf(orderId), regionNumber);
+        return StringIndexHash.getRegionIdByHashId(String.valueOf(orderId), regionNumber);
     }
     
     public static boolean isRegionExist(String regionRootFolder, int regionId) {
