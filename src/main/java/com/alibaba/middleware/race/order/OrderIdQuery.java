@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.order;
 
+import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -17,8 +18,8 @@ public class OrderIdQuery {
         //System.out.println("==========:"+goodId + " index:" + index);
         Order order = new Order();
         try {
-            FileInputStream twoIndexFile = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
-            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
+//            FileInputStream twoIndexFile = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
+//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
             File hashFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -28,17 +29,17 @@ public class OrderIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long position = 0;
-            while ((str = twoIndexBR.readLine()) != null) {
-                String[] keyValue = str.split(":");
-                //System.out.println(keyValue[0]);
-                if (orderId < Long.valueOf(keyValue[0])) {
-                    //System.out.println("--------"+keyValue[0]);
-                    break;
-                } else {
-                    position = Long.valueOf(keyValue[1]);
-                }
-            }
+            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
+//            while ((str = twoIndexBR.readLine()) != null) {
+//                String[] keyValue = str.split(":");
+//                //System.out.println(keyValue[0]);
+//                if (orderId < Long.valueOf(keyValue[0])) {
+//                    //System.out.println("--------"+keyValue[0]);
+//                    break;
+//                } else {
+//                    position = Long.valueOf(keyValue[1]);
+//                }
+//            }
 
             //System.out.println(position);
 
@@ -77,7 +78,7 @@ public class OrderIdQuery {
                 order.getKeyValues().put(strs[0], kv);
             }
             order.setId(orderId);
-            twoIndexBR.close();
+//            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
