@@ -116,7 +116,9 @@ public class OrderSystemImpl implements OrderSystem {
         long starttime = System.currentTimeMillis();
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
+        long findStartTime = System.currentTimeMillis();
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
+        System.out.println("===queryOrder==index===orderid: " + orderId + " time :" + (System.currentTimeMillis() - findStartTime));
         List<String> orderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
         List<String> buyerSearchKeys = new ArrayList<String>();
@@ -330,7 +332,7 @@ public class OrderSystemImpl implements OrderSystem {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("queryOrdersByBuyer : time :" + (System.currentTimeMillis() - starttime));
+        System.out.println("queryOrdersByBuyer :" + buyerid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
@@ -362,8 +364,10 @@ public class OrderSystemImpl implements OrderSystem {
         }
 
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        long findStartTime = System.currentTimeMillis();
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
+        System.out.println("===queryOrdersBySaler===index==goodid:" + goodid + " time :" + (System.currentTimeMillis() - findStartTime));
         if (orders == null || orders.size() == 0) {
             System.out.println("goodid :" + goodid + " order is null ");
             return results.iterator();
@@ -448,7 +452,7 @@ public class OrderSystemImpl implements OrderSystem {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("queryOrdersBySaler : time :" + (System.currentTimeMillis() - starttime));
+        System.out.println("queryOrdersBySaler : " + goodid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
