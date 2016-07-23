@@ -65,6 +65,7 @@ public class GoodIdIndexFile extends Thread{
                         if (orderid != null && goodid != null) {
                             String key = goodid + "|" + orderid;
                             orderRankMap.put(key, rankStr);
+                            break;
                         }
                     }
                 }

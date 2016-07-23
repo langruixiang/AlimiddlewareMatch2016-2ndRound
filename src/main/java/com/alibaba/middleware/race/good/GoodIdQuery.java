@@ -84,7 +84,6 @@ public class GoodIdQuery {
                 length = (int) (hashRaf.length() - Long.valueOf(pos));
             }
 
-            String orderStr = null;
             hashRaf.seek(Long.valueOf(pos));
 //            while ((orderStr = hashRaf.readLine()) != null) {
 //                String orderContent = new String(orderStr.getBytes("iso-8859-1"), "UTF-8");
@@ -108,8 +107,8 @@ public class GoodIdQuery {
 
             byte[] bytes = new byte[length];
             hashRaf.read(bytes, 0, length);
-            String strsss = new String(bytes);
-            String[] constents = strsss.split("\n");
+            String orderStrs = new String(bytes);
+            String[] constents = orderStrs.split("\n");
             for (String content : constents) {
                 Order order = new Order();
                 String[] keyValues = content.split("\t");
@@ -128,7 +127,7 @@ public class GoodIdQuery {
                 }
                 orders.add(order);
             }
-            System.out.println(constents);
+            //System.out.println(constents);
 
             System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
 //            twoIndexBR.close();

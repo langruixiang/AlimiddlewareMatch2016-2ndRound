@@ -27,8 +27,11 @@ public class BuyerIdQuery {
 //            twoIndexFile = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
 //            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
-            File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+//            File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
+//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+
+            File rankFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
 
             File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
@@ -53,56 +56,61 @@ public class BuyerIdQuery {
             int count = 0;
             indexRaf.seek(position);
             String oneIndex = null;
-            List<String> oneIndexs = new ArrayList<String>();
-            while ((oneIndex = indexRaf.readLine()) != null) {
+            String oneIndexTmp = null;
+            String onePlusIndex = null;
+            while ((oneIndexTmp = indexRaf.readLine()) != null) {
                 count++;
-                String[] keyValue = oneIndex.split(":");
+                String[] keyValue = oneIndexTmp.split(":");
                 if (endKey.compareTo(keyValue[0]) <= 0) {
                     continue;
                 } else if (beginKey.compareTo(keyValue[0]) > 0) {
+                    onePlusIndex = oneIndexTmp;
                     break;
                 }
-                oneIndexs.add(oneIndex);
+                if (oneIndex == null) {
+                    oneIndex = oneIndexTmp;
+                }
             }
             System.out.println("===queryOrdersByBuyer===oneindex==buyerid:" + buyerId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
-            long SeekStartTime = System.currentTimeMillis();
-            List<String> orderContents = new ArrayList<String>();
-            for (String line : oneIndexs) {
-                String[] keyValue = line.split(":");
-                //System.out.println(keyValue[1]);
-                String[] positions = keyValue[1].split("\\|");
-                //System.out.println("======" + positions.length);
-                for (String pos : positions) {
-                    //System.out.println(pos);
-                    hashRaf.seek(Long.valueOf(pos));
-                    String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                    orderContents.add(orderContent);
-                    //System.out.println(orderContent);
+            long handleStartTime = System.currentTimeMillis();
+            System.out.println(oneIndex);
+            String[] keyValue = oneIndex.split(":");
+            //System.out.println(keyValue[1]);
+            String pos = keyValue[1];
+            int length = 0;
+            if (onePlusIndex != null) {
+                String[] kv = onePlusIndex.split(":");
+                System.out.println(kv[1] + ":" + pos);
+                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
+            } else {
+                System.out.println(hashRaf.length() + ":" + pos);
+                length = (int) (hashRaf.length() - Long.valueOf(pos));
+            }
+            hashRaf.seek(Long.valueOf(pos));
+            byte[] bytes = new byte[length];
+            hashRaf.read(bytes, 0, length);
+            String orderStrs = new String(bytes);
+            String[] constents = orderStrs.split("\n");
+            for (String orderContent : constents) {
+                //4.将字符串转成order对象集合
+                Order order = new Order();
+                String[] keyValues = orderContent.split("\t");
+                for (int i = 0; i < keyValues.length; i++) {
+                    String[] strs = keyValues[i].split(":");
+                    KeyValue kv = new KeyValue();
+                    kv.setKey(strs[0]);
+                    kv.setValue(strs[1]);
+                    order.getKeyValues().put(strs[0], kv);
                 }
+                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
+                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                }
+                orders.add(order);
             }
-            System.out.println("===queryOrdersByBuyer===seekposition=====buyerid:" + buyerId +  " size: " + oneIndexs.size() + " time :" + (System.currentTimeMillis() - SeekStartTime));
-
-            long objectStartTime = System.currentTimeMillis();
-            for (String orderContent : orderContents) {
-                    //4.将字符串转成order对象集合
-                    Order order = new Order();
-                    String[] keyValues = orderContent.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] strs = keyValues[i].split(":");
-                        KeyValue kv = new KeyValue();
-                        kv.setKey(strs[0]);
-                        kv.setValue(strs[1]);
-                        order.getKeyValues().put(strs[0], kv);
-                    }
-                    if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
-                        order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                    }
-                    orders.add(order);
-            }
-            System.out.println("===queryOrdersByBuyer===map object=buyerid:" + buyerId +  " time :" + (System.currentTimeMillis() - objectStartTime));
-            //            twoIndexBR.close();
+            System.out.println("===queryOrdersByBuyer===handle==buyerid:" + buyerId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
+            //twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
