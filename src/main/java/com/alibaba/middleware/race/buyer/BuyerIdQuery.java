@@ -20,7 +20,7 @@ public class BuyerIdQuery {
         if (buyerId == null || buyerId.isEmpty()) return null;
         String beginKey = buyerId + "_" + starttime;
         String endKey = buyerId + "_" + endtime;
-        //System.out.println("==========:"+buyerId + " index:" + index);
+        System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 //            FileInputStream twoIndexFile = null;
@@ -49,10 +49,13 @@ public class BuyerIdQuery {
             //System.out.println(position);
 
             //2.查找一级索引
+            long oneIndexStartTime = System.currentTimeMillis();
+            int count = 0;
             indexRaf.seek(position);
             String oneIndex = null;
             List<String> oneIndexs = new ArrayList<String>();
             while ((oneIndex = indexRaf.readLine()) != null) {
+                count++;
                 String[] keyValue = oneIndex.split(":");
                 if (endKey.compareTo(keyValue[0]) <= 0) {
                     continue;
@@ -61,8 +64,11 @@ public class BuyerIdQuery {
                 }
                 oneIndexs.add(oneIndex);
             }
+            System.out.println("===queryOrdersByBuyer===oneindex==buyerid:" + buyerId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
+            long SeekStartTime = System.currentTimeMillis();
+            List<String> orderContents = new ArrayList<String>();
             for (String line : oneIndexs) {
                 String[] keyValue = line.split(":");
                 //System.out.println(keyValue[1]);
@@ -72,8 +78,14 @@ public class BuyerIdQuery {
                     //System.out.println(pos);
                     hashRaf.seek(Long.valueOf(pos));
                     String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                    orderContents.add(orderContent);
                     //System.out.println(orderContent);
+                }
+            }
+            System.out.println("===queryOrdersByBuyer===seekposition=====buyerid:" + buyerId +  " size: " + oneIndexs.size() + " time :" + (System.currentTimeMillis() - SeekStartTime));
 
+            long objectStartTime = System.currentTimeMillis();
+            for (String orderContent : orderContents) {
                     //4.将字符串转成order对象集合
                     Order order = new Order();
                     String[] keyValues = orderContent.split("\t");
@@ -88,9 +100,9 @@ public class BuyerIdQuery {
                         order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                     }
                     orders.add(order);
-                }
             }
-//            twoIndexBR.close();
+            System.out.println("===queryOrdersByBuyer===map object=buyerid:" + buyerId +  " time :" + (System.currentTimeMillis() - objectStartTime));
+            //            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
