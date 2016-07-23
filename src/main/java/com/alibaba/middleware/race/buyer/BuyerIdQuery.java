@@ -71,6 +71,7 @@ public class BuyerIdQuery {
                     oneIndex = oneIndexTmp;
                 }
             }
+            if (oneIndex == null) return null;
             System.out.println("===queryOrdersByBuyer===oneindex==buyerid:" + buyerId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
