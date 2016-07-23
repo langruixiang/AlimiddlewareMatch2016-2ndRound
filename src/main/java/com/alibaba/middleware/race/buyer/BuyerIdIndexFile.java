@@ -27,7 +27,7 @@ public class BuyerIdIndexFile extends Thread{
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
         TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
-        Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
+        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);

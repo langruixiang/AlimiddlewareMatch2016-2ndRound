@@ -27,7 +27,7 @@ public class OrderIdIndexFile extends Thread{
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateOrderIdIndex() {
         Map<String, Long> orderIndex = new TreeMap<String, Long>();
-        Map<Long, Long> twoIndexMap = new LinkedHashMap<Long, Long>();
+        TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);

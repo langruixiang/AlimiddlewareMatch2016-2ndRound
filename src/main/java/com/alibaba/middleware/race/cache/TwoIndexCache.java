@@ -1,7 +1,8 @@
 package com.alibaba.middleware.race.cache;
 
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -9,60 +10,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TwoIndexCache {
 
-    public static Map<Integer, Map<Long, Long>> orderIdTwoIndexCache = new ConcurrentHashMap<Integer, Map<Long, Long>>();
+    public static Map<Integer, TreeMap<Long, Long>> orderIdTwoIndexCache = new ConcurrentHashMap<Integer, TreeMap<Long, Long>>();
 
-    public static Map<Integer, Map<String, Long>> goodIdTwoIndexCache = new ConcurrentHashMap<Integer, Map<String, Long>>();
+    public static Map<Integer, TreeMap<String, Long>> goodIdTwoIndexCache = new ConcurrentHashMap<Integer, TreeMap<String, Long>>();
 
-    public static Map<Integer, Map<String, Long>> buyerIdTwoIndexCache = new ConcurrentHashMap<Integer, Map<String, Long>>();
+    public static Map<Integer, TreeMap<String, Long>> buyerIdTwoIndexCache = new ConcurrentHashMap<Integer, TreeMap<String, Long>>();
 
     public static long findOrderIdOneIndexPosition (long orderId, int index) {
-        long position = 0;
-        Iterator iterator = orderIdTwoIndexCache.get(index).entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            Long key = (Long) entry.getKey();
-            Long val = (Long)entry.getValue();
-            if (orderId < key) {
-                break;
-            } else {
-                position = val;
-            }
-        }
-        return position;
+        TreeMap<Long, Long> map = orderIdTwoIndexCache.get(index);
+        
+        Entry<Long, Long> entry = map.floorEntry(orderId);
+        return entry == null ? 0L : entry.getValue();
     }
 
     public static long findGoodIdOneIndexPosition (String goodId, int index) {
-        long position = 0;
-        Iterator iterator = goodIdTwoIndexCache.get(index).entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String key = (String) entry.getKey();
-            Long val = (Long)entry.getValue();
-            if (goodId.compareTo(key) < 0) {
-                break;
-            } else {
-                position = val;
-            }
-        }
-        return position;
+        TreeMap<String, Long> map = goodIdTwoIndexCache.get(index);
+       
+        Entry<String, Long> entry = map.floorEntry(goodId);
+        return entry == null ? 0L : entry.getValue();
     }
 
     public static long findBuyerIdOneIndexPosition (String buyerId, long starttime, long endtime, int index) {
-        long position = 0;
-        String beginKey = buyerId + "_" + starttime;
+        TreeMap<String, Long> map = buyerIdTwoIndexCache.get(index);
         String endKey = buyerId + "_" + endtime;
-        Iterator iterator = buyerIdTwoIndexCache.get(index).entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String key = (String) entry.getKey();
-            Long val = (Long)entry.getValue();
-            if (endKey.compareTo(key) > 0) {
-                //System.out.println("--------"+keyValue[0]);
-                break;
-            } else {
-                position = val;
-            }
-        }
-        return position;
+        
+        Entry<String, Long> entry = map.ceilingEntry(endKey);
+        
+        return entry == null ? 0L : entry.getValue();
     }
 }
