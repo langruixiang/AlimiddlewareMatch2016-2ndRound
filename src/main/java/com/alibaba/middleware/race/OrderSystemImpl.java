@@ -338,7 +338,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
-        //System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
+        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         if (goodid == null) {
@@ -367,7 +367,7 @@ public class OrderSystemImpl implements OrderSystem {
         long findStartTime = System.currentTimeMillis();
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
-        System.out.println("===queryOrdersBySaler===index==goodid:" + goodid + " time :" + (System.currentTimeMillis() - findStartTime));
+        System.out.println("===queryOrdersBySaler===getOrders==goodid:" + goodid + " time :" + (System.currentTimeMillis() - findStartTime));
         if (orders == null || orders.size() == 0) {
             System.out.println("goodid :" + goodid + " order is null ");
             return results.iterator();

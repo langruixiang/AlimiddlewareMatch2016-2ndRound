@@ -30,7 +30,9 @@ public class GoodIdQuery {
             String str = null;
 
             //1.查找二·级索引
+            long twoIndexStartTime = System.currentTimeMillis();
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+            System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
 //            while ((str = twoIndexBR.readLine()) != null) {
 //                String[] keyValue = str.split(":");
 //                if (goodId.compareTo(keyValue[0]) < 0) {
@@ -44,6 +46,7 @@ public class GoodIdQuery {
             //System.out.println(position);
 
             //2.查找一级索引
+            long oneIndexStartTime = System.currentTimeMillis();
             indexRaf.seek(position);
             String oneIndex = null;
             int count = 0;
@@ -58,8 +61,10 @@ public class GoodIdQuery {
                     return null;
                 }
             }
+            System.out.println("===queryOrdersBySaler===oneindex==goodid:" + goodId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
+            long handleStartTime = System.currentTimeMillis();
             String[] keyValue = oneIndex.split(":");
             //System.out.println(keyValue[1]);
             String[] positions = keyValue[1].split("\\|");
@@ -86,6 +91,7 @@ public class GoodIdQuery {
                 //System.out.println(order);
                 orders.add(order);
             }
+            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " time :" + (System.currentTimeMillis() - handleStartTime));
 //            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
