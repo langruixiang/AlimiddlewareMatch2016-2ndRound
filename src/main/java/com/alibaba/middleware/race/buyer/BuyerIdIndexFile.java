@@ -28,7 +28,7 @@ public class BuyerIdIndexFile extends Thread{
     public void generateBuyerIdIndex() {
         Map<String, String> orderRankMap = new TreeMap<String, String>().descendingMap();
         Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
-        Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
+        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);

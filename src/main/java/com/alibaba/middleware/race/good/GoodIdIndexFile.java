@@ -31,7 +31,7 @@ public class GoodIdIndexFile extends Thread{
     public void generateGoodIdIndex() {
         Map<String, String> orderRankMap = new TreeMap<String, String>();
         Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
-        Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
+        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
