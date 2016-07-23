@@ -112,7 +112,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-        //System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
+        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         long starttime = System.currentTimeMillis();
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
@@ -123,20 +123,24 @@ public class OrderSystemImpl implements OrderSystem {
         if (keys != null) {
             for (String key : keys) {
                 if (KeyCache.orderKeyCache.contains(key)) {
+                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in order");
                     orderSearchKeys.add(key);
                 } else if (KeyCache.goodKeyCache.contains(key)) {
+                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in good");
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.contains(key)) {
+                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in buyer");
                     buyerSearchKeys.add(key);
                 }
             }
         }
         if (order == null) {
+            System.out.println("orderid: " + orderId + "is null");
             return null;
         }
         if (keys != null && keys.isEmpty()) {
             result.setOrderid(orderId);
-            //System.out.println(orderId + ": " + result);
+            System.out.println(orderId + ": keys is empty" );
             return result;
         }
         {
@@ -206,7 +210,7 @@ public class OrderSystemImpl implements OrderSystem {
 //        if (result != null) {
 //            System.out.println(orderId + ": " + result);
 //        }
-        System.out.println("queryOrder : time :" + (System.currentTimeMillis() - starttime));
+        System.out.println("queryOrder : " + orderId + " time :" + (System.currentTimeMillis() - starttime));
         return result;
     }
 
@@ -293,17 +297,19 @@ public class OrderSystemImpl implements OrderSystem {
         List<Order> orders = BuyerIdQuery.findByBuyerId(buyerid, startTime, endTime, hashIndex);
         if (orders == null || orders.size() == 0) return results.iterator();
         //Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
+
+        Buyer buyer = null;
+        synchronized (PageCache.buyerMap) {
+            if (PageCache.buyerMap.get(hashIndex) == null) {
+                PageCache.cacheBuyerFile(hashIndex);
+            }
+            buyer = PageCache.buyerMap.get(hashIndex).get(buyerid);
+        }
+
         for (Order order : orders) {
             //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order_old.toString());
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
-            Buyer buyer = null;
-            synchronized (PageCache.buyerMap) {
-                if (PageCache.buyerMap.get(hashIndex) == null) {
-                    PageCache.cacheBuyerFile(hashIndex);
-                }
-                buyer = PageCache.buyerMap.get(hashIndex).get(buyerid);
-            }
             if (buyer != null && buyer.getKeyValues() != null) {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
@@ -343,10 +349,13 @@ public class OrderSystemImpl implements OrderSystem {
         if (keys != null) {
             for (String key : keys) {
                 if (KeyCache.orderKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in order");
                     orderSearchKeys.add(key);
                 } else if (KeyCache.goodKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in good");
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in buyer");
                     buyerSearchKeys.add(key);
                 }
             }
@@ -355,30 +364,34 @@ public class OrderSystemImpl implements OrderSystem {
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
-        if (orders == null || orders.size() == 0) return results.iterator();
-
+        if (orders == null || orders.size() == 0) {
+            System.out.println("goodid :" + goodid + " order is null ");
+            return results.iterator();
+        }
+        System.out.println("goodid :" + goodid + " size is :" + orders.size());
         if (keys != null && keys.size() == 0) {
+            System.out.println("goodid :" + goodid + " kyes is empty");
             for (Order order : orders) {
                 com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
                 result.setOrderid(order.getId());
                 results.add(result);
             }
             //对所求结果按照交易订单从小到大排序
-//            Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-//
-//                @Override
-//                public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-//                                   com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-//                    long diff = 0;
-//                    diff = (o1.getOrderid() - o2.getOrderid());
-//                    if (diff > 0) {
-//                        return 1;
-//                    }
-//                    return -1;
-//                }
-//            });
             return results.iterator();
         }
+
+        Good good = null;
+        if (keys == null || goodSearchKeys.size() > 0) {
+            //加入对应商品的所有属性kv
+            synchronized (PageCache.goodMap) {
+                if (PageCache.goodMap.get(hashIndex) == null) {
+                    PageCache.cacheGoodFile(hashIndex);
+                }
+                good = PageCache.goodMap.get(hashIndex).get(goodid);
+            }
+
+        }
+
         for (Order order : orders) {
             //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order_old.toString());
             //Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> keyValueMap = new HashMap<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue>();
@@ -407,24 +420,15 @@ public class OrderSystemImpl implements OrderSystem {
 
                 }
             }
-            if (keys == null || goodSearchKeys.size() > 0) {
-                //加入对应商品的所有属性kv
-                Good good = null;
-                synchronized (PageCache.goodMap) {
-                    if (PageCache.goodMap.get(hashIndex) == null) {
-                        PageCache.cacheGoodFile(hashIndex);
-                    }
-                    good = PageCache.goodMap.get(hashIndex).get(goodid);
-                }
-                if (good != null && good.getKeyValues() != null) {
-                    if (keys == null) {
-                        result.getKeyValues().putAll(good.getKeyValues());
-                    } else {
-                        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
-                        for (String key : goodSearchKeys) {
-                            if (goodKeyValues.containsKey(key)) {
-                                result.getKeyValues().put(key, goodKeyValues.get(key));
-                            }
+
+            if (good != null && good.getKeyValues() != null) {
+                if (keys == null) {
+                    result.getKeyValues().putAll(good.getKeyValues());
+                } else {
+                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
+                    for (String key : goodSearchKeys) {
+                        if (goodKeyValues.containsKey(key)) {
+                            result.getKeyValues().put(key, goodKeyValues.get(key));
                         }
                     }
                 }
