@@ -89,8 +89,8 @@ public class GoodIdIndexFile extends Thread{
                         //content = content + pos + "|";
                     }
                     val.clear();
-                    content.append('\n');
-                    bufferedWriter.write(content.toString());
+                    //content.append('\n');
+                    bufferedWriter.write(content.toString() + '\n');
 
                     if (count%towIndexSize == 0) {
 //                        twoIndexBW.write(key+":");

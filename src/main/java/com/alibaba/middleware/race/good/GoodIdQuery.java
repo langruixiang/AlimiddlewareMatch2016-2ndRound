@@ -50,7 +50,7 @@ public class GoodIdQuery {
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
-                    System.out.println(oneIndex);
+                    //System.out.println(oneIndex);
                     break;
                 }
                 count++;
