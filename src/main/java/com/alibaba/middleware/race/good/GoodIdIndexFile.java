@@ -29,12 +29,17 @@ public class GoodIdIndexFile extends Thread{
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
-        Map<String, TreeMap<String, Long>> goodIndex = new TreeMap<String, TreeMap<String, Long>>();
+        Map<String, String> orderRankMap = new TreeMap<String, String>();
+        Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
         Map<String, Long> twoIndexMap = new LinkedHashMap<String, Long>();
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+
+                File fileRank = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+                FileWriter fwRank = new FileWriter(fileRank);
+                BufferedWriter rankBW = new BufferedWriter(fwRank);
 
                 File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
                 FileWriter fw = new FileWriter(file);
@@ -44,12 +49,11 @@ public class GoodIdIndexFile extends Thread{
 //                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
 //                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
-                String str = null;
-                long count = 0;
-                while ((str = order_br.readLine()) != null) {
+                String rankStr = null;
+                while ((rankStr = order_br.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
-                    String[] keyValues = str.split("\t");
+                    String[] keyValues = rankStr.split("\t");
                     for (int j = 0; j < keyValues.length; j++) {
                         String[] keyValue = keyValues[j].split(":");
 
@@ -57,53 +61,54 @@ public class GoodIdIndexFile extends Thread{
                             orderid = keyValue[1];
                         } else if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
-                            if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new TreeMap<String, Long>());
-                            }
                         }
                         if (orderid != null && goodid != null) {
-                            goodIndex.get(goodid).put(orderid, count);
+                            String key = goodid + "|" + orderid;
+                            orderRankMap.put(key, rankStr);
                         }
                     }
-                    count += str.getBytes().length + 1;
+                }
+
+                long position = 0;
+                Iterator orderRankIterator = orderRankMap.entrySet().iterator();
+                while (orderRankIterator.hasNext()) {
+                    Map.Entry entry = (Map.Entry) orderRankIterator.next();
+                    String key = (String) entry.getKey();
+                    String val = (String) entry.getValue();
+                    rankBW.write(val + '\n');
+
+                    String[] keys = key.split("\\|");
+                    String goodid = keys[0];
+                    if (!goodIndex.containsKey(goodid)) {
+                        goodIndex.put(goodid, position);
+                    }
+                    position += val.getBytes().length + 1;
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
                 FileConstant.goodIdIndexRegionSizeMap.put(index, towIndexSize);
-                count = 0;
-                long position = 0;
+                int count = 0;
+                long oneIndexPosition = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
-
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    Map<String, Long> val = (Map<String, Long>) entry.getValue();
-                    StringBuilder content = new StringBuilder(key + ":");
-                    //String content = key + ":";
-                    Iterator iteratorOrders = val.entrySet().iterator();
-                    while (iteratorOrders.hasNext()) {
-                        Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
-                        Long pos = (Long)orderEntry.getValue();
-                        content.append(pos);
-                        content.append("|");
-                        //content = content + pos + "|";
-                    }
-                    val.clear();
-                    //content.append('\n');
-                    bufferedWriter.write(content.toString() + '\n');
+                    Long val = (Long) entry.getValue();
+                    String content = key + ":" + val;
+                    bufferedWriter.write(content + '\n');
 
                     if (count%towIndexSize == 0) {
-//                        twoIndexBW.write(key+":");
-//                        twoIndexBW.write(String.valueOf(position) + '\n');
-                        twoIndexMap.put(key, position);
+                        twoIndexMap.put(key, oneIndexPosition);
                     }
-                    position += content.toString().getBytes().length + 1;
+                    oneIndexPosition += content.getBytes().length + 1;
                     count++;
                 }
                 TwoIndexCache.goodIdTwoIndexCache.put(index, twoIndexMap);
                 goodIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
+                rankBW.flush();
+                rankBW.close();
 //                twoIndexBW.flush();
 //                twoIndexBW.close();
                 order_br.close();

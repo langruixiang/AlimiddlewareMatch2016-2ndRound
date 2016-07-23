@@ -19,9 +19,13 @@ public class FileConstant {
 
     public static String FILE_TWO_INDEXING_BY_ORDERID = "orderid_two_index_";
 
+    public static String FILE_RANK_BY_GOODID = "goodid_rank_";
+
     public static String FILE_ONE_INDEXING_BY_GOODID = "goodid_index_";
 
     public static String FILE_TWO_INDEXING_BY_GOODID = "goodid_two_index_";
+
+    public static String FILE_RANK_BY_BUYERID = "buyerid_rank_";
 
     public static String FILE_ONE_INDEXING_BY_BUYERID = "buyerid_index_";
 

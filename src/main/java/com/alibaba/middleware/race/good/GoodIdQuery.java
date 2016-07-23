@@ -22,8 +22,11 @@ public class GoodIdQuery {
 //            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
 //            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
-            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+//            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
+//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+
+            File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
@@ -65,25 +68,16 @@ public class GoodIdQuery {
 
             //3.按行读取内容
             long handleStartTime = System.currentTimeMillis();
+            System.out.println(oneIndex);
             String[] keyValue = oneIndex.split(":");
             //System.out.println(keyValue[1]);
-            String[] positions = keyValue[1].split("\\|");
+            String pos = keyValue[1];
             //System.out.println("======" + positions.length);
 
-            long SeekStartTime = System.currentTimeMillis();
-            List<String> orderConstents = new ArrayList<String>();
-            for (String pos : positions) {
-                //System.out.println(pos);
-                hashRaf.seek(Long.valueOf(pos));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                orderConstents.add(orderContent);
-            }
-            System.out.println("===queryOrdersBySaler===seekposition==goodid:" + goodId +  " time :" + (System.currentTimeMillis() - SeekStartTime));
-                //System.out.println(orderContent);
-
-                //4.将字符串转成order对象集合
-            long objectStartTime = System.currentTimeMillis();
-            for (String orderContent : orderConstents) {
+            String orderStr = null;
+            hashRaf.seek(Long.valueOf(pos));
+            while ((orderStr = hashRaf.readLine()) != null) {
+                String orderContent = new String(orderStr.getBytes("iso-8859-1"), "UTF-8");
                 Order order = new Order();
                 String[] keyValues = orderContent.split("\t");
                 for (int i = 0; i < keyValues.length; i++) {
@@ -93,14 +87,15 @@ public class GoodIdQuery {
                     kv.setValue(strs[1]);
                     order.getKeyValues().put(strs[0], kv);
                 }
+                if (order.getKeyValues().get("goodid").getValue() != null && !goodId.equals(order.getKeyValues().get("goodid").getValue())) {
+                    break;
+                }
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
-                //System.out.println(order);
                 orders.add(order);
             }
-            System.out.println("===queryOrdersBySaler===map object=goodid:" + goodId +  " time :" + (System.currentTimeMillis() - objectStartTime));
-            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " time :" + (System.currentTimeMillis() - handleStartTime));
+            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
 //            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
