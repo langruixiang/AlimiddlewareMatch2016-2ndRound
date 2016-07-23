@@ -16,7 +16,7 @@ import java.util.List;
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        //System.out.println("==========:"+goodId + " index:" + index);
+        System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 //            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
@@ -52,6 +52,7 @@ public class GoodIdQuery {
             long oneIndexStartTime = System.currentTimeMillis();
             indexRaf.seek(position);
             String oneIndex = null;
+            String onePlusIndex = null;
             int count = 0;
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
@@ -64,6 +65,8 @@ public class GoodIdQuery {
                     return null;
                 }
             }
+            if (oneIndex == null) return null;
+            onePlusIndex = indexRaf.readLine();
             System.out.println("===queryOrdersBySaler===oneindex==goodid:" + goodId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
@@ -73,13 +76,43 @@ public class GoodIdQuery {
             //System.out.println(keyValue[1]);
             String pos = keyValue[1];
             //System.out.println("======" + positions.length);
+            int length = 0;
+            if (onePlusIndex != null) {
+                String[] kv = onePlusIndex.split(":");
+                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
+            } else {
+                length = (int) (hashRaf.length() - Long.valueOf(pos));
+            }
 
             String orderStr = null;
             hashRaf.seek(Long.valueOf(pos));
-            while ((orderStr = hashRaf.readLine()) != null) {
-                String orderContent = new String(orderStr.getBytes("iso-8859-1"), "UTF-8");
+//            while ((orderStr = hashRaf.readLine()) != null) {
+//                String orderContent = new String(orderStr.getBytes("iso-8859-1"), "UTF-8");
+//                Order order = new Order();
+//                String[] keyValues = orderContent.split("\t");
+//                for (int i = 0; i < keyValues.length; i++) {
+//                    String[] strs = keyValues[i].split(":");
+//                    KeyValue kv = new KeyValue();
+//                    kv.setKey(strs[0]);
+//                    kv.setValue(strs[1]);
+//                    order.getKeyValues().put(strs[0], kv);
+//                }
+//                if (order.getKeyValues().get("goodid").getValue() != null && !goodId.equals(order.getKeyValues().get("goodid").getValue())) {
+//                    break;
+//                }
+//                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
+//                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+//                }
+//                orders.add(order);
+//            }
+
+            byte[] bytes = new byte[length];
+            hashRaf.read(bytes, 0, length);
+            String strsss = new String(bytes);
+            String[] constents = strsss.split("\n");
+            for (String content : constents) {
                 Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
+                String[] keyValues = content.split("\t");
                 for (int i = 0; i < keyValues.length; i++) {
                     String[] strs = keyValues[i].split(":");
                     KeyValue kv = new KeyValue();
@@ -95,6 +128,8 @@ public class GoodIdQuery {
                 }
                 orders.add(order);
             }
+            System.out.println(constents);
+
             System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
 //            twoIndexBR.close();
             hashRaf.close();
