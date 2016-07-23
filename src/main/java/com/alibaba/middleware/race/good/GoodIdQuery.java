@@ -71,11 +71,14 @@ public class GoodIdQuery {
             //System.out.println("======" + positions.length);
             for (String pos : positions) {
                 //System.out.println(pos);
+                long SeekStartTime = System.currentTimeMillis();
                 hashRaf.seek(Long.valueOf(pos));
                 String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                System.out.println("===queryOrdersBySaler===seekposition==goodid:" + goodId +  " time :" + (System.currentTimeMillis() - SeekStartTime));
                 //System.out.println(orderContent);
 
                 //4.将字符串转成order对象集合
+                long objectStartTime = System.currentTimeMillis();
                 Order order = new Order();
                 String[] keyValues = orderContent.split("\t");
                 for (int i = 0; i < keyValues.length; i++) {
@@ -88,6 +91,7 @@ public class GoodIdQuery {
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
+                System.out.println("===queryOrdersBySaler===map object=goodid:" + goodId +  " time :" + (System.currentTimeMillis() - objectStartTime));
                 //System.out.println(order);
                 orders.add(order);
             }
