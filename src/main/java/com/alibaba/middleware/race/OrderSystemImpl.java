@@ -13,8 +13,6 @@ import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.order.OrderIdQuery;
-import com.alibaba.middleware.race.order.OrderQuery;
-import com.alibaba.middleware.race.orderSystemImpl.Result;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -115,6 +113,7 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
         //System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
+        long starttime = System.currentTimeMillis();
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
@@ -207,6 +206,7 @@ public class OrderSystemImpl implements OrderSystem {
 //        if (result != null) {
 //            System.out.println(orderId + ": " + result);
 //        }
+        System.out.println("queryOrder : time :" + (System.currentTimeMillis() - starttime));
         return result;
     }
 
@@ -285,6 +285,7 @@ public class OrderSystemImpl implements OrderSystem {
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
         //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
+        long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_NUMS);
 
@@ -323,26 +324,14 @@ public class OrderSystemImpl implements OrderSystem {
             result.setOrderid(order.getId());
             results.add(result);
         }
-
-        //对所求结果按照交易时间从大到小排序
-//        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-//
-//            @Override public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-//                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-//                return o2.get("createtime").getValue().compareTo(o1.get("createtime").getValue());
-//            }
-//        });
-
-//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-//            System.out.println(buyerid + result);
-//        }
-
+        System.out.println("queryOrdersByBuyer : time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         //System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
+        long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         if (goodid == null) {
             return results.iterator();
@@ -455,31 +444,14 @@ public class OrderSystemImpl implements OrderSystem {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        //对所求结果按照交易订单从小到大排序
-//        Collections.sort(results, new Comparator<com.alibaba.middleware.race.orderSystemImpl.Result>() {
-//
-//            @Override
-//            public int compare(com.alibaba.middleware.race.orderSystemImpl.Result o1,
-//                                         com.alibaba.middleware.race.orderSystemImpl.Result o2) {
-//                long diff = 0;
-//                diff = (o1.getOrderid() - o2.getOrderid());
-//                if (diff > 0) {
-//                    return 1;
-//                }
-//                return -1;
-//            }
-//        });
-
-//        for (com.alibaba.middleware.race.orderSystemImpl.Result result : results) {
-//            System.out.println(goodid + ":" + result);
-//        }
-
+        System.out.println("queryOrdersBySaler : time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
-        System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
+        //System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
+        long starttime = System.currentTimeMillis();
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
@@ -574,11 +546,12 @@ public class OrderSystemImpl implements OrderSystem {
         keyValue.setKey(key);
         if (flag == 0) {
             keyValue.setValue(String.valueOf(longValue));
-            System.out.println("sum goodid:"+ goodid +" : " + longValue);
+            //System.out.println("sum goodid:"+ goodid +" : " + longValue);
         } else {
             keyValue.setValue(String.valueOf(value));
-            System.out.println("sum goodid:"+ goodid +" : " + value);
+            //System.out.println("sum goodid:"+ goodid +" : " + value);
         }
+        System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
         return keyValue;
     }
 

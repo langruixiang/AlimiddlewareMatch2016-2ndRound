@@ -16,7 +16,7 @@ import java.util.List;
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        System.out.println("==========:"+goodId + " index:" + index);
+        //System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 //            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);

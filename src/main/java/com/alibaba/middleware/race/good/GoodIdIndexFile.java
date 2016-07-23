@@ -78,23 +78,26 @@ public class GoodIdIndexFile extends Thread{
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
                     Map<String, Long> val = (Map<String, Long>) entry.getValue();
-                    String content = key + ":";
+                    StringBuilder content = new StringBuilder(key + ":");
+                    //String content = key + ":";
                     Iterator iteratorOrders = val.entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
                         Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
                         Long pos = (Long)orderEntry.getValue();
-                        content = content + pos + "|";
+                        content.append(pos);
+                        content.append("|");
+                        //content = content + pos + "|";
                     }
                     val.clear();
-
-                    bufferedWriter.write(content + '\n');
+                    content.append('\n');
+                    bufferedWriter.write(content.toString());
 
                     if (count%towIndexSize == 0) {
 //                        twoIndexBW.write(key+":");
 //                        twoIndexBW.write(String.valueOf(position) + '\n');
                         twoIndexMap.put(key, position);
                     }
-                    position += content.getBytes().length + 1;
+                    position += content.toString().getBytes().length + 1;
                     count++;
                 }
                 TwoIndexCache.goodIdTwoIndexCache.put(index, twoIndexMap);
