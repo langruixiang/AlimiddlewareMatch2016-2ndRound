@@ -28,7 +28,7 @@ public class GoodHashFile extends Thread{
     public void generateGoodHashFile() {
 
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+        	BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
                 File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + i);
@@ -36,33 +36,19 @@ public class GoodHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
+            CountDownLatch multiHashLatch = new CountDownLatch(goodFiles.size());
             for (String goodFile : goodFiles) {
-                FileInputStream good_records = new FileInputStream(goodFile);
-                BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
-
-                String str = null;
-                long goodid = 0;
-                int hashFileIndex;
-                while ((str = good_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        KeyCache.goodKeyCache.add(keyValue[0]);
-                        if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1].hashCode();
-                            hashFileIndex = (int) (Math.abs(goodid) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
-                        }
-                    }
-                }
+                MultiHash multiHash = new MultiHash(goodFile, multiHashLatch, bufferedWriters);
+                multiHash.start();
             }
+            
+            multiHashLatch.await();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].flush();
                 bufferedWriters[i].close();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -71,5 +57,52 @@ public class GoodHashFile extends Thread{
         generateGoodHashFile();
         System.out.println("buyer file hash end~");
         countDownLatch.countDown();
+    }
+    
+    private class MultiHash extends Thread{
+    	private String goodFile;
+    	private CountDownLatch countDownLatch;
+    	private BufferedWriter[] bufferedWriters;
+    	
+    	public MultiHash(String goodFile, CountDownLatch countDownLatch, BufferedWriter[] bufferedWriters){
+    		this.goodFile = goodFile;
+    		this.countDownLatch = countDownLatch;
+    		this.bufferedWriters = bufferedWriters;
+    	}
+    	
+    	@Override
+    	public void run(){
+    		try {
+				FileInputStream good_records = new FileInputStream(goodFile);
+				BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
+
+				String str = null;
+				long goodid = 0;
+				int hashFileIndex;
+				while ((str = good_br.readLine()) != null) {
+				    String[] keyValues = str.split("\t");
+				    for (int i = 0; i < keyValues.length; i++) {
+				        String[] keyValue = keyValues[i].split(":");
+				        KeyCache.goodKeyCache.add(keyValue[0]);
+				        if ("goodid".equals(keyValue[0])) {
+				            goodid = keyValue[1].hashCode();
+				            hashFileIndex = (int) (Math.abs(goodid) % nums);
+				            synchronized (bufferedWriters[hashFileIndex]) {
+								bufferedWriters[hashFileIndex].write(str + '\n');
+								//bufferedWriters[hashFileIndex].newLine();
+							}
+				        }
+				    }
+				}
+				
+				countDownLatch.countDown();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
     }
 }
