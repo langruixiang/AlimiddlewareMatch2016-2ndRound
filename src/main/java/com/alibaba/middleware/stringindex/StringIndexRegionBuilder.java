@@ -6,9 +6,12 @@
 package com.alibaba.middleware.stringindex;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -35,8 +38,8 @@ public class StringIndexRegionBuilder extends Thread {
     private int initKeyMapCapacity;
     private Map<String, Integer> keyMap;
 
-    private RandomAccessFile regionFirstIndexFile;
-    private RandomAccessFile regionSecondIndexFile;
+    private BufferedWriter regionFirstIndexFile;
+    private BufferedWriter regionSecondIndexFile;
 
     private BufferedReader regionKeyValuesFileBR;
 
@@ -82,19 +85,23 @@ public class StringIndexRegionBuilder extends Thread {
      * 
      */
     private void writeFirstIndexsToFile() throws IOException {
-        regionFirstIndexFile = new RandomAccessFile(
-                StringIndexRegion.getRegionFirstIndexFilePath(regionRootFolder,
-                        regionId, indexIdName), "rw");
+//        regionFirstIndexFile = new RandomAccessFile(
+//                StringIndexRegion.getRegionFirstIndexFilePath(regionRootFolder,
+//                        regionId, indexIdName), "rw");
+      regionFirstIndexFile = new BufferedWriter(
+              new OutputStreamWriter(new FileOutputStream(StringIndexRegion.getRegionFirstIndexFilePath(regionRootFolder,
+                      regionId, indexIdName)),StringIndex.ENCODING));
+        
         Iterator<Entry<String, String>> iterator = firstIndexLineMap.entrySet()
                 .iterator();
         int secondIndexSize = (int) Math.sqrt(firstIndexLineMap.size());
         int count = 0;
+        long offset = 0;
         while (iterator.hasNext()) {
             Entry<String, String> entry = iterator.next();
-            long offset = regionFirstIndexFile.length();
-            long length = FileUtil.appendLineWithRandomAccessFile(regionFirstIndexFile,
-                    StringIndex.ENCODING, entry.getValue().toString());
-            
+            String line = entry.getValue().concat("\n");
+            regionFirstIndexFile.write(line);
+            long length = line.getBytes(StringIndex.ENCODING).length;
             //write secondIndex
             if (count % secondIndexSize == 0 || !iterator.hasNext()) {
                 String secondIndexLine = entry.getKey().concat(StringIndex.INDEX_SPLITOR)
@@ -102,23 +109,24 @@ public class StringIndexRegionBuilder extends Thread {
                         .concat(String.valueOf(length)));
                 secondIndexLineMap.put(entry.getKey(), secondIndexLine);
             }
+            offset += length;
             ++count;
-            iterator.remove();
+//            iterator.remove();//TODO
         }
 
         regionFirstIndexFile.close();
     }
 
     private void writeSecondIndexsToFile() throws IOException {
-        regionSecondIndexFile = new RandomAccessFile(
-                StringIndexRegion.getRegionSecondIndexFilePath(regionRootFolder,
-                        regionId, indexIdName), "rw");
+        regionSecondIndexFile = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(StringIndexRegion.getRegionSecondIndexFilePath(regionRootFolder,
+                        regionId, indexIdName)),StringIndex.ENCODING));
         Iterator<Entry<String, String>> iterator = secondIndexLineMap.entrySet()
                 .iterator();
         while (iterator.hasNext()) {
             Entry<String, String> entry = iterator.next();
-            FileUtil.appendLineWithRandomAccessFile(regionSecondIndexFile, StringIndex.ENCODING, entry.getValue().toString());
-            iterator.remove();
+            regionSecondIndexFile.write(entry.getValue().concat("\n"));
+//            iterator.remove();//TODO
         }
         regionSecondIndexFile.close();
     }
