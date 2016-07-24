@@ -141,6 +141,75 @@ public class GoodIdQuery {
         return orders;
     }
 
+    public static int findOrderNumberByGoodKey(String goodId, int index) {
+        if (goodId == null) return 0;
+        System.out.println("==========:"+goodId + " index:" + index);
+        try {
+            File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+
+            File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            String str = null;
+
+            //1.查找二·级索引
+            long twoIndexStartTime = System.currentTimeMillis();
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+            System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
+
+            //2.查找一级索引
+            long oneIndexStartTime = System.currentTimeMillis();
+            indexRaf.seek(position);
+            String oneIndex = null;
+            String onePlusIndex = null;
+            int count = 0;
+            while ((oneIndex = indexRaf.readLine()) != null) {
+                String[] keyValue = oneIndex.split(":");
+                if (goodId.equals(keyValue[0])) {
+                    //System.out.println(oneIndex);
+                    break;
+                }
+                count++;
+                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                    return 0;
+                }
+            }
+            if (oneIndex == null) return 0;
+            onePlusIndex = indexRaf.readLine();
+            System.out.println("===queryOrdersBySaler===oneindex==goodid:" + goodId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
+
+            //3.按行读取内容
+            long handleStartTime = System.currentTimeMillis();
+            System.out.println(oneIndex);
+            String[] keyValue = oneIndex.split(":");
+            String pos = keyValue[1];
+            int length = 0;
+            if (onePlusIndex != null) {
+                String[] kv = onePlusIndex.split(":");
+                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
+            } else {
+                length = (int) (hashRaf.length() - Long.valueOf(pos));
+            }
+
+            hashRaf.seek(Long.valueOf(pos));
+
+            byte[] bytes = new byte[length];
+            hashRaf.read(bytes, 0, length);
+            String orderStrs = new String(bytes);
+            String[] constents = orderStrs.split("\n");
+            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + constents.length + " time :" + (System.currentTimeMillis() - handleStartTime));
+
+            hashRaf.close();
+            indexRaf.close();
+            return constents.length;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public static void main(String args[]) {
 
         //OrderIdIndexFile.generateGoodIdIndex();

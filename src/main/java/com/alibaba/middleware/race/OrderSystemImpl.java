@@ -463,47 +463,54 @@ public class OrderSystemImpl implements OrderSystem {
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
-        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
-        if (orders == null || orders.size() == 0) return null;
         double value = 0;
         long longValue = 0;
-        int count = 0;
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
 
         if (KeyCache.goodKeyCache.contains(key)) {
             //加入对应商品的所有属性kv
             System.out.println("=============");
-                Good good = null;
-                synchronized (PageCache.goodMap) {
-                    if (PageCache.goodMap.get(hashIndex) == null) {
-                        PageCache.cacheGoodFile(hashIndex);
-                    }
-                    good = PageCache.goodMap.get(hashIndex).get(goodid);
+            int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
+            //int num = GoodIdQuery.findByGoodId(goodid, hashIndex).size();
+            //int num = 24;
+            Good good = null;
+            synchronized (PageCache.goodMap) {
+                if (PageCache.goodMap.get(hashIndex) == null) {
+                    PageCache.cacheGoodFile(hashIndex);
                 }
-                if (good.getKeyValues().containsKey(key)) {
-                    String str = good.getKeyValues().get(key).getValue();
-                    if (flag == 0 && str.contains(".")) {
-                        flag = 1;
-                    }
-                    if (NumberUtils.isNumber(str)) {
-                        if (flag == 0) {
-                            longValue = orders.size() * Long.valueOf(str);
-                            keyValue.setKey(key);
-                            keyValue.setValue(String.valueOf(longValue));
-                        } else {
-                            value = orders.size() * Double.valueOf(str);
-                            keyValue.setKey(key);
-                            keyValue.setValue(String.valueOf(value));
-                        }
-                        System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
-                        return keyValue;
-                    }
-                    return null;
-                } else {
-                    return null;
+                good = PageCache.goodMap.get(hashIndex).get(goodid);
+            }
+            if (good.getKeyValues().containsKey(key)) {
+                String str = good.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
                 }
+                System.out.println("str:" + str);
+                long w = System.currentTimeMillis();
+                if (NumberUtils.isNumber(str)) {
+                    System.out.println("--------1.use time :" + (System.currentTimeMillis() - w));
+                    if (flag == 0) {
+                        longValue = num * Long.valueOf(str);
+                        keyValue.setKey(key);
+                        keyValue.setValue(String.valueOf(longValue));
+                    } else {
+                        value = num * Double.valueOf(str);
+                        keyValue.setKey(key);
+                        keyValue.setValue(String.valueOf(value));
+                    }
+                    System.out.println("---------sumByGood : time : " + (System.currentTimeMillis() - starttime));
+                    return keyValue;
+                }
+                return null;
+            } else {
+                return null;
+            }
         }
+
+        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
+        if (orders == null || orders.size() == 0) return null;
+        int count = 0;
 
         for (Order order : orders) {
             //System.out.println("sum goodid:"+ goodid +" : " + order_old.toString());
