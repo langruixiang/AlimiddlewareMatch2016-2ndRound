@@ -30,6 +30,7 @@ public class OrderIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
+            System.out.println(position + ":" +index);
             if (position == -1L) return null;
 //            while ((str = twoIndexBR.readLine()) != null) {
 //                String[] keyValue = str.split(":");
@@ -58,7 +59,7 @@ public class OrderIdQuery {
                     return null;
                 }
             }
-
+            if (oneIndex == null) return null;
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             //System.out.println(keyValue[1]);

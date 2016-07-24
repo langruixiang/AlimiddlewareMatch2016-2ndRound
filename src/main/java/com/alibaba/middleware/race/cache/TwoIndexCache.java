@@ -36,6 +36,6 @@ public class TwoIndexCache {
         
         Entry<String, Long> entry = map.ceilingEntry(endKey);
         
-        return entry == null ? -1L : entry.getValue();
+        return entry == null ? 0L : entry.getValue();
     }
 }
