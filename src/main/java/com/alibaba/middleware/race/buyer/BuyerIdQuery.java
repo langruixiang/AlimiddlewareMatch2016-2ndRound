@@ -39,6 +39,7 @@ public class BuyerIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
+            if (position == -1L) return null;
 //            while ((str = twoIndexBR.readLine()) != null) {
 //                String[] keyValue = str.split(":");
 //                if (endKey.compareTo(keyValue[0]) > 0) {

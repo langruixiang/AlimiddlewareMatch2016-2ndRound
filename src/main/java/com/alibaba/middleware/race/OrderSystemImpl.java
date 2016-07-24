@@ -124,6 +124,7 @@ public class OrderSystemImpl implements OrderSystem {
         int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
         long findStartTime = System.currentTimeMillis();
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
+        if (order == null) return null;
         System.out.println("===queryOrder==index===orderid: " + orderId + " time :" + (System.currentTimeMillis() - findStartTime));
         List<String> orderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
@@ -222,77 +223,7 @@ public class OrderSystemImpl implements OrderSystem {
         return result;
     }
 
-//    @Override
-//    public Result queryOrder(long orderId, Collection<String> keys) {
-//        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
-//        OrderQuery orderQuery = new OrderQuery();
-//        com.alibaba.middleware.race.orderSystemImpl.Result result = orderQuery.queryOrder(orderId, keys);
-//        if (result == null) {
-//            return null;
-//        }
-//        if (keys != null && keys.isEmpty()) {
-//            return result;
-//        }
-//        {
-//            String buyerId = result.get("buyerid").getValue();
-//            if (keys != null && !keys.contains("buyerid")) {
-//                result.remove("buyerid");
-//            }
-//            int hashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
-//            //加入对应买家的所有属性kv
-//            Buyer buyer = null;
-//            synchronized (PageCache.buyerMap) {
-//                if (PageCache.buyerMap.get(hashIndex) == null) {
-//                    PageCache.cacheBuyerFile(hashIndex);
-//                }
-//                buyer = PageCache.buyerMap.get(hashIndex).get(buyerId);
-//            }
-//            if (buyer != null && buyer.getKeyValues() != null) {
-//                if (keys ==  null) {
-//                    result.getKeyValues().putAll(buyer.getKeyValues());
-//                } else {
-//                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> buyerKeyValues = buyer.getKeyValues();
-//                    for (String key : keys) {
-//                        if (buyerKeyValues.containsKey(key)) {
-//                            result.getKeyValues().put(key, buyerKeyValues.get(key));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        {
-//            String goodId = result.get("goodid").getValue();
-//            if (keys != null && !keys.contains("goodid")) {
-//                result.remove("goodid");
-//            }
-//            //加入对应商品的所有属性kv
-//            int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
-//            Good good = null;
-//            synchronized (PageCache.goodMap) {
-//                if (PageCache.goodMap.get(goodIdHashIndex) == null) {
-//                    PageCache.cacheGoodFile(goodIdHashIndex);
-//                }
-//                good = PageCache.goodMap.get(goodIdHashIndex).get(goodId);
-//            }
-//            if (good != null && good.getKeyValues() != null) {
-//                if (keys ==  null) {
-//                    result.getKeyValues().putAll(good.getKeyValues());
-//                } else {
-//                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
-//                    for (String key : keys) {
-//                        if (goodKeyValues.containsKey(key)) {
-//                            result.getKeyValues().put(key, goodKeyValues.get(key));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        if (result != null) {
-//            System.out.println(orderId + ": " + result.toString());
-//        }
-//        return result;
-//    }
+
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {

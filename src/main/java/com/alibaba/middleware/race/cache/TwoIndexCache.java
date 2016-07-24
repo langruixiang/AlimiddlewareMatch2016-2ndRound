@@ -20,14 +20,14 @@ public class TwoIndexCache {
         TreeMap<Long, Long> map = orderIdTwoIndexCache.get(index);
         
         Entry<Long, Long> entry = map.floorEntry(orderId);
-        return entry == null ? 0L : entry.getValue();
+        return entry == null ? -1L : entry.getValue();
     }
 
     public static long findGoodIdOneIndexPosition (String goodId, int index) {
         TreeMap<String, Long> map = goodIdTwoIndexCache.get(index);
        
         Entry<String, Long> entry = map.floorEntry(goodId);
-        return entry == null ? 0L : entry.getValue();
+        return entry == null ? -1L : entry.getValue();
     }
 
     public static long findBuyerIdOneIndexPosition (String buyerId, long starttime, long endtime, int index) {
@@ -36,6 +36,6 @@ public class TwoIndexCache {
         
         Entry<String, Long> entry = map.ceilingEntry(endKey);
         
-        return entry == null ? 0L : entry.getValue();
+        return entry == null ? -1L : entry.getValue();
     }
 }

@@ -37,6 +37,7 @@ public class GoodIdQuery {
             //1.查找二·级索引
             long twoIndexStartTime = System.currentTimeMillis();
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+            if (position == -1L) return null;
             System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
 //            while ((str = twoIndexBR.readLine()) != null) {
 //                String[] keyValue = str.split(":");
