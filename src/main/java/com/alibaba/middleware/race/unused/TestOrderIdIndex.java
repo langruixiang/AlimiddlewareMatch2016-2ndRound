@@ -3,7 +3,7 @@
  * Copyright 2016 escenter@zju.edu.cn, all rights reserved.
  * any form of usage is subject to approval.
  */
-package com.alibaba.middleware.race.order;
+package com.alibaba.middleware.race.unused;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,4 +55,10 @@ public class TestOrderIdIndex {
         Order order = NewOrderIdQuery.queryOrder(2982270, keys);
         System.out.println(order);
     }
+    
+
+    private static void testStringLong() {
+        
+    }
+    
 }
