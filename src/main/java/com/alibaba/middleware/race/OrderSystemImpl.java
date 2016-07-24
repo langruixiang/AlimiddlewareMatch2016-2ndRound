@@ -489,7 +489,7 @@ public class OrderSystemImpl implements OrderSystem {
                 }
                 System.out.println("str:" + str);
                 long w = System.currentTimeMillis();
-                if (NumberUtils.isNumber(str)) {
+                if (GoodIdQuery.isNumeric(str)) {
                     System.out.println("--------1.use time :" + (System.currentTimeMillis() - w));
                     if (flag == 0) {
                         longValue = num * Long.valueOf(str);

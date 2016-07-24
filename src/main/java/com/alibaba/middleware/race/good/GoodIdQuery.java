@@ -9,6 +9,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by jiangchao on 2016/7/17.
@@ -208,6 +210,15 @@ public class GoodIdQuery {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public static boolean isNumeric(String str){
+        Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
+        Matcher isNum = pattern.matcher(str);
+        if( !isNum.matches() ){
+            return false;
+        }
+        return true;
     }
 
     public static void main(String args[]) {
