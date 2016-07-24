@@ -481,6 +481,7 @@ public class OrderSystemImpl implements OrderSystem {
                 }
                 good = PageCache.goodMap.get(hashIndex).get(goodid);
             }
+            if (good == null) return null;
             if (good.getKeyValues().containsKey(key)) {
                 String str = good.getKeyValues().get(key).getValue();
                 if (flag == 0 && str.contains(".")) {
