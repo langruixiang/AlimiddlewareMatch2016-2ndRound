@@ -470,6 +470,41 @@ public class OrderSystemImpl implements OrderSystem {
         int count = 0;
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
+
+        if (KeyCache.goodKeyCache.contains(key)) {
+            //加入对应商品的所有属性kv
+            System.out.println("=============");
+                Good good = null;
+                synchronized (PageCache.goodMap) {
+                    if (PageCache.goodMap.get(hashIndex) == null) {
+                        PageCache.cacheGoodFile(hashIndex);
+                    }
+                    good = PageCache.goodMap.get(hashIndex).get(goodid);
+                }
+                if (good.getKeyValues().containsKey(key)) {
+                    String str = good.getKeyValues().get(key).getValue();
+                    if (flag == 0 && str.contains(".")) {
+                        flag = 1;
+                    }
+                    if (NumberUtils.isNumber(str)) {
+                        if (flag == 0) {
+                            longValue = orders.size() * Long.valueOf(str);
+                            keyValue.setKey(key);
+                            keyValue.setValue(String.valueOf(longValue));
+                        } else {
+                            value = orders.size() * Double.valueOf(str);
+                            keyValue.setKey(key);
+                            keyValue.setValue(String.valueOf(value));
+                        }
+                        System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
+                        return keyValue;
+                    }
+                    return null;
+                } else {
+                    return null;
+                }
+        }
+
         for (Order order : orders) {
             //System.out.println("sum goodid:"+ goodid +" : " + order_old.toString());
             //加入订单信息的所有属性kv
@@ -521,32 +556,32 @@ public class OrderSystemImpl implements OrderSystem {
             }
 
             //加入对应商品的所有属性kv
-            if (KeyCache.goodKeyCache.contains(key)) {
-                Good good = null;
-                synchronized (PageCache.goodMap) {
-                    if (PageCache.goodMap.get(hashIndex) == null) {
-                        PageCache.cacheGoodFile(hashIndex);
-                    }
-                    good = PageCache.goodMap.get(hashIndex).get(goodid);
-                }
-                if (good.getKeyValues().containsKey(key)) {
-                    String str = good.getKeyValues().get(key).getValue();
-                    if (flag == 0 && str.contains(".")) {
-                        flag = 1;
-                    }
-                    if (NumberUtils.isNumber(str)) {
-                        if (flag == 0) {
-                            longValue += Long.valueOf(str);
-                            value += Double.valueOf(str);
-                        } else {
-                            value += Double.valueOf(str);
-                        }
-                        count++;
-                        continue;
-                    }
-                    return null;
-                }
-            }
+//            if (KeyCache.goodKeyCache.contains(key)) {
+//                Good good = null;
+//                synchronized (PageCache.goodMap) {
+//                    if (PageCache.goodMap.get(hashIndex) == null) {
+//                        PageCache.cacheGoodFile(hashIndex);
+//                    }
+//                    good = PageCache.goodMap.get(hashIndex).get(goodid);
+//                }
+//                if (good.getKeyValues().containsKey(key)) {
+//                    String str = good.getKeyValues().get(key).getValue();
+//                    if (flag == 0 && str.contains(".")) {
+//                        flag = 1;
+//                    }
+//                    if (NumberUtils.isNumber(str)) {
+//                        if (flag == 0) {
+//                            longValue += Long.valueOf(str);
+//                            value += Double.valueOf(str);
+//                        } else {
+//                            value += Double.valueOf(str);
+//                        }
+//                        count++;
+//                        continue;
+//                    }
+//                    return null;
+//                }
+//            }
         }
         if (count == 0) {
             return null;
