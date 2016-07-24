@@ -45,32 +45,16 @@ public class OrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            for (String orderFile : orderFiles) {
-                FileInputStream order_records = new FileInputStream(orderFile);
-                BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
-
-                String str = null;
-                Long orderid = null;
-                int hashFileIndex;
-                while ((str = order_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        if ("orderid".equals(keyValue[0])) {
-                            orderid = Long.valueOf(keyValue[1]);
-                            hashFileIndex = (int) (orderid % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
-                            break;
-                        }
-                    }
-                }
-            }
+            CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
+            for (String orderFile : orderFiles) {            	
+            	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters).start();
+            }            
+            multiHashLatch.await();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -86,32 +70,16 @@ public class OrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            for (String orderFile : orderFiles) {
-                FileInputStream order_records = new FileInputStream(orderFile);
-                BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
-
-                String str = null;
-                String buyerid = null;
-                int hashFileIndex;
-                while ((str = order_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        if ("buyerid".equals(keyValue[0])) {
-                            buyerid = keyValue[1];
-                            hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
-                            break;
-                        }
-                    }
-                }
-            }
+            CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
+            for (String orderFile : orderFiles) {            	
+            	new MultiHash(orderFile, multiHashLatch, "buyerid", bufferedWriters).start();
+            }            
+            multiHashLatch.await();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -127,33 +95,16 @@ public class OrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            for (String orderFile : orderFiles) {
-                FileInputStream order_records = new FileInputStream(orderFile);
-                BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
-
-                String str = null;
-                String goodid = null;
-                int hashFileIndex;
-                while ((str = order_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        KeyCache.orderKeyCache.add(keyValue[0]);
-                        if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1];
-                            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
-                        }
-                    }
-                }
-            }
+            CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
+            for (String orderFile : orderFiles) {            	
+            	new MultiHash(orderFile, multiHashLatch, "goodid", bufferedWriters).start();
+            }            
+            multiHashLatch.await();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
-                bufferedWriters[i].close();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -180,5 +131,90 @@ public class OrderHashFile extends Thread{
         goodFileList.add("good_records.txt");
 
         //generateBuyerIdHashFile(orderFileList, buyerFileList, goodFileList, orderFileList, 25);
+    }
+    
+    private class MultiHash extends Thread{
+    	private String orderFile;
+    	private CountDownLatch countDownLatch;
+    	private String type;
+    	private BufferedWriter[] bufferedWriters;
+    	
+    	public MultiHash(String orderFile, CountDownLatch countDownLatch, String type, BufferedWriter[] bufferedWriters){
+    		this.orderFile = orderFile;
+    		this.countDownLatch = countDownLatch;
+    		this.type = type;
+    		this.bufferedWriters = bufferedWriters;
+    	}
+    	
+    	@Override
+    	public void run(){
+    		try {
+				FileInputStream order_records = new FileInputStream(orderFile);
+				BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+
+				String str = null;
+				String buyerid = null;
+				String goodid = null;
+				Long orderid = null;
+				
+				int hashFileIndex;
+				if(type.equals("orderid")){
+					while ((str = order_br.readLine()) != null) {
+	                    String[] keyValues = str.split("\t");
+	                    for (int i = 0; i < keyValues.length; i++) {
+	                        String[] keyValue = keyValues[i].split(":");
+	                        if ("orderid".equals(keyValue[0])) {
+	                            orderid = Long.valueOf(keyValue[1]);
+	                            hashFileIndex = (int) (orderid % nums);
+	                            synchronized (bufferedWriters[hashFileIndex]) {
+									bufferedWriters[hashFileIndex].write(str + '\n');
+								}
+								//bufferedWriters[hashFileIndex].newLine();
+	                            break;
+	                        }
+	                    }
+	                }
+				}else if(type.equals("goodid")){
+					while ((str = order_br.readLine()) != null) {
+					    String[] keyValues = str.split("\t");
+					    for (int i = 0; i < keyValues.length; i++) {
+					        String[] keyValue = keyValues[i].split(":");
+					        KeyCache.orderKeyCache.add(keyValue[0]);
+					        if (type.equals(keyValue[0])) {
+					            goodid = keyValue[1];
+					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
+					            synchronized (bufferedWriters[hashFileIndex]) {
+									bufferedWriters[hashFileIndex].write(str + '\n');
+								}
+					        }
+					    }
+					}
+				}else if(type.equals("buyerid")){
+	                while ((str = order_br.readLine()) != null) {
+	                    String[] keyValues = str.split("\t");
+	                    for (int i = 0; i < keyValues.length; i++) {
+	                        String[] keyValue = keyValues[i].split(":");
+	                        if ("buyerid".equals(keyValue[0])) {
+	                            buyerid = keyValue[1];
+	                            hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
+	                            synchronized (bufferedWriters[hashFileIndex]) {
+									bufferedWriters[hashFileIndex].write(str + '\n');
+								}
+								//bufferedWriters[hashFileIndex].newLine();
+	                            break;
+	                        }
+	                    }
+	                }
+				}
+				
+				countDownLatch.countDown();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    	}
     }
 }
