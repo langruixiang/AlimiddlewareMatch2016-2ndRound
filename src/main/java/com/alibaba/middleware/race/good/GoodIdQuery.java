@@ -213,7 +213,8 @@ public class GoodIdQuery {
     }
 
     public static boolean isNumeric(String str){
-        Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
+        //Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
+        Pattern pattern = Pattern.compile("^[-+]?\\d+(\\.\\d+)?$");
         Matcher isNum = pattern.matcher(str);
         if( !isNum.matches() ){
             return false;
