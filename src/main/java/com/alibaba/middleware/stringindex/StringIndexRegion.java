@@ -39,8 +39,7 @@ public class StringIndexRegion {
     }
 
     public static String getRegionKeyMapFilePath(String regionRootFolder, int regionId) {
-        return StringIndexRegion.getRegionFilesPrefix(regionRootFolder, regionId)
-                .concat(StringIndexRegion.REGION_KEY_MAP_FILE_NAME);
+        return regionRootFolder.concat(StringIndexRegion.REGION_KEY_MAP_FILE_NAME);
     }
 
     public static String getRegionKeyValuesFilePath(String regionRootFolder, int regionId) {
