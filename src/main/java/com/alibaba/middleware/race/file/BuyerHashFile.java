@@ -16,7 +16,8 @@ public class BuyerHashFile extends Thread{
     private Collection<String> storeFolders;
     private int                nums;
     private CountDownLatch countDownLatch;
-
+    
+    
     public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch) {
         this.buyerFiles = buyerFiles;
         this.storeFolders = storeFolders;
@@ -28,7 +29,7 @@ public class BuyerHashFile extends Thread{
     public void generateBuyerHashFile() {
 
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+        	BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
                 File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + i);
@@ -36,33 +37,19 @@ public class BuyerHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
+            CountDownLatch multiHashLatch = new CountDownLatch(buyerFiles.size());
             for (String buyerFile : buyerFiles) {
-                FileInputStream buyer_records = new FileInputStream(buyerFile);
-                BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
-
-                String str = null;
-                long buyerid = 0;
-                int hashFileIndex;
-                while ((str = buyer_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        KeyCache.buyerKeyCache.add(keyValue[0]);
-                        if ("buyerid".equals(keyValue[0])) {
-                            buyerid = keyValue[1].hashCode();
-                            hashFileIndex = (int) (Math.abs(buyerid) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
-                        }
-                    }
-                }
+                MultiHash multiHash = new MultiHash(buyerFile, multiHashLatch, bufferedWriters);
+                multiHash.start();
             }
+            
+            multiHashLatch.await();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].flush();
                 bufferedWriters[i].close();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -71,6 +58,55 @@ public class BuyerHashFile extends Thread{
         generateBuyerHashFile();
         System.out.println("good file hash end~");
         countDownLatch.countDown();
+    }
+    
+    private class MultiHash extends Thread{
+    	private String buyerFile;
+    	private CountDownLatch countDownLatch;
+    	private BufferedWriter[] bufferedWriters;
+    	
+    	public MultiHash(String buyerFile, CountDownLatch countDownLatch, BufferedWriter[] bufferedWriters){
+    		this.buyerFile = buyerFile;
+    		this.countDownLatch = countDownLatch;
+    		this.bufferedWriters = bufferedWriters;
+    	}
+    	
+    	@Override
+    	public void run(){
+
+            try {
+				FileInputStream buyer_records = new FileInputStream(buyerFile);
+				BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
+
+				String str = null;
+				long buyerid = 0;
+				int hashFileIndex;
+				while ((str = buyer_br.readLine()) != null) {
+				    String[] keyValues = str.split("\t");
+				    for (int i = 0; i < keyValues.length; i++) {
+				        String[] keyValue = keyValues[i].split(":");
+				        KeyCache.buyerKeyCache.add(keyValue[0]);
+				        if ("buyerid".equals(keyValue[0])) {
+				            buyerid = keyValue[1].hashCode();
+				            hashFileIndex = (int) (Math.abs(buyerid) % nums);
+				            synchronized (bufferedWriters[hashFileIndex]) {
+								bufferedWriters[hashFileIndex].write(str + '\n');
+								//bufferedWriters[hashFileIndex].newLine();
+							}
+				        }
+				    }
+				}
+				
+				countDownLatch.countDown();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        
+    	}
     }
 
 }
