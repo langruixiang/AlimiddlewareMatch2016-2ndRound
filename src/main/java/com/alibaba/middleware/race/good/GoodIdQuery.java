@@ -1,14 +1,19 @@
 package com.alibaba.middleware.race.good;
 
+import com.alibaba.middleware.race.OrderSystem;
+import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.Buyer;
+import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.orderSystemImpl.Result;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,6 +215,225 @@ public class GoodIdQuery {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
+        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
+        long starttime = System.currentTimeMillis();
+        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
+        if (goodid == null) {
+            return results.iterator();
+        }
+
+        List<String> orderSearchKeys = new ArrayList<String>();
+        List<String> goodSearchKeys = new ArrayList<String>();
+        List<String> buyerSearchKeys = new ArrayList<String>();
+        if (keys != null) {
+            for (String key : keys) {
+                if (KeyCache.orderKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in order");
+                    orderSearchKeys.add(key);
+                } else if (KeyCache.goodKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in good");
+                    goodSearchKeys.add(key);
+                } else if (KeyCache.buyerKeyCache.contains(key)) {
+                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in buyer");
+                    buyerSearchKeys.add(key);
+                }
+            }
+        }
+
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        long findStartTime = System.currentTimeMillis();
+
+        Good good = null;
+        if (keys == null || goodSearchKeys.size() > 0) {
+            //加入对应商品的所有属性kv
+            good = GoodQuery.findGoodById(goodid, hashIndex);
+            if (good == null) return results.iterator();
+
+        }
+
+
+        //获取goodid的所有订单信息
+        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
+        System.out.println("===queryOrdersBySaler===getOrders==goodid:" + goodid + " time :" + (System.currentTimeMillis() - findStartTime));
+        if (orders == null || orders.size() == 0) {
+            System.out.println("goodid :" + goodid + " order is null ");
+            return results.iterator();
+        }
+        System.out.println("goodid :" + goodid + " size is :" + orders.size());
+        if (keys != null && keys.size() == 0) {
+            System.out.println("goodid :" + goodid + " kyes is empty");
+            for (Order order : orders) {
+                com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+                result.setOrderid(order.getId());
+                results.add(result);
+            }
+            //对所求结果按照交易订单从小到大排序
+            return results.iterator();
+        }
+
+        for (Order order : orders) {
+            //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order_old.toString());
+            com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+            if (keys == null || buyerSearchKeys.size() > 0) {
+                //加入对应买家的所有属性kv
+                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
+
+                if (buyer != null && buyer.getKeyValues() != null) {
+                    if (keys == null) {
+                        result.getKeyValues().putAll(buyer.getKeyValues());
+                    } else {
+                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
+                        for (String key : buyerSearchKeys) {
+                            if (buyerKeyValues.containsKey(key)) {
+                                result.getKeyValues().put(key, buyerKeyValues.get(key));
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            if (good != null) {
+                if (keys == null) {
+                    result.getKeyValues().putAll(good.getKeyValues());
+                } else {
+                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
+                    for (String key : goodSearchKeys) {
+                        if (goodKeyValues.containsKey(key)) {
+                            result.getKeyValues().put(key, goodKeyValues.get(key));
+                        }
+                    }
+                }
+            }
+
+            //加入订单信息的所有属性kv
+            if (keys == null) {
+                result.getKeyValues().putAll(order.getKeyValues());
+            } else {
+                for (String key : orderSearchKeys) {
+                    if (order.getKeyValues().containsKey(key)) {
+                        result.getKeyValues().put(key, order.getKeyValues().get(key));
+                    }
+                }
+            }
+
+            result.setOrderid(order.getId());
+            results.add(result);
+        }
+        System.out.println("queryOrdersBySaler : " + goodid + " time :" + (System.currentTimeMillis() - starttime));
+        return results.iterator();
+    }
+
+    public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
+        //System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
+        long starttime = System.currentTimeMillis();
+        if (goodid == null || key == null) return null;
+        com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        double value = 0;
+        long longValue = 0;
+        //flag=0表示Long类型，1表示Double类型
+        int flag = 0;
+
+        if (KeyCache.goodKeyCache.contains(key)) {
+            //加入对应商品的所有属性kv
+            System.out.println("=============");
+            int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
+            Good good = GoodQuery.findGoodById(goodid, hashIndex);
+
+            if (good == null) return null;
+            if (good.getKeyValues().containsKey(key)) {
+                String str = good.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
+                }
+                System.out.println("str:" + str);
+                long w = System.currentTimeMillis();
+                if (GoodIdQuery.isNumeric(str)) {
+                    System.out.println("--------1.use time :" + (System.currentTimeMillis() - w));
+                    if (flag == 0) {
+                        longValue = num * Long.valueOf(str);
+                        keyValue.setKey(key);
+                        keyValue.setValue(String.valueOf(longValue));
+                    } else {
+                        value = num * Double.valueOf(str);
+                        keyValue.setKey(key);
+                        keyValue.setValue(String.valueOf(value));
+                    }
+                    System.out.println("---------sumByGood : time : " + (System.currentTimeMillis() - starttime));
+                    return keyValue;
+                }
+                return null;
+            } else {
+                return null;
+            }
+        }
+
+        List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
+        if (orders == null || orders.size() == 0) return null;
+        int count = 0;
+
+        for (Order order : orders) {
+            //System.out.println("sum goodid:"+ goodid +" : " + order_old.toString());
+            //加入订单信息的所有属性kv
+            if (order.getKeyValues().containsKey(key)) {
+                String str = order.getKeyValues().get(key).getValue();
+                if (flag == 0 && str.contains(".")) {
+                    flag = 1;
+                }
+                if (NumberUtils.isNumber(str)) {
+                    if (flag == 0) {
+                        longValue += Long.valueOf(str);
+                        value += Double.valueOf(str);
+                    } else {
+                        value += Double.valueOf(str);
+                    }
+                    count++;
+                    continue;
+                }
+                return null;
+            }
+
+            //加入对应买家的所有属性kv
+            if (KeyCache.buyerKeyCache.contains(key)) {
+                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
+                if (buyer.getKeyValues().containsKey(key)) {
+                    String str = buyer.getKeyValues().get(key).getValue();
+                    if (flag == 0 && str.contains(".")) {
+                        flag = 1;
+                    }
+                    if (NumberUtils.isNumber(str)) {
+                        if (flag == 0) {
+                            longValue += Long.valueOf(str);
+                            value += Double.valueOf(str);
+                        } else {
+                            value += Double.valueOf(str);
+                        }
+                        count++;
+                        continue;
+                    }
+                    return null;
+                }
+            }
+        }
+        if (count == 0) {
+            return null;
+        }
+        keyValue.setKey(key);
+        if (flag == 0) {
+            keyValue.setValue(String.valueOf(longValue));
+            //System.out.println("sum goodid:"+ goodid +" : " + longValue);
+        } else {
+            keyValue.setValue(String.valueOf(value));
+            //System.out.println("sum goodid:"+ goodid +" : " + value);
+        }
+        System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
+        return keyValue;
     }
 
     public static boolean isNumeric(String str){
