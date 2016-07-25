@@ -66,9 +66,9 @@ public class GoodQuery {
         //findByBuyerId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 
-    private static RandomAccessFile[] goodHashFiles;
+    private RandomAccessFile[] goodHashFiles;
 
-    public static void initGoodHashFiles() throws FileNotFoundException {
+    public void initGoodHashFiles() throws FileNotFoundException {
         goodHashFiles = new RandomAccessFile[FileConstant.FILE_NUMS];
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             File rankFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + i);
@@ -76,7 +76,7 @@ public class GoodQuery {
         }
     }
 
-    public static String getGoodLine(String goodId) throws UnsupportedEncodingException, IOException {
+    public String getGoodLine(String goodId) throws UnsupportedEncodingException, IOException {
         int hashFileIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
         RandomAccessFile hashRaf = goodHashFiles[hashFileIndex];
 
@@ -95,7 +95,7 @@ public class GoodQuery {
         return oneIndex;
     }
     
-    public static void closeGoodHashFiles() throws IOException {
+    public void closeGoodHashFiles() throws IOException {
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             goodHashFiles[i].close();
         }
