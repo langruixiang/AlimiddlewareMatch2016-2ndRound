@@ -10,15 +10,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.alibaba.middleware.race.buyer.BuyerIndexFile;
-import com.alibaba.middleware.race.buyer.BuyerQuery;
-import com.alibaba.middleware.race.good.GoodIndexFile;
-import com.alibaba.middleware.race.good.GoodQuery;
+import com.alibaba.middleware.race.buyer.*;
+import com.alibaba.middleware.race.good.*;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
-import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -26,8 +22,6 @@ import com.alibaba.middleware.race.file.BuyerHashFile;
 import com.alibaba.middleware.race.file.GoodHashFile;
 import com.alibaba.middleware.race.file.NewOrderHashFile;
 import com.alibaba.middleware.race.file.OrderHashFile;
-import com.alibaba.middleware.race.good.GoodIdIndexFile;
-import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
@@ -72,13 +66,13 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch goodAndBuyerBuildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
 
-        //按买家ID hash成多个小文件
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
-        buyerIdHashThread.start();
-
-        //按商品ID hash成多个小文件
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
-        goodIdHashThread.start();
+//        //按买家ID hash成多个小文件
+//        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
+//        buyerIdHashThread.start();
+//
+//        //按商品ID hash成多个小文件
+//        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
+//        goodIdHashThread.start();
 
         //将商品文件hash成多个小文件
         GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodCountDownLatch);
@@ -104,6 +98,12 @@ public class OrderSystemImpl implements OrderSystem {
         //按订单ID hash成多个小文件并同时合并相应的good和buyer的信息
         NewOrderHashFile orderIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", goodAndBuyerBuildIndexLatch, orderIdCountDownLatch);
         orderIdHashThread.start();
+
+        NewOrderHashFile buyerIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", goodAndBuyerBuildIndexLatch, buyerIdCountDownLatch);
+        buyerIdHashThread.start();
+
+        NewOrderHashFile goodIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodAndBuyerBuildIndexLatch, goodIdCountDownLatch);
+        goodIdHashThread.start();
 
         //根据orderid生成一级二级索引
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
@@ -146,16 +146,16 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        return BuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
+        return NewBuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
-        return GoodIdQuery.findOrdersByGood(salerid, goodid, keys);
+        return NewGoodIdQuery.findOrdersByGood(salerid, goodid, keys);
     }
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
-        return GoodIdQuery.sumValuesByGood(goodid, key);
+        return NewGoodIdQuery.sumValuesByGood(goodid, key);
     }
 }

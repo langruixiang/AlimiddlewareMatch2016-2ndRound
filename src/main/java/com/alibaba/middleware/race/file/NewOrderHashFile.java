@@ -27,6 +27,8 @@ public class NewOrderHashFile extends Thread{
     private String type;
     private CountDownLatch countDownLatch;
     private CountDownLatch awaitCountDownLatch;
+    private BuyerQuery buyerQuery = new BuyerQuery();
+    private GoodQuery goodQuery = new GoodQuery();
 
     public NewOrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
             CountDownLatch awaitCountDownLatch, CountDownLatch countDownLatch) {
@@ -51,8 +53,8 @@ public class NewOrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            BuyerQuery.initBuyerHashFiles();
-            GoodQuery.initGoodHashFiles();
+            buyerQuery.initBuyerHashFiles();
+            goodQuery.initGoodHashFiles();
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
@@ -60,8 +62,8 @@ public class NewOrderHashFile extends Thread{
             }            
             multiHashLatch.await();
 
-            BuyerQuery.closeBuyerHashFiles();
-            GoodQuery.closeGoodHashFiles();
+            buyerQuery.closeBuyerHashFiles();
+            goodQuery.closeGoodHashFiles();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
@@ -73,10 +75,63 @@ public class NewOrderHashFile extends Thread{
 
     //读取所有订单文件，按照订单中的买家ID hash到多个小文件中
     public void generateBuyerIdHashFile() {
+        try {
+            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+
+            for (int i = 0; i < nums; i++) {
+                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i);
+                FileWriter fw = new FileWriter(file);
+                bufferedWriters[i] = new BufferedWriter(fw);
+            }
+
+            buyerQuery.initBuyerHashFiles();
+            goodQuery.initGoodHashFiles();
+
+            CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
+            for (String orderFile : orderFiles) {
+                new MultiHash(orderFile, multiHashLatch, "buyerid", bufferedWriters).start();
+            }
+            multiHashLatch.await();
+
+            buyerQuery.closeBuyerHashFiles();
+            goodQuery.closeGoodHashFiles();
+
+            for (int i = 0; i < nums; i++) {
+                bufferedWriters[i].close();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     //读取所有订单文件，按照订单中的商品ID hash到多个小文件中
     public void generateGoodIdHashFile() {
+        try {
+            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+
+            for (int i = 0; i < nums; i++) {
+                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i);
+                FileWriter fw = new FileWriter(file);
+                bufferedWriters[i] = new BufferedWriter(fw);
+            }
+            buyerQuery.initBuyerHashFiles();
+            goodQuery.initGoodHashFiles();
+
+            CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
+            for (String orderFile : orderFiles) {
+                new MultiHash(orderFile, multiHashLatch, "goodid", bufferedWriters).start();
+            }
+            multiHashLatch.await();
+
+            buyerQuery.closeBuyerHashFiles();
+            goodQuery.closeGoodHashFiles();
+
+            for (int i = 0; i < nums; i++) {
+                bufferedWriters[i].close();
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void run(){
@@ -134,13 +189,46 @@ public class NewOrderHashFile extends Thread{
 	                            buyerid = keyValue[1];
 	                        }
 	                    }
-	                    line = line.concat("\t").concat(BuyerQuery.getBuyerLine(buyerid)).concat("\t").concat(GoodQuery.getGoodLine(goodid));
+	                    line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
 	                    synchronized (bufferedWriters[hashFileIndex]) {
                             bufferedWriters[hashFileIndex].write(line + '\n');
                         }//TODO
 	                }
 				}else if(type.equals("goodid")){
+                    while ((line = order_br.readLine()) != null) {
+                        String[] keyValues = line.split("\t");
+                        for (int i = 0; i < keyValues.length; i++) {
+                            String[] keyValue = keyValues[i].split(":");
+                            KeyCache.orderKeyCache.add(keyValue[0]);
+                            if ("goodid".equals(keyValue[0])) {
+                                goodid = keyValue[1];
+                                hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
+                            } else if ("buyerid".equals(keyValue[0])) {
+                                buyerid = keyValue[1];
+                            }
+                        }
+                        line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
+                        synchronized (bufferedWriters[hashFileIndex]) {
+                            bufferedWriters[hashFileIndex].write(line + '\n');
+                        }
+                    }
 				}else if(type.equals("buyerid")){
+                    while ((line = order_br.readLine()) != null) {
+                        String[] keyValues = line.split("\t");
+                        for (int i = 0; i < keyValues.length; i++) {
+                            String[] keyValue = keyValues[i].split(":");
+                            if ("buyerid".equals(keyValue[0])) {
+                                buyerid = keyValue[1];
+                                hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
+                            } else if ("goodid".equals(keyValue[0])) {
+                                goodid = keyValue[1];
+                            }
+                        }
+                        line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
+                        synchronized (bufferedWriters[hashFileIndex]) {
+                            bufferedWriters[hashFileIndex].write(line + '\n');
+                        }
+                    }
 				}
 				
 				countDownLatch.countDown();

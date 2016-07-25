@@ -67,9 +67,9 @@ public class BuyerQuery {
         return buyer;
     }
     
-    private static RandomAccessFile[] buyerHashFiles;
+    public RandomAccessFile[] buyerHashFiles;
 
-    public static void initBuyerHashFiles() throws FileNotFoundException {
+    public void initBuyerHashFiles() throws FileNotFoundException {
         buyerHashFiles = new RandomAccessFile[FileConstant.FILE_NUMS];
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             File rankFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + i);
@@ -77,7 +77,7 @@ public class BuyerQuery {
         }
     }
 
-    public static String getBuyerLine(String buyerId) throws UnsupportedEncodingException, IOException {
+    public String getBuyerLine(String buyerId) throws UnsupportedEncodingException, IOException {
         int hashFileIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
         RandomAccessFile hashRaf = buyerHashFiles[hashFileIndex];
 
@@ -96,7 +96,7 @@ public class BuyerQuery {
         return oneIndex;
     }
     
-    public static void closeBuyerHashFiles() throws IOException {
+    public void closeBuyerHashFiles() throws IOException {
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             buyerHashFiles[i].close();
         }
