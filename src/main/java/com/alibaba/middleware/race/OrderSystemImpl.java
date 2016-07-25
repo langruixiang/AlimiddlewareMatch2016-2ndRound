@@ -14,6 +14,7 @@ import com.alibaba.middleware.race.buyer.BuyerIndexFile;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.good.GoodIndexFile;
 import com.alibaba.middleware.race.good.GoodQuery;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
@@ -23,12 +24,14 @@ import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.BuyerHashFile;
 import com.alibaba.middleware.race.file.GoodHashFile;
+import com.alibaba.middleware.race.file.NewOrderHashFile;
 import com.alibaba.middleware.race.file.OrderHashFile;
 import com.alibaba.middleware.race.good.GoodIdIndexFile;
 import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
+import com.alibaba.middleware.race.order.NewOrderIdQuery;
 import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.order.OrderIdQuery;
 
@@ -65,7 +68,8 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodCountDownLatch = new CountDownLatch(1);
         //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
-        CountDownLatch buildIndexLatch = new CountDownLatch(5 * FileConstant.FILE_NUMS);
+        CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_NUMS);
+        CountDownLatch goodAndBuyerBuildIndexLatch = new CountDownLatch(2 * FileConstant.FILE_NUMS);
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
 
         //按买家ID hash成多个小文件
@@ -75,11 +79,6 @@ public class OrderSystemImpl implements OrderSystem {
         //按商品ID hash成多个小文件
         OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
-
-        //按订单ID hash成多个小文件
-        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", orderIdCountDownLatch);
-        orderIdHashThread.start();
-
 
         //将商品文件hash成多个小文件
         GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodCountDownLatch);
@@ -92,15 +91,19 @@ public class OrderSystemImpl implements OrderSystem {
 
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
+            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, goodAndBuyerBuildIndexLatch, i);
             buyerIndexThreadPool.execute(buyerIndexFile);
         }
 
         //good文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
-            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
+            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, goodAndBuyerBuildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
+        
+        //按订单ID hash成多个小文件并同时合并相应的good和buyer的信息
+        NewOrderHashFile orderIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", goodAndBuyerBuildIndexLatch, orderIdCountDownLatch);
+        orderIdHashThread.start();
 
         //根据orderid生成一级二级索引
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
@@ -138,7 +141,7 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-        return OrderIdQuery.findOrder(orderId, keys);
+        return NewOrderIdQuery.findOrder(orderId, keys);
     }
 
     @Override

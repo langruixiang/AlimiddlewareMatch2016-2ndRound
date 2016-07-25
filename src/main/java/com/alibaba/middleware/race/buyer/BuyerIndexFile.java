@@ -74,6 +74,7 @@ public class BuyerIndexFile extends Thread{
         System.out.println("buyer build index " + index + " work end!");
     }
 
+
 //    public static long bytes2Long(byte[] byteNum) {
 //        long num = 0;
 //        for (int ix = 0; ix < 8; ++ix) {
