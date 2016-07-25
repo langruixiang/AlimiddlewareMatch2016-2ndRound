@@ -82,12 +82,12 @@ public class OrderSystemImpl implements OrderSystem {
 
 
         //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, buyerCountDownLatch);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodCountDownLatch);
         goodHashFileThread.start();
 
 
         //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, goodCountDownLatch);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, buyerCountDownLatch);
         buyerHashFile.start();
 
         //buyer文件生成索引放入内存
