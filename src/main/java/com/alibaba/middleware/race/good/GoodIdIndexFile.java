@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.good;
 
+import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -30,8 +31,7 @@ public class GoodIdIndexFile extends Thread{
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
         Map<String, String> orderRankMap = new TreeMap<String, String>();
-        Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
-        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
+
         //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
@@ -40,14 +40,6 @@ public class GoodIdIndexFile extends Thread{
                 File fileRank = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
                 FileWriter fwRank = new FileWriter(fileRank);
                 BufferedWriter rankBW = new BufferedWriter(fwRank);
-
-                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bufferedWriter = new BufferedWriter(fw);
-
-//                File twoIndexfile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String rankStr = null;
                 while ((rankStr = order_br.readLine()) != null) {
@@ -72,6 +64,7 @@ public class GoodIdIndexFile extends Thread{
 
                 long position = 0;
                 Iterator orderRankIterator = orderRankMap.entrySet().iterator();
+                String preGoodid = null;
                 while (orderRankIterator.hasNext()) {
                     Map.Entry entry = (Map.Entry) orderRankIterator.next();
                     String key = (String) entry.getKey();
@@ -80,38 +73,26 @@ public class GoodIdIndexFile extends Thread{
 
                     String[] keys = key.split("\\|");
                     String goodid = keys[0];
-                    if (!goodIndex.containsKey(goodid)) {
-                        goodIndex.put(goodid, position);
+                    if (!OneIndexCache.goodidOneIndexCache.containsKey(goodid)) {
+                        //goodIndex.put(goodid, position);
+                        List<Long> positions = new ArrayList<Long>();
+                        positions.add(position);
+                        OneIndexCache.goodidOneIndexCache.put(goodid, positions);
+                        if (preGoodid != null) {
+                            Long length = position - OneIndexCache.goodidOneIndexCache.get(preGoodid).get(0) -1;
+                            OneIndexCache.goodidOneIndexCache.get(preGoodid).add(length);
+                        }
+                        preGoodid = goodid;
                     }
                     position += val.getBytes().length + 1;
                 }
-
-                int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                FileConstant.goodIdIndexRegionSizeMap.put(index, towIndexSize);
-                int count = 0;
-                long oneIndexPosition = 0;
-                Iterator iterator = goodIndex.entrySet().iterator();
-                while (iterator.hasNext()) {
-                    Map.Entry entry = (Map.Entry) iterator.next();
-                    String key = (String) entry.getKey();
-                    Long val = (Long) entry.getValue();
-                    String content = key + ":" + val;
-                    bufferedWriter.write(content + '\n');
-
-                    if (count%towIndexSize == 0) {
-                        twoIndexMap.put(key, oneIndexPosition);
-                    }
-                    oneIndexPosition += content.getBytes().length + 1;
-                    count++;
+                if (preGoodid != null) {
+                    Long length = position - OneIndexCache.goodidOneIndexCache.get(preGoodid).get(0) -1;
+                    OneIndexCache.goodidOneIndexCache.get(preGoodid).add(length);
                 }
-                TwoIndexCache.goodIdTwoIndexCache.put(index, twoIndexMap);
-                goodIndex.clear();
-                bufferedWriter.flush();
-                bufferedWriter.close();
+
                 rankBW.flush();
                 rankBW.close();
-//                twoIndexBW.flush();
-//                twoIndexBW.close();
                 order_br.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -134,14 +115,5 @@ public class GoodIdIndexFile extends Thread{
         buildIndexCountLatch.countDown();//完成工作，计数减一
         System.out.println("goodid build index " + index + " work end!");
     }
-
-//    public static long bytes2Long(byte[] byteNum) {
-//        long num = 0;
-//        for (int ix = 0; ix < 8; ++ix) {
-//            num <<= 8;
-//            num |= (byteNum[ix] & 0xff);
-//        }
-//        return num;
-//    }
 
 }

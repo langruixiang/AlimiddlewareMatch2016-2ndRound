@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.good;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
@@ -34,41 +35,19 @@ public class GoodIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-
-            //2.查找一级索引
-            indexRaf.seek(position);
-            String oneIndex = null;
-            String onePlusIndex = null;
-            int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
-                String[] keyValue = oneIndex.split(":");
-                if (goodId.equals(keyValue[0])) {
-                    break;
-                }
-                count++;
-                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
-                    return null;
-                }
+            if (!OneIndexCache.goodidOneIndexCache.containsKey(goodId)) {
+                return null;
             }
-            if (oneIndex == null) return null;
-            onePlusIndex = indexRaf.readLine();
+            long pos = OneIndexCache.goodidOneIndexCache.get(goodId).get(0);
+            long length =  OneIndexCache.goodidOneIndexCache.get(goodId).get(1);
 
             //3.按行读取内容
-            String[] keyValue = oneIndex.split(":");
-            String pos = keyValue[1];
-            int length = 0;
-            if (onePlusIndex != null) {
-                String[] kv = onePlusIndex.split(":");
-                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
-            } else {
-                length = (int) (hashRaf.length() - Long.valueOf(pos));
-            }
 
-            hashRaf.seek(Long.valueOf(pos));
 
-            byte[] bytes = new byte[length];
-            hashRaf.read(bytes, 0, length);
+            hashRaf.seek(pos);
+
+            byte[] bytes = new byte[(int)length];
+            hashRaf.read(bytes, 0, (int)length);
             String orderStrs = new String(bytes);
             String[] constents = orderStrs.split("\n");
             for (String content : constents) {
