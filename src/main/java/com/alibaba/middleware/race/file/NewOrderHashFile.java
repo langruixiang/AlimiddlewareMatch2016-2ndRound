@@ -59,7 +59,9 @@ public class NewOrderHashFile extends Thread{
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
             	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters).start();
+            	System.out.println("MultiHash Start : " + orderFile);
             }            
+            
             multiHashLatch.await();
 
             buyerQuery.closeBuyerHashFiles();
@@ -189,9 +191,10 @@ public class NewOrderHashFile extends Thread{
 	                            buyerid = keyValue[1];
 	                        }
 	                    }
-	                    line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
 	                    synchronized (bufferedWriters[hashFileIndex]) {
-                            bufferedWriters[hashFileIndex].write(line + '\n');
+                            bufferedWriters[hashFileIndex].write(line + '\t');
+                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
+                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
                         }//TODO
 	                }
 				}else if(type.equals("goodid")){
@@ -207,9 +210,10 @@ public class NewOrderHashFile extends Thread{
                                 buyerid = keyValue[1];
                             }
                         }
-                        line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
                         synchronized (bufferedWriters[hashFileIndex]) {
-                            bufferedWriters[hashFileIndex].write(line + '\n');
+                            bufferedWriters[hashFileIndex].write(line + '\t');
+                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
+                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
                         }
                     }
 				}else if(type.equals("buyerid")){
@@ -224,13 +228,14 @@ public class NewOrderHashFile extends Thread{
                                 goodid = keyValue[1];
                             }
                         }
-                        line = line.concat("\t").concat(buyerQuery.getBuyerLine(buyerid)).concat("\t").concat(goodQuery.getGoodLine(goodid));
                         synchronized (bufferedWriters[hashFileIndex]) {
-                            bufferedWriters[hashFileIndex].write(line + '\n');
+                            bufferedWriters[hashFileIndex].write(line + '\t');
+                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
+                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
                         }
                     }
 				}
-				
+				System.out.println("NewOrderHashFile.MultiHash " + orderFile + " over !");
 				countDownLatch.countDown();
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block

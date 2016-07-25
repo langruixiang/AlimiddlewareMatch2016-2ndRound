@@ -88,13 +88,19 @@ public class JunitTest {
 
         OrderSystem orderSystem = new OrderSystemImpl();
         List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
+        orderFileList.add("prerun_data_withoutcase/order.0.0");
+        orderFileList.add("prerun_data_withoutcase/order.0.3");
+        orderFileList.add("prerun_data_withoutcase/order.1.1");
+        orderFileList.add("prerun_data_withoutcase/order.2.2");
 
         List<String> buyerFileList = new ArrayList<String>();
-        buyerFileList.add("buyer_records.txt");
+        buyerFileList.add("prerun_data_withoutcase/buyer.0.0");
+        buyerFileList.add("prerun_data_withoutcase/buyer.1.1");
 
         List<String> goodFileList = new ArrayList<String>();
-        goodFileList.add("good_records.txt");
+        goodFileList.add("prerun_data_withoutcase/good.0.0");
+        goodFileList.add("prerun_data_withoutcase/good.1.1");
+        goodFileList.add("prerun_data_withoutcase/good.2.2");
         
         List<String> storeFolderList = new ArrayList<String>();
         FileUtil.createDir("s1");

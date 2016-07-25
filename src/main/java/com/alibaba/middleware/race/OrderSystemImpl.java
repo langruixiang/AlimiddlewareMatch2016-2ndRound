@@ -94,16 +94,26 @@ public class OrderSystemImpl implements OrderSystem {
             GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, goodAndBuyerBuildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
-        
+
+        goodAndBuyerBuildIndexLatch.await();
+        System.out.println("goodAndBuyerBuildIndexLatch time is :" + (System.currentTimeMillis() - beginTime));
+
         //按订单ID hash成多个小文件并同时合并相应的good和buyer的信息
         NewOrderHashFile orderIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", goodAndBuyerBuildIndexLatch, orderIdCountDownLatch);
         orderIdHashThread.start();
+        
+        orderIdCountDownLatch.await();
+        System.out.println("orderIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
 
         NewOrderHashFile buyerIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", goodAndBuyerBuildIndexLatch, buyerIdCountDownLatch);
         buyerIdHashThread.start();
+        buyerIdCountDownLatch.await();
+        System.out.println("buyerIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
 
         NewOrderHashFile goodIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodAndBuyerBuildIndexLatch, goodIdCountDownLatch);
         goodIdHashThread.start();
+        goodIdCountDownLatch.await();
+        System.out.println("goodIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
 
         //根据orderid生成一级二级索引
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
