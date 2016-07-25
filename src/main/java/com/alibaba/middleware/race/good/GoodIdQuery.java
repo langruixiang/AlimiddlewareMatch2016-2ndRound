@@ -26,11 +26,6 @@ public class GoodIdQuery {
         System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
-//            FileInputStream twoIndexFile = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
-//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
-
-//            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
@@ -43,17 +38,6 @@ public class GoodIdQuery {
             long twoIndexStartTime = System.currentTimeMillis();
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
             System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
-//            while ((str = twoIndexBR.readLine()) != null) {
-//                String[] keyValue = str.split(":");
-//                if (goodId.compareTo(keyValue[0]) < 0) {
-//                    //System.out.println("--------"+keyValue[0]);
-//                    break;
-//                } else {
-//                    position = Long.valueOf(keyValue[1]);
-//                }
-//            }
-
-            //System.out.println(position);
 
             //2.查找一级索引
             long oneIndexStartTime = System.currentTimeMillis();
@@ -64,7 +48,6 @@ public class GoodIdQuery {
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
-                    //System.out.println(oneIndex);
                     break;
                 }
                 count++;
@@ -80,9 +63,7 @@ public class GoodIdQuery {
             long handleStartTime = System.currentTimeMillis();
             System.out.println(oneIndex);
             String[] keyValue = oneIndex.split(":");
-            //System.out.println(keyValue[1]);
             String pos = keyValue[1];
-            //System.out.println("======" + positions.length);
             int length = 0;
             if (onePlusIndex != null) {
                 String[] kv = onePlusIndex.split(":");
@@ -92,25 +73,6 @@ public class GoodIdQuery {
             }
 
             hashRaf.seek(Long.valueOf(pos));
-//            while ((orderStr = hashRaf.readLine()) != null) {
-//                String orderContent = new String(orderStr.getBytes("iso-8859-1"), "UTF-8");
-//                Order order = new Order();
-//                String[] keyValues = orderContent.split("\t");
-//                for (int i = 0; i < keyValues.length; i++) {
-//                    String[] strs = keyValues[i].split(":");
-//                    KeyValue kv = new KeyValue();
-//                    kv.setKey(strs[0]);
-//                    kv.setValue(strs[1]);
-//                    order.getKeyValues().put(strs[0], kv);
-//                }
-//                if (order.getKeyValues().get("goodid").getValue() != null && !goodId.equals(order.getKeyValues().get("goodid").getValue())) {
-//                    break;
-//                }
-//                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
-//                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-//                }
-//                orders.add(order);
-//            }
 
             byte[] bytes = new byte[length];
             hashRaf.read(bytes, 0, length);
@@ -275,7 +237,6 @@ public class GoodIdQuery {
         }
 
         for (Order order : orders) {
-            //System.out.println("queryOrdersBySaler goodid:"+ goodid +" : " + order_old.toString());
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 //加入对应买家的所有属性kv
@@ -329,7 +290,6 @@ public class GoodIdQuery {
     }
 
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
-        //System.out.println("===sumOrdersByGood=====goodid:" + goodid + "======key:" + key);
         long starttime = System.currentTimeMillis();
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
@@ -341,7 +301,6 @@ public class GoodIdQuery {
 
         if (KeyCache.goodKeyCache.contains(key)) {
             //加入对应商品的所有属性kv
-            System.out.println("=============");
             int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
             Good good = GoodQuery.findGoodById(goodid, hashIndex);
 
@@ -378,7 +337,6 @@ public class GoodIdQuery {
         int count = 0;
 
         for (Order order : orders) {
-            //System.out.println("sum goodid:"+ goodid +" : " + order_old.toString());
             //加入订单信息的所有属性kv
             if (order.getKeyValues().containsKey(key)) {
                 String str = order.getKeyValues().get(key).getValue();
@@ -427,10 +385,8 @@ public class GoodIdQuery {
         keyValue.setKey(key);
         if (flag == 0) {
             keyValue.setValue(String.valueOf(longValue));
-            //System.out.println("sum goodid:"+ goodid +" : " + longValue);
         } else {
             keyValue.setValue(String.valueOf(value));
-            //System.out.println("sum goodid:"+ goodid +" : " + value);
         }
         System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
         return keyValue;

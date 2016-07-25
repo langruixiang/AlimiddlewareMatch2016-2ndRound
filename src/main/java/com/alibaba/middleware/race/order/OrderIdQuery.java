@@ -23,11 +23,8 @@ import java.util.Map;
  */
 public class OrderIdQuery {
     public static Order findByOrderId(long orderId, int index) {
-        //System.out.println("==========:"+goodId + " index:" + index);
         Order order = new Order();
         try {
-//            FileInputStream twoIndexFile = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
-//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
 
             File hashFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -38,18 +35,6 @@ public class OrderIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
-//            while ((str = twoIndexBR.readLine()) != null) {
-//                String[] keyValue = str.split(":");
-//                //System.out.println(keyValue[0]);
-//                if (orderId < Long.valueOf(keyValue[0])) {
-//                    //System.out.println("--------"+keyValue[0]);
-//                    break;
-//                } else {
-//                    position = Long.valueOf(keyValue[1]);
-//                }
-//            }
-
-            //System.out.println(position);
 
             //2.查找一级索引
             indexRaf.seek(position);
@@ -68,13 +53,10 @@ public class OrderIdQuery {
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
-            //System.out.println(keyValue[1]);
 
             long pos = Long.valueOf(keyValue[1]);
-            //System.out.println(pos);
             hashRaf.seek(Long.valueOf(pos));
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-            //System.out.println(orderContent);
 
             //4.将字符串转成order对象集合
             String[] keyValues = orderContent.split("\t");
@@ -86,7 +68,6 @@ public class OrderIdQuery {
                 order.getKeyValues().put(strs[0], kv);
             }
             order.setId(orderId);
-//            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
@@ -111,24 +92,19 @@ public class OrderIdQuery {
         if (keys != null) {
             for (String key : keys) {
                 if (KeyCache.orderKeyCache.contains(key)) {
-                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in order");
                     orderSearchKeys.add(key);
                 } else if (KeyCache.goodKeyCache.contains(key)) {
-                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in good");
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.contains(key)) {
-                    System.out.println("===queryOrder=====orderid:" + orderId + "======key in buyer");
                     buyerSearchKeys.add(key);
                 }
             }
         }
         if (order == null) {
-            System.out.println("orderid: " + orderId + "is null");
             return null;
         }
         if (keys != null && keys.isEmpty()) {
             result.setOrderid(orderId);
-            System.out.println(orderId + ": keys is empty" );
             return result;
         }
         {

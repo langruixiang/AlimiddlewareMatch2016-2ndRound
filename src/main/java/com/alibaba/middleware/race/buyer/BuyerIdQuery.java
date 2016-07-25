@@ -28,12 +28,6 @@ public class BuyerIdQuery {
         System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
-//            FileInputStream twoIndexFile = null;
-//            twoIndexFile = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
-//            BufferedReader twoIndexBR = new BufferedReader(new InputStreamReader(twoIndexFile));
-
-//            File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
-//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
             File rankFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
@@ -44,17 +38,6 @@ public class BuyerIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
-//            while ((str = twoIndexBR.readLine()) != null) {
-//                String[] keyValue = str.split(":");
-//                if (endKey.compareTo(keyValue[0]) > 0) {
-//                    //System.out.println("--------"+keyValue[0]);
-//                    break;
-//                } else {
-//                    position = Long.valueOf(keyValue[1]);
-//                }
-//            }
-
-            //System.out.println(position);
 
             //2.查找一级索引
             long oneIndexStartTime = System.currentTimeMillis();
@@ -83,7 +66,6 @@ public class BuyerIdQuery {
             long handleStartTime = System.currentTimeMillis();
             System.out.println(oneIndex);
             String[] keyValue = oneIndex.split(":");
-            //System.out.println(keyValue[1]);
             String pos = keyValue[1];
             int length = 0;
             if (onePlusIndex != null) {

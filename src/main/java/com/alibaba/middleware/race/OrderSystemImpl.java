@@ -93,13 +93,13 @@ public class OrderSystemImpl implements OrderSystem {
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
-            orderIdIndexThreadPool.execute(buyerIndexFile);
+            buyerIndexThreadPool.execute(buyerIndexFile);
         }
 
         //good文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
-            orderIdIndexThreadPool.execute(goodIndexFile);
+            goodIndexThreadPool.execute(goodIndexFile);
         }
 
         //根据orderid生成一级二级索引
