@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 public class GoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 
@@ -35,12 +34,9 @@ public class GoodIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long twoIndexStartTime = System.currentTimeMillis();
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-            System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
 
             //2.查找一级索引
-            long oneIndexStartTime = System.currentTimeMillis();
             indexRaf.seek(position);
             String oneIndex = null;
             String onePlusIndex = null;
@@ -57,11 +53,8 @@ public class GoodIdQuery {
             }
             if (oneIndex == null) return null;
             onePlusIndex = indexRaf.readLine();
-            System.out.println("===queryOrdersBySaler===oneindex==goodid:" + goodId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
-            long handleStartTime = System.currentTimeMillis();
-            System.out.println(oneIndex);
             String[] keyValue = oneIndex.split(":");
             String pos = keyValue[1];
             int length = 0;
@@ -96,10 +89,7 @@ public class GoodIdQuery {
                 }
                 orders.add(order);
             }
-            //System.out.println(constents);
 
-            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
-//            twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
@@ -112,7 +102,6 @@ public class GoodIdQuery {
 
     public static int findOrderNumberByGoodKey(String goodId, int index) {
         if (goodId == null) return 0;
-        System.out.println("==========:"+goodId + " index:" + index);
         try {
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
@@ -122,12 +111,9 @@ public class GoodIdQuery {
             String str = null;
 
             //1.查找二·级索引
-            long twoIndexStartTime = System.currentTimeMillis();
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-            System.out.println("===queryOrdersBySaler===twoindex==goodid:" + goodId + " time :" + (System.currentTimeMillis() - twoIndexStartTime));
 
             //2.查找一级索引
-            long oneIndexStartTime = System.currentTimeMillis();
             indexRaf.seek(position);
             String oneIndex = null;
             String onePlusIndex = null;
@@ -135,7 +121,6 @@ public class GoodIdQuery {
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
-                    //System.out.println(oneIndex);
                     break;
                 }
                 count++;
@@ -145,11 +130,8 @@ public class GoodIdQuery {
             }
             if (oneIndex == null) return 0;
             onePlusIndex = indexRaf.readLine();
-            System.out.println("===queryOrdersBySaler===oneindex==goodid:" + goodId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
-            long handleStartTime = System.currentTimeMillis();
-            System.out.println(oneIndex);
             String[] keyValue = oneIndex.split(":");
             String pos = keyValue[1];
             int length = 0;
@@ -166,7 +148,6 @@ public class GoodIdQuery {
             hashRaf.read(bytes, 0, length);
             String orderStrs = new String(bytes);
             String[] constents = orderStrs.split("\n");
-            System.out.println("===queryOrdersBySaler===handle==goodid:" + goodId + " size :" + constents.length + " time :" + (System.currentTimeMillis() - handleStartTime));
 
             hashRaf.close();
             indexRaf.close();
@@ -180,8 +161,6 @@ public class GoodIdQuery {
     }
 
     public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
-        System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======keys:" + keys);
-        long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         if (goodid == null) {
             return results.iterator();
@@ -193,20 +172,16 @@ public class GoodIdQuery {
         if (keys != null) {
             for (String key : keys) {
                 if (KeyCache.orderKeyCache.contains(key)) {
-                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in order");
                     orderSearchKeys.add(key);
                 } else if (KeyCache.goodKeyCache.contains(key)) {
-                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in good");
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.contains(key)) {
-                    System.out.println("===queryOrdersBySaler=====goodid:" + goodid + "======key in buyer");
                     buyerSearchKeys.add(key);
                 }
             }
         }
 
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
-        long findStartTime = System.currentTimeMillis();
 
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
@@ -219,14 +194,10 @@ public class GoodIdQuery {
 
         //获取goodid的所有订单信息
         List<Order> orders = GoodIdQuery.findByGoodId(goodid, hashIndex);
-        System.out.println("===queryOrdersBySaler===getOrders==goodid:" + goodid + " time :" + (System.currentTimeMillis() - findStartTime));
         if (orders == null || orders.size() == 0) {
-            System.out.println("goodid :" + goodid + " order is null ");
             return results.iterator();
         }
-        System.out.println("goodid :" + goodid + " size is :" + orders.size());
         if (keys != null && keys.size() == 0) {
-            System.out.println("goodid :" + goodid + " kyes is empty");
             for (Order order : orders) {
                 com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
                 result.setOrderid(order.getId());
@@ -285,12 +256,10 @@ public class GoodIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("queryOrdersBySaler : " + goodid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
-        long starttime = System.currentTimeMillis();
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
@@ -310,10 +279,7 @@ public class GoodIdQuery {
                 if (flag == 0 && str.contains(".")) {
                     flag = 1;
                 }
-                System.out.println("str:" + str);
-                long w = System.currentTimeMillis();
                 if (GoodIdQuery.isNumeric(str)) {
-                    System.out.println("--------1.use time :" + (System.currentTimeMillis() - w));
                     if (flag == 0) {
                         longValue = num * Long.valueOf(str);
                         keyValue.setKey(key);
@@ -323,7 +289,6 @@ public class GoodIdQuery {
                         keyValue.setKey(key);
                         keyValue.setValue(String.valueOf(value));
                     }
-                    System.out.println("---------sumByGood : time : " + (System.currentTimeMillis() - starttime));
                     return keyValue;
                 }
                 return null;
@@ -388,7 +353,6 @@ public class GoodIdQuery {
         } else {
             keyValue.setValue(String.valueOf(value));
         }
-        System.out.println("sumByGood : time : " + (System.currentTimeMillis() - starttime));
         return keyValue;
     }
 
