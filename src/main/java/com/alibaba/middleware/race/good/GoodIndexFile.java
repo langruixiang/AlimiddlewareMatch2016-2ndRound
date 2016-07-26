@@ -66,7 +66,7 @@ public class GoodIndexFile extends Thread{
         }
         generateGoodIndex();
         buildIndexCountLatch.countDown();
-        System.out.println("buyer build index " + index + " work end!");
+        System.out.println("good build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {

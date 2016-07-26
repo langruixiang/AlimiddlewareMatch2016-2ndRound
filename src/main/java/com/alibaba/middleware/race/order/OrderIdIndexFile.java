@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.order;
 
+import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -16,31 +17,68 @@ public class OrderIdIndexFile extends Thread{
 
     private CountDownLatch buildIndexCountLatch;
 
-    private int index;
+    private int concurrentNum;
 
-    public OrderIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
+    public OrderIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
-        this.index = index;
+        this.concurrentNum = concurrentNum;
     }
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateOrderIdIndex() {
-        Map<String, Long> orderIndex = new TreeMap<String, Long>();
-        TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
-        //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+            CountDownLatch countDownLatch = new CountDownLatch(num);
+            for (int j = i; j < i+num; j++) {
+                new MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+            }
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void run(){
+        if (hashDownLatch != null) {
+            try {
+                hashDownLatch.await();//等待上一个任务的完成
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        generateOrderIdIndex();
+        System.out.println("orderid build index " + " work end!");
+    }
+
+    private class MultiIndex extends Thread{
+        private int index;
+        private CountDownLatch selfCountDownLatch;
+        private CountDownLatch parentCountDownLatch;
+
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch){
+            this.index = index;
+            this.selfCountDownLatch = selfCountDownLatch;
+            this.parentCountDownLatch = parentCountDownLatch;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("=================================================================================index " + index + " file by orderid" + " start.");
+            Map<String, Long> orderIndex = new TreeMap<String, Long>();
+            TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
+            FileInputStream order_records = null;
+            try {
+                order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
+
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
                 File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
-
-//                File twoIndexfile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_ORDERID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
-
                 String str = null;
                 long count = 0;
                 String orderid = null;
@@ -72,9 +110,7 @@ public class OrderIdIndexFile extends Thread{
                     content = content + val;
                     bufferedWriter.write(content + '\n');
 
-                    if (count%towIndexSize == 0) {
-//                        twoIndexBW.write(key+":");
-//                        twoIndexBW.write(String.valueOf(position) + '\n');
+                    if (count % towIndexSize == 0) {
                         twoIndexMap.put(Long.valueOf(key), position);
                     }
                     position += content.getBytes().length + 1;
@@ -84,29 +120,15 @@ public class OrderIdIndexFile extends Thread{
                 orderIndex.clear();
                 bufferedWriter.flush();
                 bufferedWriter.close();
-//                twoIndexBW.flush();
-//                twoIndexBW.close();
                 order_br.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                selfCountDownLatch.countDown();
+                parentCountDownLatch.countDown();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-    //}
-
-    public void run(){
-        if (hashDownLatch != null) {
-            try {
-                hashDownLatch.await();//等待上一个任务的完成
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        generateOrderIdIndex();
-        buildIndexCountLatch.countDown();//完成工作，计数减一
-        System.out.println("orderid build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {

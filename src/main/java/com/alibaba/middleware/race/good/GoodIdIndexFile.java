@@ -4,6 +4,7 @@ import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Order;
+import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
@@ -19,20 +20,60 @@ public class GoodIdIndexFile extends Thread{
 
     private CountDownLatch buildIndexCountLatch;
 
-    private int index;
+    private int concurrentNum;
 
-    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
+    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
-        this.index = index;
+        this.concurrentNum = concurrentNum;
     }
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
-        Map<String, String> orderRankMap = new TreeMap<String, String>();
-        Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
-        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
-        //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+            CountDownLatch countDownLatch = new CountDownLatch(num);
+            for (int j = i; j < i + num; j++) {
+                new GoodIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void run(){
+        if (hashDownLatch != null) {
+            try {
+                hashDownLatch.await();//等待上一个任务的完成
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        generateGoodIdIndex();
+        System.out.println("goodid build index " + " work end!");
+    }
+
+    private class MultiIndex extends Thread{
+        private int index;
+        private CountDownLatch selfCountDownLatch;
+        private CountDownLatch parentCountDownLatch;
+
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch){
+            this.index = index;
+            this.selfCountDownLatch = selfCountDownLatch;
+            this.parentCountDownLatch = parentCountDownLatch;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("index " + index + " file by goodid" + " start.");
+            Map<String, String> orderRankMap = new TreeMap<String, String>();
+            Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
+            TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
+            //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -44,10 +85,6 @@ public class GoodIdIndexFile extends Thread{
                 File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
-
-//                File twoIndexfile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_GOODID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
 
                 String rankStr = null;
                 while ((rankStr = order_br.readLine()) != null) {
@@ -110,29 +147,15 @@ public class GoodIdIndexFile extends Thread{
                 bufferedWriter.close();
                 rankBW.flush();
                 rankBW.close();
-//                twoIndexBW.flush();
-//                twoIndexBW.close();
                 order_br.close();
+                selfCountDownLatch.countDown();
+                parentCountDownLatch.countDown();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-    //}
-
-    public void run(){
-        if (hashDownLatch != null) {
-            try {
-                hashDownLatch.await();//等待上一个任务的完成
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        generateGoodIdIndex();
-        buildIndexCountLatch.countDown();//完成工作，计数减一
-        System.out.println("goodid build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {
@@ -143,5 +166,4 @@ public class GoodIdIndexFile extends Thread{
 //        }
 //        return num;
 //    }
-
 }

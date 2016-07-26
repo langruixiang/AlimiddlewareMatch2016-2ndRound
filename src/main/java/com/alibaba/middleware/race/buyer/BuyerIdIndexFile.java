@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.buyer;
 
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.good.GoodIdIndexFile;
 
 import java.io.*;
 import java.util.*;
@@ -16,20 +17,61 @@ public class BuyerIdIndexFile extends Thread{
 
     private CountDownLatch buildIndexCountLatch;
 
-    private int index;
+    private int concurrentNum;
 
-    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
+    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
-        this.index = index;
+        this.concurrentNum = concurrentNum;
     }
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
-        Map<String, String> orderRankMap = new TreeMap<String, String>().descendingMap();
-        Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
-        TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
-        //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+            CountDownLatch countDownLatch = new CountDownLatch(num);
+            for (int j = i; j < i+num; j++) {
+                new BuyerIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+            }
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    //}
+
+    public void run(){
+        if (hashDownLatch != null) {
+            try {
+                hashDownLatch.await(); //等待上一个任务的结束
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        generateBuyerIdIndex();
+        System.out.println("buyerid build index " + " work end!");
+    }
+
+    private class MultiIndex extends Thread{
+        private int index;
+        private CountDownLatch selfCountDownLatch;
+        private CountDownLatch parentCountDownLatch;
+
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch){
+            this.index = index;
+            this.selfCountDownLatch = selfCountDownLatch;
+            this.parentCountDownLatch = parentCountDownLatch;
+        }
+
+        @Override
+        public void run() {
+            System.out.println("index " + index + " file by buyerid" + " start.");
+            Map<String, String> orderRankMap = new TreeMap<String, String>().descendingMap();
+            Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
+            TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
+            //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -41,11 +83,6 @@ public class BuyerIdIndexFile extends Thread{
                 File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
-
-//                File twoIndexfile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_TWO_INDEXING_BY_BUYERID + index);
-//                FileWriter twoIndexfw = new FileWriter(twoIndexfile);
-//                BufferedWriter twoIndexBW = new BufferedWriter(twoIndexfw);
-
 
 
                 String rankStr = null;
@@ -108,26 +145,14 @@ public class BuyerIdIndexFile extends Thread{
                 bufferedWriter.flush();
                 bufferedWriter.close();
                 order_br.close();
+                selfCountDownLatch.countDown();
+                parentCountDownLatch.countDown();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-    //}
-
-    public void run(){
-        if (hashDownLatch != null) {
-            try {
-                hashDownLatch.await(); //等待上一个任务的结束
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        generateBuyerIdIndex();
-        buildIndexCountLatch.countDown();
-        System.out.println("buyerid build index " + index + " work end!");
     }
 
 //    public static long bytes2Long(byte[] byteNum) {
