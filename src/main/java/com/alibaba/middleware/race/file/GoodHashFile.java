@@ -69,7 +69,7 @@ public class GoodHashFile extends Thread{
 
     public void run(){
         generateGoodHashFile();
-        System.out.println("buyer file hash end~");
+        System.out.println("good file hash end~");
         countDownLatch.countDown();
     }
 }

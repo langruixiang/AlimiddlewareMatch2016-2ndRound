@@ -55,11 +55,11 @@ public class OrderSystemImpl implements OrderSystem {
             FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
         }
 
-        ExecutorService orderIdIndexThreadPool = Executors.newFixedThreadPool(10);
-        ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(10);
-        ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(10);
-        ExecutorService buyerIndexThreadPool = Executors.newFixedThreadPool(10);
-        ExecutorService goodIndexThreadPool = Executors.newFixedThreadPool(10);
+        ExecutorService orderIdIndexThreadPool = Executors.newFixedThreadPool(6);
+        ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(6);
+        ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(6);
+        ExecutorService buyerIndexThreadPool = Executors.newFixedThreadPool(6);
+        ExecutorService goodIndexThreadPool = Executors.newFixedThreadPool(6);
 
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
@@ -71,25 +71,39 @@ public class OrderSystemImpl implements OrderSystem {
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
         System.out.println("begin to build index:");
         //将商品文件hash成多个小文件
+        long goodTime = System.currentTimeMillis();
         GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
         goodHashFileThread.start();
-
+        goodCountDownLatch.await();
+        System.out.println("good file hash end, time:" + (System.currentTimeMillis() - goodTime));
 
         //将买家文件hash成多个小文件
+        long buyerTime = System.currentTimeMillis();
         BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
         buyerHashFile.start();
+        buyerCountDownLatch.await();
+        System.out.println("buyer file hash end, time:" + (System.currentTimeMillis() - buyerTime));
 
         //按买家ID hash成多个小文件
+        long buyerIdHashTime = System.currentTimeMillis();
         OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch);
         buyerIdHashThread.start();
+        buyerIdCountDownLatch.await();
+        System.out.println("buyerid hash order end, time:" + (System.currentTimeMillis() - buyerIdHashTime));
 
         //按商品ID hash成多个小文件
+        long goodIdHashTime = System.currentTimeMillis();
         OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
+        goodIdCountDownLatch.await();
+        System.out.println("goodid hash order end, time:" + (System.currentTimeMillis() - goodIdHashTime));
 
         //按订单ID hash成多个小文件
+        long orderIdHashTime = System.currentTimeMillis();
         OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch);
         orderIdHashThread.start();
+        orderIdCountDownLatch.await();
+        System.out.println("orderid hash order end, time:" + (System.currentTimeMillis() - orderIdHashTime));
 
 
         //buyer文件生成索引放入内存

@@ -37,7 +37,7 @@ public class FileConstant {
 
     //public static int FILE_NUMS = 200;
 
-    public static int FILE_ORDER_NUMS = 5000;
+    public static int FILE_ORDER_NUMS = 3000;
 
     public static int FILE_GOOD_NUMS = 2000;
 
