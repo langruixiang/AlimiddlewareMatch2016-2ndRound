@@ -25,7 +25,7 @@ public class BuyerIdQuery {
         if (buyerId == null || buyerId.isEmpty()) return null;
         String beginKey = buyerId + "_" + starttime;
         String endKey = buyerId + "_" + endtime;
-        System.out.println("==========:"+buyerId + " index:" + index);
+        //System.out.println("=======111===:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 
@@ -113,9 +113,10 @@ public class BuyerIdQuery {
         //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_NUMS);
+        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
-        Buyer buyer = BuyerQuery.findBuyerById(buyerid, hashIndex);
+        int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_BUYER_NUMS);
+        Buyer buyer = BuyerQuery.findBuyerById(buyerid, buyerHashIndex);
         if (buyer == null) return results.iterator();
 
         //获取goodid的所有订单信息
@@ -130,7 +131,7 @@ public class BuyerIdQuery {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_GOOD_NUMS);
             Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue(), goodIdHashIndex);
 
             if (good != null && good.getKeyValues() != null) {

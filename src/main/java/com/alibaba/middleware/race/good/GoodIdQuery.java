@@ -181,12 +181,13 @@ public class GoodIdQuery {
             }
         }
 
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
+        int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
             //加入对应商品的所有属性kv
-            good = GoodQuery.findGoodById(goodid, hashIndex);
+            good = GoodQuery.findGoodById(goodid, goodHashIndex);
             if (good == null) return results.iterator();
 
         }
@@ -211,7 +212,7 @@ public class GoodIdQuery {
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 //加入对应买家的所有属性kv
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
@@ -262,7 +263,7 @@ public class GoodIdQuery {
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型
@@ -270,8 +271,9 @@ public class GoodIdQuery {
 
         if (KeyCache.goodKeyCache.contains(key)) {
             //加入对应商品的所有属性kv
+            int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
-            Good good = GoodQuery.findGoodById(goodid, hashIndex);
+            Good good = GoodQuery.findGoodById(goodid, goodHashIndex);
 
             if (good == null) return null;
             if (good.getKeyValues().containsKey(key)) {
@@ -323,7 +325,7 @@ public class GoodIdQuery {
 
             //加入对应买家的所有属性kv
             if (KeyCache.buyerKeyCache.contains(key)) {
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_NUMS);
+                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
                 if (buyer.getKeyValues().containsKey(key)) {
                     String str = buyer.getKeyValues().get(key).getValue();

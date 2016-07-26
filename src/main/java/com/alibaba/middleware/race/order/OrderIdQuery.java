@@ -82,7 +82,7 @@ public class OrderIdQuery {
         System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         long starttime = System.currentTimeMillis();
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
-        int hashIndex = (int) (orderId % FileConstant.FILE_NUMS);
+        int hashIndex = (int) (orderId % FileConstant.FILE_ORDER_NUMS);
         long findStartTime = System.currentTimeMillis();
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
         System.out.println("===queryOrder==index===orderid: " + orderId + " time :" + (System.currentTimeMillis() - findStartTime));
@@ -110,7 +110,7 @@ public class OrderIdQuery {
         {
             if (keys == null || buyerSearchKeys.size() > 0) {
                 String buyerId = order.getKeyValues().get("buyerid").getValue();
-                int buyerHashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
+                int buyerHashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 //加入对应买家的所有属性kv
                 Buyer buyer = BuyerQuery.findBuyerById(buyerId, buyerHashIndex);
 
@@ -133,7 +133,7 @@ public class OrderIdQuery {
             if (keys == null || goodSearchKeys.size() > 0) {
                 String goodId = order.getKeyValues().get("goodid").getValue();
                 //加入对应商品的所有属性kv
-                int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
+                int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_GOOD_NUMS);
                 Good good = GoodQuery.findGoodById(goodId, goodIdHashIndex);
 
                 if (good != null && good.getKeyValues() != null) {

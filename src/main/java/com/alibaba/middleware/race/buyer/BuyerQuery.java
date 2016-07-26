@@ -21,7 +21,7 @@ import java.util.List;
 public class BuyerQuery {
     public static Buyer findBuyerById(String buyerId, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        System.out.println("==========:"+buyerId + " index:" + index);
+        //System.out.println("=======222===:"+buyerId + " index:" + index);
         Buyer buyer = new Buyer();
         try {
 

@@ -65,57 +65,57 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodCountDownLatch = new CountDownLatch(1);
         //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
-        CountDownLatch buildIndexLatch = new CountDownLatch(5 * FileConstant.FILE_NUMS);
+        CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
 
         //按买家ID hash成多个小文件
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "buyerid", buyerIdCountDownLatch);
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch);
         buyerIdHashThread.start();
 
         //按商品ID hash成多个小文件
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodIdCountDownLatch);
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "goodid", goodIdCountDownLatch);
         goodIdHashThread.start();
 
         //按订单ID hash成多个小文件
-        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", orderIdCountDownLatch);
+        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch);
         orderIdHashThread.start();
 
 
         //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_NUMS, goodCountDownLatch);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
         goodHashFileThread.start();
 
 
         //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_NUMS, buyerCountDownLatch);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
         buyerHashFile.start();
 
         //buyer文件生成索引放入内存
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
             BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
             buyerIndexThreadPool.execute(buyerIndexFile);
         }
 
         //good文件生成索引放入内存
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_GOOD_NUMS; i++) {
             GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
 
         //根据orderid生成一级二级索引
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
             OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, i);
             orderIdIndexThreadPool.execute(orderIdIndexFile);
         }
 
         //根据buyerid生成一级二级索引
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
             BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, i);
             buyerIdIndexThreadPool.execute(buyerIdIndexFile);
         }
 
         //根据goodid生成一级二级索引
-        for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
+        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
             GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, i);
             goodIdIndexThreadPool.execute(goodIdIndexFile);
         }
