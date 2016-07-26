@@ -60,76 +60,79 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch orderIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodCountDownLatch = new CountDownLatch(1);
-        //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
+        CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(5);
 
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
         System.out.println("begin to build index:");
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodAndBuyerCountDownLatch);
         goodHashFileThread.start();
-        goodCountDownLatch.await();
+        //goodCountDownLatch.await();
         System.out.println("good file hash end, time:" + (System.currentTimeMillis() - goodTime));
 
         //将买家文件hash成多个小文件
         long buyerTime = System.currentTimeMillis();
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, goodAndBuyerCountDownLatch);
         buyerHashFile.start();
-        buyerCountDownLatch.await();
+        //buyerCountDownLatch.await();
         System.out.println("buyer file hash end, time:" + (System.currentTimeMillis() - buyerTime));
 
         //按买家ID hash成多个小文件
         long buyerIdHashTime = System.currentTimeMillis();
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch);
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", goodAndBuyerCountDownLatch);
         buyerIdHashThread.start();
-        buyerIdCountDownLatch.await();
+        //buyerIdCountDownLatch.await();
         System.out.println("buyerid hash order end, time:" + (System.currentTimeMillis() - buyerIdHashTime));
 
         //按商品ID hash成多个小文件
         long goodIdHashTime = System.currentTimeMillis();
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "goodid", goodIdCountDownLatch);
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "goodid", goodAndBuyerCountDownLatch);
         goodIdHashThread.start();
-        goodIdCountDownLatch.await();
+        //goodIdCountDownLatch.await();
         System.out.println("goodid hash order end, time:" + (System.currentTimeMillis() - goodIdHashTime));
 
         //按订单ID hash成多个小文件
         long orderIdHashTime = System.currentTimeMillis();
-        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch);
+        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", goodAndBuyerCountDownLatch);
         orderIdHashThread.start();
-        orderIdCountDownLatch.await();
+        //orderIdCountDownLatch.await();
         System.out.println("orderid hash order end, time:" + (System.currentTimeMillis() - orderIdHashTime));
+
+        goodAndBuyerCountDownLatch.await();
+        System.out.println("all the hash is end, time :" + (System.currentTimeMillis() - goodTime));
 
 
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
-            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
+            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, i);
             buyerIndexThreadPool.execute(buyerIndexFile);
         }
 
         //good文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_GOOD_NUMS; i++) {
-            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
+            GoodIndexFile goodIndexFile = new GoodIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
 
         //根据orderid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
             System.out.println("===========================================================orderid index==============================================");
-            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, 10);
+            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
             orderIdIndexFile.start();
             //orderIdIndexThreadPool.execute(orderIdIndexFile);
         //}
 
         //根据buyerid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, 10);
+            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
             buyerIdIndexFile.start();
             //buyerIdIndexThreadPool.execute(buyerIdIndexFile);
         //}
 
         //根据goodid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10);
+            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
             goodIdIndexFile.start();
             //goodIdIndexThreadPool.execute(goodIdIndexFile);
         //}
@@ -139,7 +142,7 @@ public class OrderSystemImpl implements OrderSystem {
         //OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
         //orderIndexBuilder.start();
 
-        buildIndexLatch.await();
+        //buildIndexLatch.await();
         //goodAndBuyerCountDownLatch.await();
         //long midTime = System.currentTimeMillis();
         //System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
