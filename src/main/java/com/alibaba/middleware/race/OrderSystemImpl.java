@@ -98,10 +98,11 @@ public class OrderSystemImpl implements OrderSystem {
         goodAndBuyerBuildIndexLatch.await();
         System.out.println("goodAndBuyerBuildIndexLatch time is :" + (System.currentTimeMillis() - beginTime));
 
+        GoodQuery.initGoodHashFiles();
+        BuyerQuery.initBuyerHashFiles();
         //按订单ID hash成多个小文件并同时合并相应的good和buyer的信息
         NewOrderHashFile orderIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "orderid", goodAndBuyerBuildIndexLatch, orderIdCountDownLatch);
         orderIdHashThread.start();
-        
         orderIdCountDownLatch.await();
         System.out.println("orderIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
 
@@ -113,6 +114,8 @@ public class OrderSystemImpl implements OrderSystem {
         NewOrderHashFile goodIdHashThread = new NewOrderHashFile(orderFiles, storeFolders, FileConstant.FILE_NUMS, "goodid", goodAndBuyerBuildIndexLatch, goodIdCountDownLatch);
         goodIdHashThread.start();
         goodIdCountDownLatch.await();
+        GoodQuery.closeGoodHashFiles();
+        BuyerQuery.closeBuyerHashFiles();
         System.out.println("goodIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
 //        System.exit(1);
 

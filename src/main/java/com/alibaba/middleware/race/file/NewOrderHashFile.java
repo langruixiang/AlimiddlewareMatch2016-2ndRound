@@ -27,8 +27,8 @@ public class NewOrderHashFile extends Thread{
     private String type;
     private CountDownLatch countDownLatch;
     private CountDownLatch awaitCountDownLatch;
-    private BuyerQuery buyerQuery = new BuyerQuery();
-    private GoodQuery goodQuery = new GoodQuery();
+//    private BuyerQuery buyerQuery = new BuyerQuery();
+//    private GoodQuery goodQuery = new GoodQuery();
 
     public NewOrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
             CountDownLatch awaitCountDownLatch, CountDownLatch countDownLatch) {
@@ -53,8 +53,8 @@ public class NewOrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            buyerQuery.initBuyerHashFiles();
-            goodQuery.initGoodHashFiles();
+//            buyerQuery.initBuyerHashFiles();
+//            goodQuery.initGoodHashFiles();
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
@@ -64,8 +64,8 @@ public class NewOrderHashFile extends Thread{
             
             multiHashLatch.await();
 
-            buyerQuery.closeBuyerHashFiles();
-            goodQuery.closeGoodHashFiles();
+//            buyerQuery.closeBuyerHashFiles();
+//            goodQuery.closeGoodHashFiles();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
@@ -86,8 +86,8 @@ public class NewOrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
-            buyerQuery.initBuyerHashFiles();
-            goodQuery.initGoodHashFiles();
+//            buyerQuery.initBuyerHashFiles();
+//            goodQuery.initGoodHashFiles();
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
@@ -95,8 +95,8 @@ public class NewOrderHashFile extends Thread{
             }
             multiHashLatch.await();
 
-            buyerQuery.closeBuyerHashFiles();
-            goodQuery.closeGoodHashFiles();
+//            buyerQuery.closeBuyerHashFiles();
+//            goodQuery.closeGoodHashFiles();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
@@ -116,8 +116,8 @@ public class NewOrderHashFile extends Thread{
                 FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
-            buyerQuery.initBuyerHashFiles();
-            goodQuery.initGoodHashFiles();
+//            buyerQuery.initBuyerHashFiles();
+//            goodQuery.initGoodHashFiles();
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
@@ -125,8 +125,8 @@ public class NewOrderHashFile extends Thread{
             }
             multiHashLatch.await();
 
-            buyerQuery.closeBuyerHashFiles();
-            goodQuery.closeGoodHashFiles();
+//            buyerQuery.closeBuyerHashFiles();
+//            goodQuery.closeGoodHashFiles();
 
             for (int i = 0; i < nums; i++) {
                 bufferedWriters[i].close();
@@ -191,11 +191,13 @@ public class NewOrderHashFile extends Thread{
 	                            buyerid = keyValue[1];
 	                        }
 	                    }
+	                    String buyerLine = BuyerQuery.getBuyerLine(buyerid);
+	                    String goodLine = GoodQuery.getGoodLine(goodid);
 	                    synchronized (bufferedWriters[hashFileIndex]) {
                             bufferedWriters[hashFileIndex].write(line + '\t');
-                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
-                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
-                        }//TODO
+                            bufferedWriters[hashFileIndex].write(buyerLine + '\t');
+                            bufferedWriters[hashFileIndex].write(goodLine + '\n');
+                        }
 	                }
 				}else if(type.equals("goodid")){
                     while ((line = order_br.readLine()) != null) {
@@ -210,10 +212,12 @@ public class NewOrderHashFile extends Thread{
                                 buyerid = keyValue[1];
                             }
                         }
+                        String buyerLine = BuyerQuery.getBuyerLine(buyerid);
+                        String goodLine = GoodQuery.getGoodLine(goodid);
                         synchronized (bufferedWriters[hashFileIndex]) {
                             bufferedWriters[hashFileIndex].write(line + '\t');
-                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
-                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
+                            bufferedWriters[hashFileIndex].write(buyerLine + '\t');
+                            bufferedWriters[hashFileIndex].write(goodLine + '\n');
                         }
                     }
 				}else if(type.equals("buyerid")){
@@ -228,10 +232,12 @@ public class NewOrderHashFile extends Thread{
                                 goodid = keyValue[1];
                             }
                         }
+                        String buyerLine = BuyerQuery.getBuyerLine(buyerid);
+                        String goodLine = GoodQuery.getGoodLine(goodid);
                         synchronized (bufferedWriters[hashFileIndex]) {
                             bufferedWriters[hashFileIndex].write(line + '\t');
-                            bufferedWriters[hashFileIndex].write(buyerQuery.getBuyerLine(buyerid) + '\t');
-                            bufferedWriters[hashFileIndex].write(goodQuery.getGoodLine(goodid) + '\n');
+                            bufferedWriters[hashFileIndex].write(buyerLine + '\t');
+                            bufferedWriters[hashFileIndex].write(goodLine + '\n');
                         }
                     }
 				}

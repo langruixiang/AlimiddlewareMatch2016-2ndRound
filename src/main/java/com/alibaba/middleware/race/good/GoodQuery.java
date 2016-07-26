@@ -71,11 +71,11 @@ public class GoodQuery {
         //findByBuyerId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 
-    private RandomAccessFile[] goodHashFiles;
-    public FileChannel[] hashFileChannels;
-    public MappedByteBuffer[] hashFileMappedByteBuffers;
+    private static RandomAccessFile[] goodHashFiles;
+    public static FileChannel[] hashFileChannels;
+    public static MappedByteBuffer[] hashFileMappedByteBuffers;
 
-    public void initGoodHashFiles() throws IOException {
+    public static void initGoodHashFiles() throws IOException {
         goodHashFiles = new RandomAccessFile[FileConstant.FILE_NUMS];
         hashFileChannels = new FileChannel[FileConstant.FILE_NUMS];
         hashFileMappedByteBuffers = new MappedByteBuffer[FileConstant.FILE_NUMS];
@@ -87,7 +87,7 @@ public class GoodQuery {
         }
     }
 
-    public String getGoodLine(String goodId) throws UnsupportedEncodingException, IOException {
+    public static String getGoodLine(String goodId) throws UnsupportedEncodingException, IOException {
         int hashFileIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_NUMS);
 
         //1.查找索引
@@ -104,17 +104,13 @@ public class GoodQuery {
         byte[] buffer = new byte[posInfo.length - 1];
         synchronized (mappedByteBuffer) {
             mappedByteBuffer.position(posInfo.offset);
-            try {
-                mappedByteBuffer.get(buffer);
-            } catch (BufferUnderflowException e) {
-                e.printStackTrace();
-            }
+            mappedByteBuffer.get(buffer);
         }
         return new String(buffer);
 //        String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
     }
     
-    public void closeGoodHashFiles() throws IOException {
+    public static void closeGoodHashFiles() throws IOException {
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             goodHashFiles[i].close();
         }

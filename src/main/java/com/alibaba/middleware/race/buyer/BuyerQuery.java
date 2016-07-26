@@ -71,11 +71,11 @@ public class BuyerQuery {
         return buyer;
     }
     
-    public RandomAccessFile[] buyerHashFiles;
-    public FileChannel[] hashFileChannels;
-    public MappedByteBuffer[] hashFileMappedByteBuffers;
+    public static RandomAccessFile[] buyerHashFiles;
+    public static FileChannel[] hashFileChannels;
+    public static MappedByteBuffer[] hashFileMappedByteBuffers;
 
-    public void initBuyerHashFiles() throws IOException {
+    public static void initBuyerHashFiles() throws IOException {
         buyerHashFiles = new RandomAccessFile[FileConstant.FILE_NUMS];
         hashFileChannels = new FileChannel[FileConstant.FILE_NUMS];
         hashFileMappedByteBuffers = new MappedByteBuffer[FileConstant.FILE_NUMS];
@@ -87,7 +87,7 @@ public class BuyerQuery {
         }
     }
 
-    public String getBuyerLine(String buyerId) throws UnsupportedEncodingException, IOException {
+    public static String getBuyerLine(String buyerId) throws UnsupportedEncodingException, IOException {
         int hashFileIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_NUMS);
 
         //1.查找索引
@@ -100,15 +100,20 @@ public class BuyerQuery {
         //System.out.println(position);
 
         //2.按行读取内容
+        if (hashFileMappedByteBuffers == null) {
+            System.out.println();
+        }
         MappedByteBuffer mappedByteBuffer = hashFileMappedByteBuffers[hashFileIndex];
-        mappedByteBuffer.position(posInfo.offset);
         byte[] buffer = new byte[posInfo.length - 1];
-        mappedByteBuffer.get(buffer);
+        synchronized (mappedByteBuffer) {
+            mappedByteBuffer.position(posInfo.offset);
+            mappedByteBuffer.get(buffer);
+        }
         return new String(buffer);
 //        String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
     }
     
-    public void closeBuyerHashFiles() throws IOException {
+    public static void closeBuyerHashFiles() throws IOException {
         for (int i = 0; i < FileConstant.FILE_NUMS;++i) {
             hashFileMappedByteBuffers[i].clear();
             hashFileChannels[i].close();
