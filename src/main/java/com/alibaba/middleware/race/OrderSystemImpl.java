@@ -10,22 +10,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.alibaba.middleware.race.buyer.BuyerIndexFile;
-import com.alibaba.middleware.race.buyer.BuyerQuery;
-import com.alibaba.middleware.race.good.GoodIndexFile;
-import com.alibaba.middleware.race.good.GoodQuery;
+import com.alibaba.middleware.race.buyer.*;
+import com.alibaba.middleware.race.good.*;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
-import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.BuyerHashFile;
 import com.alibaba.middleware.race.file.GoodHashFile;
 import com.alibaba.middleware.race.file.OrderHashFile;
-import com.alibaba.middleware.race.good.GoodIdIndexFile;
-import com.alibaba.middleware.race.good.GoodIdQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
@@ -128,14 +122,14 @@ public class OrderSystemImpl implements OrderSystem {
 
         //根据buyerid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, 10);
+            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, 10);
             buyerIdIndexFile.start();
             //buyerIdIndexThreadPool.execute(buyerIdIndexFile);
         //}
 
         //根据goodid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10);
+            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10);
             goodIdIndexFile.start();
             //goodIdIndexThreadPool.execute(goodIdIndexFile);
         //}
@@ -173,7 +167,7 @@ public class OrderSystemImpl implements OrderSystem {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return BuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
+        return OldBuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
     }
 
     @Override
@@ -183,7 +177,7 @@ public class OrderSystemImpl implements OrderSystem {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return GoodIdQuery.findOrdersByGood(salerid, goodid, keys);
+        return OldGoodIdQuery.findOrdersByGood(salerid, goodid, keys);
     }
 
     @Override
@@ -193,6 +187,6 @@ public class OrderSystemImpl implements OrderSystem {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return GoodIdQuery.sumValuesByGood(goodid, key);
+        return OldGoodIdQuery.sumValuesByGood(goodid, key);
     }
 }
