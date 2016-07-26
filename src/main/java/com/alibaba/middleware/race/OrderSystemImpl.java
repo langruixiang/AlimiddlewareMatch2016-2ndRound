@@ -37,7 +37,7 @@ import com.alibaba.middleware.race.order.OrderIdQuery;
  */
 public class OrderSystemImpl implements OrderSystem {
 
-    private CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
+    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
 
     //实现无参构造函数
     public OrderSystemImpl() {
@@ -127,7 +127,7 @@ public class OrderSystemImpl implements OrderSystem {
         //OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
         //orderIndexBuilder.start();
 
-
+        //buildIndexLatch.await();
         //goodAndBuyerCountDownLatch.await();
         //long midTime = System.currentTimeMillis();
         //System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
