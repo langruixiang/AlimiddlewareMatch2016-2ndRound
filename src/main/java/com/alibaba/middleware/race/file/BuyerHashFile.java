@@ -36,6 +36,7 @@ public class BuyerHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
+            int count = 0;
             for (String buyerFile : buyerFiles) {
                 FileInputStream buyer_records = new FileInputStream(buyerFile);
                 BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
@@ -56,6 +57,7 @@ public class BuyerHashFile extends Thread{
                         }
                     }
                 }
+                System.out.println("buyer hash file " + count++);
             }
 
             for (int i = 0; i < nums; i++) {

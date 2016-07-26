@@ -35,7 +35,7 @@ public class GoodHashFile extends Thread{
                 FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
-
+            int count = 0;
             for (String goodFile : goodFiles) {
                 FileInputStream good_records = new FileInputStream(goodFile);
                 BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
@@ -56,6 +56,7 @@ public class GoodHashFile extends Thread{
                         }
                     }
                 }
+                System.out.println("good hash FIle " + count++);
             }
 
             for (int i = 0; i < nums; i++) {
