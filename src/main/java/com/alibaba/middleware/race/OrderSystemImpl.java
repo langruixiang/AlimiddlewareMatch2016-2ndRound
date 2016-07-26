@@ -37,6 +37,8 @@ import com.alibaba.middleware.race.order.OrderIdQuery;
  */
 public class OrderSystemImpl implements OrderSystem {
 
+    private CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
+
     //实现无参构造函数
     public OrderSystemImpl() {
 
@@ -65,8 +67,17 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodCountDownLatch = new CountDownLatch(1);
         //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(2);
-        CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
+
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
+        System.out.println("begin to build index:");
+        //将商品文件hash成多个小文件
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
+        goodHashFileThread.start();
+
+
+        //将买家文件hash成多个小文件
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
+        buyerHashFile.start();
 
         //按买家ID hash成多个小文件
         OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch);
@@ -80,15 +91,6 @@ public class OrderSystemImpl implements OrderSystem {
         OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch);
         orderIdHashThread.start();
 
-
-        //将商品文件hash成多个小文件
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
-        goodHashFileThread.start();
-
-
-        //将买家文件hash成多个小文件
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
-        buyerHashFile.start();
 
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
@@ -125,7 +127,7 @@ public class OrderSystemImpl implements OrderSystem {
         //OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
         //orderIndexBuilder.start();
 
-        buildIndexLatch.await();
+
         //goodAndBuyerCountDownLatch.await();
         //long midTime = System.currentTimeMillis();
         //System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
@@ -138,21 +140,41 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
+        try {
+            buildIndexLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return OrderIdQuery.findOrder(orderId, keys);
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
+        try {
+            buildIndexLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return BuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
+        try {
+            buildIndexLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return GoodIdQuery.findOrdersByGood(salerid, goodid, keys);
     }
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
+        try {
+            buildIndexLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return GoodIdQuery.sumValuesByGood(goodid, key);
     }
 }
