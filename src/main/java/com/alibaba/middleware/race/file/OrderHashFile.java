@@ -148,6 +148,7 @@ public class OrderHashFile extends Thread{
     	
     	@Override
     	public void run(){
+            System.out.println(orderFile + "hash file by " + type + " start.");
     		try {
 				FileInputStream order_records = new FileInputStream(orderFile);
 				BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -208,6 +209,7 @@ public class OrderHashFile extends Thread{
 				}
 				
 				countDownLatch.countDown();
+                System.out.println(type + "hash file end :" + orderFile);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
