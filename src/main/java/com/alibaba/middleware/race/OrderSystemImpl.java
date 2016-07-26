@@ -114,6 +114,7 @@ public class OrderSystemImpl implements OrderSystem {
         goodIdHashThread.start();
         goodIdCountDownLatch.await();
         System.out.println("goodIdCountDownLatch time is :" + (System.currentTimeMillis() - beginTime));
+//        System.exit(1);
 
         //根据orderid生成一级二级索引
         for (int i = 0; i < FileConstant.FILE_NUMS; i++) {

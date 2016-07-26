@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.PosInfo;
 
 import java.io.*;
 import java.util.concurrent.CountDownLatch;
@@ -30,21 +31,19 @@ public class GoodIndexFile extends Thread{
                 FileInputStream good_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
                 BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
-                String str = null;
-                long position = 0;
-                while ((str = good_br.readLine()) != null) {
-                    String goodid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
-
-                        if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1];
-                            OneIndexCache.goodOneIndexCache.put(goodid, position);
-                            break;
-                        }
+                String line = null;
+                int offset = 0;
+                int length = 0;
+                while ((line = good_br.readLine()) != null) {
+                    int goodIdStartIndex = line.indexOf("goodid:") + 7;// 7 : "goodid:".length()
+                    int goodIdEndIndex = line.indexOf('\t', goodIdStartIndex);
+                    if (goodIdEndIndex < 0) {
+                        goodIdEndIndex = line.indexOf('\n', goodIdStartIndex);
                     }
-                    position += str.getBytes().length + 1;
+                    String goodId = line.substring(goodIdStartIndex, goodIdEndIndex);
+                    length = line.getBytes().length + 1;
+                    OneIndexCache.goodOneIndexCache.put(goodId, new PosInfo(offset, length));
+                    offset += length;
                 }
                 good_br.close();
             } catch (FileNotFoundException e) {

@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.buyer;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.PosInfo;
 
 import java.io.*;
 import java.util.Iterator;
@@ -35,21 +36,19 @@ public class BuyerIndexFile extends Thread{
                 FileInputStream buyer_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
                 BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
-                String str = null;
-                long position = 0;
-                while ((str = buyer_br.readLine()) != null) {
-                    String buyerid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
-
-                        if ("buyerid".equals(keyValue[0])) {
-                            buyerid = keyValue[1];
-                            OneIndexCache.buyerOneIndexCache.put(buyerid, position);
-                            break;
-                        }
+                String line = null;
+                int offset = 0;
+                int length = 0;
+                while ((line = buyer_br.readLine()) != null) {
+                    int buyerIdStartIndex = line.indexOf("buyerid:") + 8;// 7 : "buyerid:".length()
+                    int buyerIdEndIndex = line.indexOf('\t', buyerIdStartIndex);
+                    if (buyerIdEndIndex < 0) {
+                        buyerIdEndIndex = line.indexOf('\n', buyerIdStartIndex);
                     }
-                    position += str.getBytes().length + 1;
+                    String buyerId = line.substring(buyerIdStartIndex, buyerIdEndIndex);
+                    length = line.getBytes().length + 1;
+                    OneIndexCache.buyerOneIndexCache.put(buyerId, new PosInfo(offset, length));
+                    offset += length;
                 }
                 buyer_br.close();
             } catch (FileNotFoundException e) {
