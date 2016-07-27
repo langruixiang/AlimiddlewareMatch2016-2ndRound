@@ -246,7 +246,7 @@ public class OldGoodIdQuery {
         int flag = 0;
 
         System.out.println(KeyCache.goodKeyCache.get(key));
-        if (!KeyCache.goodKeyCache.containsKey(key)) {
+        if (KeyCache.goodKeyCache.containsKey(key)) {
             System.out.println("-------------");
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
