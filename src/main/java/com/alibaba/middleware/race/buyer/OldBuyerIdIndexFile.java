@@ -67,7 +67,7 @@ public class OldBuyerIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("index " + index + " file by buyerid" + " start.");
-            TreeMap<String, List<Long>> buyerIndex = new TreeMap<String, List<Long>>();
+            TreeMap<String, TreeMap<Long, Long>> buyerIndex = new TreeMap<String, TreeMap<Long, Long>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -91,15 +91,14 @@ public class OldBuyerIdIndexFile extends Thread{
 
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];
+                            if (!buyerIndex.containsKey(buyerid)) {
+                                buyerIndex.put(buyerid, new TreeMap<Long, Long>());
+                            }
                         } else if ("createtime".equals(keyValue[0])) {
                             createtime = keyValue[1];
                         }
                         if (buyerid != null && createtime != null) {
-                            String newKey = buyerid + "_" + createtime;
-                            if (!buyerIndex.containsKey(newKey)) {
-                                buyerIndex.put(newKey, new ArrayList<Long>());
-                            }
-                            buyerIndex.get(newKey).add(count);
+                            buyerIndex.get(buyerid).put(Long.valueOf(createtime), count);
                             break;
                         }
                     }
@@ -110,22 +109,31 @@ public class OldBuyerIdIndexFile extends Thread{
                 FileConstant.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 count = 0;
                 long position = 0;
-                Iterator iterator = buyerIndex.descendingMap().entrySet().iterator();
+                Iterator iterator = buyerIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    List<Long> val = (List<Long>) entry.getValue();
-                    String content = key + ":";
-                    for (Long num : val) {
-                        content = content + num + "|";
+                    TreeMap<Long, Long> val = (TreeMap<Long, Long>) entry.getValue();
+
+                    StringBuilder content = new StringBuilder(key + "\t");
+                    Iterator iteratorOrders = val.descendingMap().entrySet().iterator();
+                    while (iteratorOrders.hasNext()) {
+                        Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
+                        Long createtime = (Long) orderEntry.getKey();
+                        Long pos = (Long)orderEntry.getValue();
+                        content.append(createtime);
+                        content.append(":");
+                        content.append(pos);
+                        content.append("|");
                     }
-                    bufferedWriter.write(content + '\n');
                     val.clear();
+                    bufferedWriter.write(content.toString() + '\n');
+
                     if (count % twoIndexSize == 0) {
                         twoIndexMap.put(key, position);
                     }
-                    position += content.getBytes().length + 1;
+                    position += content.toString().getBytes().length + 1;
                     count++;
                 }
                 TwoIndexCache.buyerIdTwoIndexCache.put(index, twoIndexMap);

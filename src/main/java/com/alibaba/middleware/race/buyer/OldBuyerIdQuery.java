@@ -24,8 +24,6 @@ import java.util.List;
 public class OldBuyerIdQuery {
     public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        String beginKey = buyerId + "_" + starttime;
-        String endKey = buyerId + "_" + endtime;
         System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
@@ -39,34 +37,35 @@ public class OldBuyerIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
-
+            System.out.println(position);
             //2.查找一级索引
             int count = 0;
             indexRaf.seek(position);
             String oneIndex = null;
-            List<String> oneIndexs = new ArrayList<String>();
             while ((oneIndex = indexRaf.readLine()) != null) {
-                count++;
-                String[] keyValue = oneIndex.split(":");
-                if (endKey.compareTo(keyValue[0]) <= 0) {
-                    continue;
-                } else if (beginKey.compareTo(keyValue[0]) > 0) {
+                String[] keyValue = oneIndex.split("\t");
+                if (buyerId.equals(keyValue[0])) {
                     break;
                 }
-                oneIndexs.add(oneIndex);
-            }
-
-            //3.按行读取内容
-            List<String> orderContents = new ArrayList<String>();
-            for (String line : oneIndexs) {
-                String[] keyValue = line.split(":");
-                String[] positions = keyValue[1].split("\\|");
-                for (String pos : positions) {
-                    hashRaf.seek(Long.valueOf(pos));
-                    String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                    orderContents.add(orderContent);
-                    //System.out.println(orderContent);
+                count++;
+                if (count >= FileConstant.buyerIdIndexRegionSizeMap.get(index)) {
+                    return null;
                 }
+            }
+            //3.按行读取内容
+            String[] keyValue = oneIndex.split("\t");
+            String[] positionKvs = keyValue[1].split("\\|");
+
+            List<String> orderContents = new ArrayList<String>();
+            for (String pos : positionKvs) {
+                String[] posKv = pos.split(":");
+                Long createTime = Long.valueOf(posKv[0]);
+                if (createTime < starttime || createTime >= endtime) {
+                    continue;
+                }
+                hashRaf.seek(Long.valueOf(posKv[1]));
+                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                orderContents.add(orderContent);
             }
 
             for (String orderContent : orderContents) {
@@ -92,12 +91,12 @@ public class OldBuyerIdQuery {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("==========:"+buyerId + " orders: " + orders);
         return orders;
     }
 
     public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
-        long starttime = System.currentTimeMillis();
+        System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         List<Result> results = new ArrayList<Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
@@ -128,7 +127,6 @@ public class OldBuyerIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("queryOrdersByBuyer :" + buyerid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 
