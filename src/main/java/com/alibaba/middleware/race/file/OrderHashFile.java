@@ -180,7 +180,9 @@ public class OrderHashFile extends Thread{
 					    String[] keyValues = str.split("\t");
 					    for (int i = 0; i < keyValues.length; i++) {
 					        String[] keyValue = keyValues[i].split(":");
-					        KeyCache.orderKeyCache.add(keyValue[0]);
+                            if (!KeyCache.orderKeyCache.containsKey(keyValue[0])){
+                                KeyCache.orderKeyCache.put(keyValue[0], 0);
+                            }
 					        if (type.equals(keyValue[0])) {
 					            goodid = keyValue[1];
 					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);

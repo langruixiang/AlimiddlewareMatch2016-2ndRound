@@ -47,7 +47,9 @@ public class GoodHashFile extends Thread{
                     String[] keyValues = str.split("\t");
                     for (int i = 0; i < keyValues.length; i++) {
                         String[] keyValue = keyValues[i].split(":");
-                        KeyCache.goodKeyCache.add(keyValue[0]);
+                        if (!KeyCache.goodKeyCache.containsKey(keyValue[0])) {
+                            KeyCache.goodKeyCache.put(keyValue[0], 0);
+                        }
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1].hashCode();
                             hashFileIndex = (int) (Math.abs(goodid) % nums);
