@@ -136,6 +136,7 @@ public class OldGoodIdQuery {
     }
 
     public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
+        System.out.println("====findOrdersByGood==" + goodid + " : keys : " + keys);
         List<Result> results = new ArrayList<Result>();
         if (goodid == null) {
             return results.iterator();
@@ -232,6 +233,7 @@ public class OldGoodIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
+        System.out.println("====findOrdersByGood==" + goodid + " : results : " + results);
         return results.iterator();
     }
 
@@ -239,15 +241,13 @@ public class OldGoodIdQuery {
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
-        System.out.println("======" + goodid + " : index : " + hashIndex + " : key : " + key);
+        System.out.println("====sumValuesByGood==" + goodid + " : index : " + hashIndex + " : key : " + key);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
 
-        System.out.println(KeyCache.goodKeyCache.get(key));
         if (KeyCache.goodKeyCache.containsKey(key)) {
-            System.out.println("-------------");
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
@@ -269,6 +269,7 @@ public class OldGoodIdQuery {
                         keyValue.setKey(key);
                         keyValue.setValue(String.valueOf(value));
                     }
+                    System.out.println("====sumValuesByGood==" + goodid + " : keyvalue : " + keyValue);
                     return keyValue;
                 }
                 return null;
@@ -333,6 +334,7 @@ public class OldGoodIdQuery {
         } else {
             keyValue.setValue(String.valueOf(value));
         }
+        System.out.println("====sumValuesByGood==" + goodid + " : keyvalue : " + keyValue);
         return keyValue;
     }
 
