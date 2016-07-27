@@ -171,11 +171,11 @@ public class GoodIdQuery {
         List<String> buyerSearchKeys = new ArrayList<String>();
         if (keys != null) {
             for (String key : keys) {
-                if (KeyCache.orderKeyCache.contains(key)) {
+                if (KeyCache.orderKeyCache.containsKey(key)) {
                     orderSearchKeys.add(key);
-                } else if (KeyCache.goodKeyCache.contains(key)) {
+                } else if (KeyCache.goodKeyCache.containsKey(key)) {
                     goodSearchKeys.add(key);
-                } else if (KeyCache.buyerKeyCache.contains(key)) {
+                } else if (KeyCache.buyerKeyCache.containsKey(key)) {
                     buyerSearchKeys.add(key);
                 }
             }
@@ -269,7 +269,7 @@ public class GoodIdQuery {
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
 
-        if (KeyCache.goodKeyCache.contains(key)) {
+        if (KeyCache.goodKeyCache.containsKey(key)) {
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
@@ -324,7 +324,7 @@ public class GoodIdQuery {
             }
 
             //加入对应买家的所有属性kv
-            if (KeyCache.buyerKeyCache.contains(key)) {
+            if (KeyCache.buyerKeyCache.containsKey(key)) {
                 int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
                 if (buyer.getKeyValues().containsKey(key)) {

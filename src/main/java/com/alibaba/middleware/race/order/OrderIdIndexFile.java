@@ -68,7 +68,7 @@ public class OrderIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("=================================================================================index " + index + " file by orderid" + " start.");
-            Map<String, Long> orderIndex = new TreeMap<String, Long>();
+            Map<Long, Long> orderIndex = new TreeMap<Long, Long>();
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
             FileInputStream order_records = null;
             try {
@@ -89,7 +89,7 @@ public class OrderIdIndexFile extends Thread{
 
                         if ("orderid".equals(keyValue[0])) {
                             orderid = keyValue[1];
-                            orderIndex.put(orderid, count);
+                            orderIndex.put(Long.valueOf(orderid), count);
                             break;
                         }
                     }
@@ -104,14 +104,14 @@ public class OrderIdIndexFile extends Thread{
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();
-                    String key = (String) entry.getKey();
+                    Long key = (Long) entry.getKey();
                     Long val = (Long) entry.getValue();
                     String content = key + ":";
                     content = content + val;
                     bufferedWriter.write(content + '\n');
 
                     if (count % towIndexSize == 0) {
-                        twoIndexMap.put(Long.valueOf(key), position);
+                        twoIndexMap.put(key, position);
                     }
                     position += content.getBytes().length + 1;
                     count++;

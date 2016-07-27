@@ -69,7 +69,7 @@ public class OldGoodIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("index " + index + " file by goodid" + " start.");
-            Map<String, TreeMap<String, Long>> goodIndex = new TreeMap<String, TreeMap<String, Long>>();
+            Map<String, TreeMap<Long, Long>> goodIndex = new TreeMap<String, TreeMap<Long, Long>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -94,11 +94,11 @@ public class OldGoodIdIndexFile extends Thread{
                         } else if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
                             if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new TreeMap<String, Long>());
+                                goodIndex.put(goodid, new TreeMap<Long, Long>());
                             }
                         }
                         if (orderid != null && goodid != null) {
-                            goodIndex.get(goodid).put(orderid, count);
+                            goodIndex.get(goodid).put(Long.valueOf(orderid), count);
                         }
                     }
                     count += str.getBytes().length + 1;

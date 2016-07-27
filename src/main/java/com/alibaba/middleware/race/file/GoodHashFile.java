@@ -49,6 +49,7 @@ public class GoodHashFile extends Thread{
                         String[] keyValue = keyValues[i].split(":");
                         if (!KeyCache.goodKeyCache.containsKey(keyValue[0])) {
                             KeyCache.goodKeyCache.put(keyValue[0], 0);
+                            System.out.println("====================================================================================good key :" + keyValue[0]);
                         }
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1].hashCode();

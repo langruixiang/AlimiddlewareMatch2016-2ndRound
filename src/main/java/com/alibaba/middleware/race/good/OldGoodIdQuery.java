@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -145,11 +146,11 @@ public class OldGoodIdQuery {
         List<String> buyerSearchKeys = new ArrayList<String>();
         if (keys != null) {
             for (String key : keys) {
-                if (KeyCache.orderKeyCache.contains(key)) {
+                if (KeyCache.orderKeyCache.containsKey(key)) {
                     orderSearchKeys.add(key);
-                } else if (KeyCache.goodKeyCache.contains(key)) {
+                } else if (KeyCache.goodKeyCache.containsKey(key)) {
                     goodSearchKeys.add(key);
-                } else if (KeyCache.buyerKeyCache.contains(key)) {
+                } else if (KeyCache.buyerKeyCache.containsKey(key)) {
                     buyerSearchKeys.add(key);
                 }
             }
@@ -238,12 +239,15 @@ public class OldGoodIdQuery {
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
+        System.out.println("======" + goodid + " : index : " + hashIndex + " : key : " + key);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
 
-        if (KeyCache.goodKeyCache.contains(key)) {
+        System.out.println(KeyCache.goodKeyCache.get(key));
+        if (!KeyCache.goodKeyCache.containsKey(key)) {
+            System.out.println("-------------");
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
@@ -298,7 +302,7 @@ public class OldGoodIdQuery {
             }
 
             //加入对应买家的所有属性kv
-            if (KeyCache.buyerKeyCache.contains(key)) {
+            if (KeyCache.buyerKeyCache.containsKey(key)) {
                 int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
                 if (buyer.getKeyValues().containsKey(key)) {
