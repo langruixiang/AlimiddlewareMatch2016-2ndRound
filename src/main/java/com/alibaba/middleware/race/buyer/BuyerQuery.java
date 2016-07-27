@@ -21,7 +21,6 @@ import java.util.List;
 public class BuyerQuery {
     public static Buyer findBuyerById(String buyerId, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        //System.out.println("=======222===:"+buyerId + " index:" + index);
         Buyer buyer = new Buyer();
         try {
 
@@ -37,7 +36,6 @@ public class BuyerQuery {
             } else {
                 position = OneIndexCache.buyerOneIndexCache.get(buyerId);
             }
-            //System.out.println(position);
 
             //2.按行读取内容
             hashRaf.seek(position);

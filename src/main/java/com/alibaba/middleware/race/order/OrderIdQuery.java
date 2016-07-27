@@ -23,7 +23,6 @@ import java.util.Map;
  */
 public class OrderIdQuery {
     public static Order findByOrderId(long orderId, int index) {
-        System.out.println("====orderquery==orderid : " + orderId + " index :" + index);
         Order order = new Order();
         try {
 
@@ -36,7 +35,6 @@ public class OrderIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
-            System.out.println("====orderquery==orderid : " + orderId + " two index position :" + position);
             //2.查找一级索引
             indexRaf.seek(position);
             String oneIndex = null;
@@ -52,7 +50,6 @@ public class OrderIdQuery {
                 }
             }
 
-            System.out.println("====orderquery==orderid : " + orderId + " oneindex :" + oneIndex);
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
 
@@ -70,7 +67,6 @@ public class OrderIdQuery {
                 order.getKeyValues().put(strs[0], kv);
             }
             order.setId(orderId);
-            System.out.println("====orderquery==orderid : " + orderId + " order :" + order);
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
@@ -82,7 +78,6 @@ public class OrderIdQuery {
     }
 
     public static OrderSystem.Result findOrder(long orderId, Collection<String> keys) {
-        System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_ORDER_NUMS);
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);

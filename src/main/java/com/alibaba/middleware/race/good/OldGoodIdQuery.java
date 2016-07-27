@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 public class OldGoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
         if (goodId == null) return null;
-        //System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
             File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
@@ -65,7 +64,6 @@ public class OldGoodIdQuery {
                 String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
                 orderConstents.add(orderContent);
             }
-            //System.out.println(orderContent);
 
             //4.将字符串转成order对象集合
             for (String orderContent : orderConstents) {
@@ -95,7 +93,6 @@ public class OldGoodIdQuery {
 
     public static int findOrderNumberByGoodKey(String goodId, int index) {
         if (goodId == null) return 0;
-        //System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 
@@ -136,7 +133,6 @@ public class OldGoodIdQuery {
     }
 
     public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
-        System.out.println("====findOrdersByGood==" + goodid + " : keys : " + keys);
         List<Result> results = new ArrayList<Result>();
         if (goodid == null) {
             return results.iterator();
@@ -233,7 +229,6 @@ public class OldGoodIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("====findOrdersByGood==" + goodid + " : results : " + results);
         return results.iterator();
     }
 
@@ -241,7 +236,6 @@ public class OldGoodIdQuery {
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
-        System.out.println("====sumValuesByGood==" + goodid + " : index : " + hashIndex + " : key : " + key);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型
@@ -269,7 +263,6 @@ public class OldGoodIdQuery {
                         keyValue.setKey(key);
                         keyValue.setValue(String.valueOf(value));
                     }
-                    System.out.println("====sumValuesByGood==" + goodid + " : keyvalue : " + keyValue);
                     return keyValue;
                 }
                 return null;
@@ -334,7 +327,6 @@ public class OldGoodIdQuery {
         } else {
             keyValue.setValue(String.valueOf(value));
         }
-        System.out.println("====sumValuesByGood==" + goodid + " : keyvalue : " + keyValue);
         return keyValue;
     }
 

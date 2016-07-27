@@ -24,7 +24,6 @@ import java.util.List;
 public class OldBuyerIdQuery {
     public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        System.out.println("==========:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 
@@ -37,7 +36,6 @@ public class OldBuyerIdQuery {
 
             //1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
-            System.out.println(position);
             //2.查找一级索引
             int count = 0;
             indexRaf.seek(position);
@@ -91,12 +89,10 @@ public class OldBuyerIdQuery {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println("==========:"+buyerId + " orders: " + orders);
         return orders;
     }
 
     public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         List<Result> results = new ArrayList<Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
@@ -109,7 +105,6 @@ public class OldBuyerIdQuery {
         if (orders == null || orders.size() == 0) return results.iterator();
 
         for (Order order : orders) {
-            //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order_old.toString());
             Result result = new Result();
             //加入对应买家的所有属性kv
             if (buyer != null && buyer.getKeyValues() != null) {
