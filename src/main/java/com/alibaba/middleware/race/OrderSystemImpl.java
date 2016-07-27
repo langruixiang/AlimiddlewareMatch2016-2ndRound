@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,13 +26,12 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.order.OrderIdQuery;
+import com.alibaba.middleware.race.unused.FileUtil;
 
 /**
  * Created by jiangchao on 2016/7/11.
  */
 public class OrderSystemImpl implements OrderSystem {
-
-    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
 
     //实现无参构造函数
     public OrderSystemImpl() {
@@ -47,23 +47,19 @@ public class OrderSystemImpl implements OrderSystem {
             FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
             FileConstant.SECOND_DISK_PATH = FileConstant.SECOND_DISK_PATH + storeFolders.toArray()[1];
             FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
+            
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	FileUtil.createDir(FileConstant.FIRST_DISK_PATH + FileConstant.ORDER_ID_FOLDERNAME + i);
+            	FileUtil.createDir(FileConstant.SECOND_DISK_PATH + FileConstant.BUYER_ID_FOLDERNAME + i);
+            	FileUtil.createDir(FileConstant.THIRD_DISK_PATH + FileConstant.GOOD_ID_FOLDERNAME + i);
+            }
         }
 
-        ExecutorService orderIdIndexThreadPool = Executors.newFixedThreadPool(6);
-        ExecutorService buyerIdIndexThreadPool = Executors.newFixedThreadPool(6);
-        ExecutorService goodIdIndexThreadPool = Executors.newFixedThreadPool(6);
-        ExecutorService buyerIndexThreadPool = Executors.newFixedThreadPool(6);
-        ExecutorService goodIndexThreadPool = Executors.newFixedThreadPool(6);
-
-        CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
-        CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
-        CountDownLatch orderIdCountDownLatch = new CountDownLatch(1);
-        CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
-        CountDownLatch goodCountDownLatch = new CountDownLatch(1);
         CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(5);
 
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
         System.out.println("begin to build index:");
+        
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
         GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodAndBuyerCountDownLatch);
@@ -102,7 +98,11 @@ public class OrderSystemImpl implements OrderSystem {
         goodAndBuyerCountDownLatch.await();
         System.out.println("all the hash is end, time :" + (System.currentTimeMillis() - goodTime));
 
-
+        ExecutorService buyerIndexThreadPool = Executors.newFixedThreadPool(6);
+        ExecutorService goodIndexThreadPool = Executors.newFixedThreadPool(6);
+        
+        CountDownLatch buildIndexLatch = new CountDownLatch(FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
+        
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
             BuyerIndexFile buyerIndexFile = new BuyerIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, i);
@@ -114,39 +114,9 @@ public class OrderSystemImpl implements OrderSystem {
             GoodIndexFile goodIndexFile = new GoodIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
+        
+        buildIndexLatch.await();
 
-        //根据orderid生成一级二级索引
-        //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            System.out.println("===========================================================orderid index==============================================");
-            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
-            orderIdIndexFile.start();
-            //orderIdIndexThreadPool.execute(orderIdIndexFile);
-        //}
-
-        //根据buyerid生成一级二级索引
-        //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
-            buyerIdIndexFile.start();
-            //buyerIdIndexThreadPool.execute(buyerIdIndexFile);
-        //}
-
-        //根据goodid生成一级二级索引
-        //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodAndBuyerCountDownLatch, buildIndexLatch, 10);
-            goodIdIndexFile.start();
-            //goodIdIndexThreadPool.execute(goodIdIndexFile);
-        //}
-
-        //long secondParseTime = System.currentTimeMillis();
-        //根据orderid建立索引以及文件
-        //OrderIndexBuilder orderIndexBuilder = new OrderIndexBuilder(orderFiles, storeFolders, orderIndexBuilderCountDownLatch);
-        //orderIndexBuilder.start();
-
-        //buildIndexLatch.await();
-        //goodAndBuyerCountDownLatch.await();
-        //long midTime = System.currentTimeMillis();
-        //System.out.println("midTime end is :" + midTime + " one parse need time :" + (midTime - beginTime));
-        //orderIndexBuilderCountDownLatch.await();
         long endTime = System.currentTimeMillis();
         //System.out.println("second end is :" + endTime + " second parse need time :" + (endTime - secondParseTime));
         System.out.println("all build index work end!!!!!!! the total time is :" + (endTime - beginTime));
@@ -155,41 +125,22 @@ public class OrderSystemImpl implements OrderSystem {
 
     @Override
     public Result queryOrder(long orderId, Collection<String> keys) {
-        try {
-            buildIndexLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return OrderIdQuery.findOrder(orderId, keys);
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        try {
-            buildIndexLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    	
         return OldBuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
     }
 
     @Override
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
-        try {
-            buildIndexLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return OldGoodIdQuery.findOrdersByGood(salerid, goodid, keys);
     }
 
     @Override
     public KeyValue sumOrdersByGood(String goodid, String key) {
-        try {
-            buildIndexLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         return OldGoodIdQuery.sumValuesByGood(goodid, key);
     }
 }

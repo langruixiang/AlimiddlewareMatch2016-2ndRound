@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.cache;
 
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.OrderIndex;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
@@ -20,7 +21,11 @@ public class PageCache {
     public static int pageIndex;
 
     //存储订单信息
-    public static Map<Long, Order> orderMap = new HashMap<Long, Order>();
+    public static Map<OrderIndex, Map<Long, Order>> orderPageMap = new LinkedHashMap<OrderIndex, Map<Long, Order>>(FileConstant.MAX_CONCURRENT, 1) {
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > FileConstant.MAX_CONCURRENT;
+        }
+    };
 
     //存储买家信息
     //public static Map<String, Buyer> buyerMap = new HashMap<String, Buyer>();
@@ -104,14 +109,18 @@ public class PageCache {
     }
 
     //选择按订单号hash后的一个订单文件加载到内存中
-    public static void cacheOrderIdFile(int index) {
-
-        //清空缓存
-        orderMap.clear();
+    public static void cacheOrderByOrderID(long orderID) {
 
         try {
-            FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_ORDERID + index);
-            BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+        	OrderIndex orderIndex = OrderIndex.getOrderIndexbyOrderID(orderID);
+
+            BufferedReader order_br = OrderIndex.getBufferedReaderByOrderID(orderID);
+            
+            Map<Long, Order> page = orderPageMap.get(orderIndex);
+            if(page == null){
+            	page = new HashMap<Long, Order>();
+            	orderPageMap.put(orderIndex, page);
+            }
 
             String str = null;
             while ((str = order_br.readLine()) != null) {
@@ -125,7 +134,7 @@ public class PageCache {
                     order.getKeyValues().put(strs[0], keyValue);
                 }
                 order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                orderMap.put(order.getId(), order);
+                page.put(order.getId(), order);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -135,14 +144,18 @@ public class PageCache {
     }
 
     //选择按买家ID hash后的一个订单文件加载到内存中
-    public static void cacheBuyerIdFile(int index) {
-
-        //清空缓存
-        orderMap.clear();
-
+    public static void cacheOrderByBuyerID(String buyerID) {
         try {
-            FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_BUYERID + index);
-            BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+        	
+        	OrderIndex orderIndex = OrderIndex.getOrderIndexbyBuyerID(buyerID);        	
+        	BufferedReader order_br = OrderIndex.getBufferedReaderByBuyerID(buyerID);
+        	
+        	Map<Long, Order> page = orderPageMap.get(orderIndex);
+            if(page == null){
+            	page = new HashMap<Long, Order>();
+            	orderPageMap.put(orderIndex, page);
+            }
+        	
 
             String str = null;
             while ((str = order_br.readLine()) != null) {
@@ -156,7 +169,7 @@ public class PageCache {
                     order.getKeyValues().put(strs[0], keyValue);
                 }
                 order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                orderMap.put(order.getId(), order);
+                page.put(order.getId(), order);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -166,15 +179,18 @@ public class PageCache {
     }
 
     //选择按商品ID hash后的一个订单文件加载到内存中
-    public static void cacheGoodIdFile(int index) {
-
-        //清空缓存
-        orderMap.clear();
+    public static void cacheOrderByGoodID(String goodid) {
 
         try {
-            FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + index);
-            BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+        	OrderIndex orderIndex = OrderIndex.getOrderIndexbyGoodID(goodid);        	
+        	BufferedReader order_br = OrderIndex.getBufferedReaderByGoodID(goodid);
 
+        	Map<Long, Order> page = orderPageMap.get(orderIndex);
+            if(page == null){
+            	page = new HashMap<Long, Order>();
+            	orderPageMap.put(orderIndex, page);
+            }        	
+        	
             String str = null;
             while ((str = order_br.readLine()) != null) {
                 Order order = new Order();
@@ -187,7 +203,7 @@ public class PageCache {
                     order.getKeyValues().put(strs[0], keyValue);
                 }
                 order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                orderMap.put(order.getId(), order);
+                page.put(order.getId(), order);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -37,11 +37,24 @@ public class FileConstant {
 
     //public static int FILE_NUMS = 200;
 
-    public static int FILE_ORDER_NUMS = 3000;
+    public static int FILE_ORDER_NUMS = 20000;
+//    public static int FILE_ORDER_NUMS = 200;
+    
+    public static String ORDER_ID_FOLDERNAME = "order_id_folder_";
+    public static String BUYER_ID_FOLDERNAME = "buyer_id_folder_";
+    public static String GOOD_ID_FOLDERNAME = "good_id_folder_";
+    
+    public static int FOLDER_ORDER_NUMS = 100;
+//    public static int FOLDER_ORDER_NUMS = 10;
+    
+    public static int FILENUM_PER_FOLDER = FILE_ORDER_NUMS / FOLDER_ORDER_NUMS;
 
     public static int FILE_GOOD_NUMS = 2000;
 
     public static int FILE_BUYER_NUMS = 2000;
+    
+//    public static int FILE_GOOD_NUMS = 200;
+//    public static int FILE_BUYER_NUMS = 200;
 
     public static int MAX_CONCURRENT = 200;
 

@@ -7,6 +7,7 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.util.FileUtil;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class JunitTest {
         keys.add("good_name");
         keys.add("orderid");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
-        Result result = (Result) orderSystem.queryOrder(2982139, null);
+        Result result = (Result) orderSystem.queryOrder(2982139, keys);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("buyername").getValue());
@@ -43,11 +44,11 @@ public class JunitTest {
     public void testQueryOrdersByBuyer() {
         //测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录
         System.out.println("\n测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录: ");
-        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
+        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1464410007, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
         while (resultIterator.hasNext()) {
             System.out.println("===============");
             Result result2 = resultIterator.next();
-            System.out.println(result2.get("createtime").getValue());
+            System.out.println(result2.get("orderid").getValue());
         }
     }
 
@@ -69,11 +70,11 @@ public class JunitTest {
     public void testSumOrdersByGood() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
-        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "price");
+        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
     }
 
-    @Test
+    @Ignore
     public void testBuyeridIndex() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试buyerid生成一级二级索引: ");

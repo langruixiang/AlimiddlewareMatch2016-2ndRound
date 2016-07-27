@@ -1,97 +1,58 @@
 package com.alibaba.middleware.race.buyer;
 
-import com.alibaba.middleware.race.cache.TwoIndexCache;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
+import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.OrderIndex;
 import com.alibaba.middleware.race.good.GoodQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
-import org.apache.commons.lang3.math.NumberUtils;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by jiangchao on 2016/7/17.
  */
 public class OldBuyerIdQuery {
-    public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
+    public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime){
         if (buyerId == null || buyerId.isEmpty()) return null;
-        String beginKey = buyerId + "_" + starttime;
-        String endKey = buyerId + "_" + endtime;
-        System.out.println("==========:"+buyerId + " index:" + index);
+        System.out.println("==========:"+buyerId);
         List<Order> orders = new ArrayList<Order>();
-        try {
-
-            File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
-
-            File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
-            String str = null;
-
-            //1.查找二·级索引
-            long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
-
-            //2.查找一级索引
-            int count = 0;
-            indexRaf.seek(position);
-            String oneIndex = null;
-            List<String> oneIndexs = new ArrayList<String>();
-            while ((oneIndex = indexRaf.readLine()) != null) {
-                count++;
-                String[] keyValue = oneIndex.split(":");
-                if (endKey.compareTo(keyValue[0]) <= 0) {
-                    continue;
-                } else if (beginKey.compareTo(keyValue[0]) > 0) {
-                    break;
-                }
-                oneIndexs.add(oneIndex);
-            }
-
-            //3.按行读取内容
-            List<String> orderContents = new ArrayList<String>();
-            for (String line : oneIndexs) {
-                String[] keyValue = line.split(":");
-                String[] positions = keyValue[1].split("\\|");
-                for (String pos : positions) {
-                    hashRaf.seek(Long.valueOf(pos));
-                    String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                    orderContents.add(orderContent);
-                    //System.out.println(orderContent);
-                }
-            }
-
-            for (String orderContent : orderContents) {
-                //4.将字符串转成order对象集合
-                Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
-                    KeyValue kv = new KeyValue();
-                    kv.setKey(strs[0]);
-                    kv.setValue(strs[1]);
-                    order.getKeyValues().put(strs[0], kv);
-                }
-                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
-                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                }
-                orders.add(order);
-            }
-            hashRaf.close();
-            indexRaf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        
+        TreeMap<Long, Order> rankMap = new TreeMap<Long, Order>();
+        
+        OrderIndex orderIndex = OrderIndex.getOrderIndexbyBuyerID(buyerId);
+		
+		Map<Long, Order> page;
+		
+		if(!PageCache.orderPageMap.containsKey(orderIndex)){
+			PageCache.cacheOrderByBuyerID(buyerId);
+		}
+		
+		page = PageCache.orderPageMap.get(orderIndex);
+		for(Map.Entry<Long, Order> entry : page.entrySet()){
+			Order order = entry.getValue();
+			Map<String, KeyValue> keyValues = order.getKeyValues();
+			KeyValue keyValue = keyValues.get("createtime");
+			long createTime = Long.valueOf(keyValue.getValue());
+			keyValue = keyValues.get("buyerid");
+			String id = keyValue.getValue();
+			
+			if(createTime >= starttime && createTime < endtime && buyerId.equals(id)){
+				rankMap.put(createTime, order);
+			}
+		}
+		
+		for(Entry<Long, Order> entry : rankMap.descendingMap().entrySet()){
+			orders.add(entry.getValue());
+		}
         return orders;
     }
 
@@ -99,14 +60,13 @@ public class OldBuyerIdQuery {
         //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         long starttime = System.currentTimeMillis();
         List<Result> results = new ArrayList<Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
         int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_BUYER_NUMS);
         Buyer buyer = BuyerQuery.findBuyerById(buyerid, buyerHashIndex);
         if (buyer == null) return results.iterator();
 
         //获取goodid的所有订单信息
-        List<Order> orders = OldBuyerIdQuery.findByBuyerId(buyerid, startTime, endTime, hashIndex);
+        List<Order> orders = OldBuyerIdQuery.findByBuyerId(buyerid, startTime, endTime);
         if (orders == null || orders.size() == 0) return results.iterator();
 
         for (Order order : orders) {
@@ -128,6 +88,7 @@ public class OldBuyerIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
+        
         System.out.println("queryOrdersByBuyer :" + buyerid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }

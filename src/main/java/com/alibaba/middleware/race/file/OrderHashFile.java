@@ -22,6 +22,8 @@ public class OrderHashFile extends Thread{
     private int nums;
     private String type;
     private CountDownLatch countDownLatch;
+    
+    private int fileNumPerFolder;
 
     public OrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
                          CountDownLatch countDownLatch) {
@@ -30,19 +32,24 @@ public class OrderHashFile extends Thread{
         this.nums = nums;
         this.type = type;
         this.countDownLatch = countDownLatch;
+        
+        fileNumPerFolder = nums / FileConstant.FOLDER_ORDER_NUMS;
     }
 
     //读取所有订单文件，按照订单号hash到多个小文件中
     public void generateOrderIdHashFile() {
 
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+        	
+            BufferedWriter[][] bufferedWriters = new BufferedWriter[FileConstant.FOLDER_ORDER_NUMS][fileNumPerFolder];
 
-            for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i);
-                FileWriter fw = null;
-                fw = new FileWriter(file);
-                bufferedWriters[i] = new BufferedWriter(fw);
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.ORDER_ID_FOLDERNAME + i
+            				+ "/" + FileConstant.FILE_INDEX_BY_ORDERID + j);
+            		
+            		bufferedWriters[i][j] = new BufferedWriter(new FileWriter(file));
+            	}
             }
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
@@ -51,8 +58,11 @@ public class OrderHashFile extends Thread{
             }            
             multiHashLatch.await();
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].close();
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		bufferedWriters[i][j].flush();
+            		bufferedWriters[i][j].close();
+            	}
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -62,12 +72,15 @@ public class OrderHashFile extends Thread{
     //读取所有订单文件，按照订单中的买家ID hash到多个小文件中
     public void generateBuyerIdHashFile() {
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+        	BufferedWriter[][] bufferedWriters = new BufferedWriter[FileConstant.FOLDER_ORDER_NUMS][fileNumPerFolder];
 
-            for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i);
-                FileWriter fw = new FileWriter(file);
-                bufferedWriters[i] = new BufferedWriter(fw);
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.BUYER_ID_FOLDERNAME + i
+            				+ "/" + FileConstant.FILE_INDEX_BY_BUYERID + j);
+            		
+            		bufferedWriters[i][j] = new BufferedWriter(new FileWriter(file));
+            	}
             }
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
@@ -76,8 +89,11 @@ public class OrderHashFile extends Thread{
             }            
             multiHashLatch.await();
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].close();
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		bufferedWriters[i][j].flush();
+            		bufferedWriters[i][j].close();
+            	}
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -87,12 +103,15 @@ public class OrderHashFile extends Thread{
     //读取所有订单文件，按照订单中的商品ID hash到多个小文件中
     public void generateGoodIdHashFile() {
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
+        	BufferedWriter[][] bufferedWriters = new BufferedWriter[FileConstant.FOLDER_ORDER_NUMS][fileNumPerFolder];
 
-            for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i);
-                FileWriter fw = new FileWriter(file);
-                bufferedWriters[i] = new BufferedWriter(fw);
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.GOOD_ID_FOLDERNAME + i
+            				+ "/" + FileConstant.FILE_INDEX_BY_GOODID + j);
+            		
+            		bufferedWriters[i][j] = new BufferedWriter(new FileWriter(file));
+            	}
             }
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
@@ -101,8 +120,11 @@ public class OrderHashFile extends Thread{
             }            
             multiHashLatch.await();
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].close();
+            for(int i = 0; i < FileConstant.FOLDER_ORDER_NUMS; i++){
+            	for(int j = 0; j < fileNumPerFolder; j++){
+            		bufferedWriters[i][j].flush();
+            		bufferedWriters[i][j].close();
+            	}
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -137,9 +159,9 @@ public class OrderHashFile extends Thread{
     	private String orderFile;
     	private CountDownLatch countDownLatch;
     	private String type;
-    	private BufferedWriter[] bufferedWriters;
+    	private BufferedWriter[][] bufferedWriters;
     	
-    	public MultiHash(String orderFile, CountDownLatch countDownLatch, String type, BufferedWriter[] bufferedWriters){
+    	public MultiHash(String orderFile, CountDownLatch countDownLatch, String type, BufferedWriter[][] bufferedWriters){
     		this.orderFile = orderFile;
     		this.countDownLatch = countDownLatch;
     		this.type = type;
@@ -158,7 +180,6 @@ public class OrderHashFile extends Thread{
 				String goodid = null;
 				Long orderid = null;
 				
-				int hashFileIndex;
 				if(type.equals("orderid")){
 					while ((str = order_br.readLine()) != null) {
 	                    String[] keyValues = str.split("\t");
@@ -166,11 +187,11 @@ public class OrderHashFile extends Thread{
 	                        String[] keyValue = keyValues[i].split(":");
 	                        if ("orderid".equals(keyValue[0])) {
 	                            orderid = Long.valueOf(keyValue[1]);
-	                            hashFileIndex = (int) (orderid % nums);
-	                            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
+	                            
+	                            OrderIndex orderIndex = OrderIndex.getOrderIndexbyOrderID(orderid);
+	                            synchronized (bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex]) {
+									bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex].write(str + '\n');
 								}
-								//bufferedWriters[hashFileIndex].newLine();
 	                            break;
 	                        }
 	                    }
@@ -183,9 +204,10 @@ public class OrderHashFile extends Thread{
 					        KeyCache.orderKeyCache.add(keyValue[0]);
 					        if (type.equals(keyValue[0])) {
 					            goodid = keyValue[1];
-					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
-					            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
+					            
+					            OrderIndex orderIndex = OrderIndex.getOrderIndexbyGoodID(goodid);
+					            synchronized (bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex]) {
+									bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex].write(str + '\n');
 								}
 					        }
 					    }
@@ -197,11 +219,11 @@ public class OrderHashFile extends Thread{
 	                        String[] keyValue = keyValues[i].split(":");
 	                        if ("buyerid".equals(keyValue[0])) {
 	                            buyerid = keyValue[1];
-	                            hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
-	                            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
+	                            
+	                            OrderIndex orderIndex = OrderIndex.getOrderIndexbyBuyerID(buyerid);
+	                            synchronized (bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex]) {
+									bufferedWriters[orderIndex.folderIndex][orderIndex.hashIndex].write(str + '\n');
 								}
-								//bufferedWriters[hashFileIndex].newLine();
 	                            break;
 	                        }
 	                    }

@@ -31,20 +31,21 @@ public class JunitTest_lrx {
         keys.add("buyername");
         keys.add("good_name");
         keys.add("orderid");
+        keys.add("description");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
-        Result result = (Result) orderSystem.queryOrder(2982139, null);
+        Result result = (Result) orderSystem.queryOrder(627040903, null);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("buyername").getValue());
         System.out.println(result.get("good_name").getValue());
-        System.out.println(result.get("orderid").getValue());
+        System.out.println(result.get("salerid").getValue());
     }
 
     @Ignore
     public void testQueryOrdersByBuyer() {
         //测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录
         System.out.println("\n测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录: ");
-        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
+        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1462018520, 1473999229, "wx-a0e0-6bda77db73ca");
         while (resultIterator.hasNext()) {
             System.out.println("===============");
             Result result2 = resultIterator.next();
@@ -60,11 +61,12 @@ public class JunitTest_lrx {
 //        keys.add("buyerid");
 //        keys.add("amount");
         keys.add("a_o_5497");
+        keys.add("address");
         System.out.println("\n测试queryOrderBySaler接口，查找某个卖家的某个商品的所有记录信息: ");
-        Iterator<Result> resultIterator2 = orderSystem.queryOrdersBySaler("ay-8f5a-a037e1e925fa", "dd-985d-b5f8d64460c9", keys);
+        Iterator<Result> resultIterator2 = orderSystem.queryOrdersBySaler("ay-9cf3-9ba0c6d504a7", "gd-80fa-bc88216aa5be", keys);
         while (resultIterator2.hasNext()) {
             Result result3 = resultIterator2.next();
-            System.out.println(result3.get("orderid").getValue() + " " + result3.get("a_o_5497"));
+            System.out.println(result3.get("orderid").getValue() + " " + result3.get("a_o_5497") + " " + result3.get("address"));
         }
     }
 
@@ -72,7 +74,7 @@ public class JunitTest_lrx {
     public void testSumOrdersByGood() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
-        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
+        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("al-9c4c-ac9ed4b6ad35", "offprice");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
     }
 

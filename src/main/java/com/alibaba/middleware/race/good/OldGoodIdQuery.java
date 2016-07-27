@@ -1,94 +1,79 @@
 package com.alibaba.middleware.race.good;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.math.NumberUtils;
+
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.OrderIndex;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
-import org.apache.commons.lang3.math.NumberUtils;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by jiangchao on 2016/7/17.
  */
 public class OldGoodIdQuery {
-    public static List<Order> findByGoodId(String goodId, int index) {
+    public static List<Order> findByGoodId(String goodId) {
         if (goodId == null) return null;
         //System.out.println("==========:"+goodId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
-        try {
-            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
-            File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
-            String str = null;
-
-            //1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-
-            //2.查找一级索引
-            indexRaf.seek(position);
-            String oneIndex = null;
-            int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
-                String[] keyValue = oneIndex.split(":");
-                if (goodId.equals(keyValue[0])) {
-                    break;
-                }
-                count++;
-                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
-                    return null;
-                }
-            }
-
-            //3.按行读取内容
-            String[] keyValue = oneIndex.split(":");
-            String[] positions = keyValue[1].split("\\|");
-
-            List<String> orderConstents = new ArrayList<String>();
-            for (String pos : positions) {
-                hashRaf.seek(Long.valueOf(pos));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-                orderConstents.add(orderContent);
-            }
-            //System.out.println(orderContent);
-
-            //4.将字符串转成order对象集合
-            for (String orderContent : orderConstents) {
-                Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
-                    KeyValue kv = new KeyValue();
-                    kv.setKey(strs[0]);
-                    kv.setValue(strs[1]);
-                    order.getKeyValues().put(strs[0], kv);
-                }
-                if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
-                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                }
-                orders.add(order);
-            }
-            hashRaf.close();
-            indexRaf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        
+        OrderIndex orderIndex = OrderIndex.getOrderIndexbyGoodID(goodId);
+        Map<Long, Order> page;
+        
+        if(!PageCache.orderPageMap.containsKey(orderIndex)){
+        	PageCache.cacheOrderByGoodID(goodId);
         }
+        
+        page = PageCache.orderPageMap.get(orderIndex);
+        
+        for(Entry<Long, Order> entry : page.entrySet()){
+        	Order order = entry.getValue();
+			Map<String, KeyValue> keyValues = order.getKeyValues();
+			KeyValue keyValue = keyValues.get("goodid");
+			String id = keyValue.getValue();
+			
+			if(id.equals(goodId)){
+				orders.add(order);
+			}
+        	
+        }
+        
+        Collections.sort(orders, new Comparator<Order>(){
+        	
+        	@Override
+        	public int compare(Order o1, Order o2){
+        		if(o1.getId() - o2.getId() > 0){
+        			return 1;
+        		}else if(o1.getId() - o2.getId() < 0){
+        			return -1;
+        		}
+        		return 0;
+        	}
+        });
+        	
         return orders;
     }
 
@@ -168,7 +153,7 @@ public class OldGoodIdQuery {
 
 
         //获取goodid的所有订单信息
-        List<Order> orders = OldGoodIdQuery.findByGoodId(goodid, hashIndex);
+        List<Order> orders = OldGoodIdQuery.findByGoodId(goodid);
         if (orders == null || orders.size() == 0) {
             return results.iterator();
         }
@@ -242,11 +227,15 @@ public class OldGoodIdQuery {
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
+        
+        List<Order> orders = OldGoodIdQuery.findByGoodId(goodid);
+        if (orders == null || orders.size() == 0) return null;
 
         if (KeyCache.goodKeyCache.contains(key)) {
             //加入对应商品的所有属性kv
-            int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
-            int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
+            int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);           
+            
+            int num = orders.size();
             Good good = GoodQuery.findGoodById(goodid, goodHashIndex);
 
             if (good == null) return null;
@@ -271,10 +260,8 @@ public class OldGoodIdQuery {
             } else {
                 return null;
             }
-        }
-
-        List<Order> orders = OldGoodIdQuery.findByGoodId(goodid, hashIndex);
-        if (orders == null || orders.size() == 0) return null;
+        }       
+        
         int count = 0;
 
         for (Order order : orders) {
@@ -345,6 +332,6 @@ public class OldGoodIdQuery {
     public static void main(String args[]) {
 
         //OrderIdIndexFile.generateGoodIdIndex();
-        findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
+        findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5");
     }
 }

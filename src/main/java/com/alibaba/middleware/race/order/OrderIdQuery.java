@@ -3,8 +3,10 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.file.OrderIndex;
 import com.alibaba.middleware.race.good.GoodQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -22,69 +24,26 @@ import java.util.Map;
  * Created by jiangchao on 2016/7/17.
  */
 public class OrderIdQuery {
-    public static Order findByOrderId(long orderId, int index) {
-        Order order = new Order();
-        try {
-
-            File hashFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
-
-            File indexFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
-            String str = null;
-
-            //1.查找二·级索引
-            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
-
-            //2.查找一级索引
-            indexRaf.seek(position);
-            String oneIndex = null;
-            int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
-                String[] keyValue = oneIndex.split(":");
-                if (orderId == Long.valueOf(keyValue[0])) {
-                    break;
-                }
-                count++;
-                if (count >= FileConstant.orderIdIndexRegionSizeMap.get(index)) {
-                    return null;
-                }
-            }
-
-            //3.按行读取内容
-            String[] keyValue = oneIndex.split(":");
-
-            long pos = Long.valueOf(keyValue[1]);
-            hashRaf.seek(Long.valueOf(pos));
-            String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-
-            //4.将字符串转成order对象集合
-            String[] keyValues = orderContent.split("\t");
-            for (int i = 0; i < keyValues.length; i++) {
-                String[] strs = keyValues[i].split(":");
-                KeyValue kv = new KeyValue();
-                kv.setKey(strs[0]);
-                kv.setValue(strs[1]);
-                order.getKeyValues().put(strs[0], kv);
-            }
-            order.setId(orderId);
-            hashRaf.close();
-            indexRaf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static Order findByOrderId(long orderId) {
+        
+        OrderIndex orderIndex = OrderIndex.getOrderIndexbyOrderID(orderId);
+        Map<Long, Order> page;
+        
+        if(!PageCache.orderPageMap.containsKey(orderIndex)){
+        	PageCache.cacheOrderByOrderID(orderId);
         }
-        return order;
+        
+        page = PageCache.orderPageMap.get(orderIndex);
+        
+        return page.get(orderId);
     }
 
     public static OrderSystem.Result findOrder(long orderId, Collection<String> keys) {
         System.out.println("===queryOrder=====orderid:" + orderId + "======keys:" + keys);
         long starttime = System.currentTimeMillis();
         com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
-        int hashIndex = (int) (orderId % FileConstant.FILE_ORDER_NUMS);
         long findStartTime = System.currentTimeMillis();
-        Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
+        Order order = OrderIdQuery.findByOrderId(orderId);
         System.out.println("===queryOrder==index===orderid: " + orderId + " time :" + (System.currentTimeMillis() - findStartTime));
         List<String> orderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
