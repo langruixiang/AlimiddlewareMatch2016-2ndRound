@@ -48,7 +48,9 @@ public class BuyerHashFile extends Thread{
                     String[] keyValues = str.split("\t");
                     for (int i = 0; i < keyValues.length; i++) {
                         String[] keyValue = keyValues[i].split(":");
-                        KeyCache.buyerKeyCache.add(keyValue[0]);
+                        if (!KeyCache.buyerKeyCache.containsKey(keyValue[0])) {
+                            KeyCache.buyerKeyCache.put(keyValue[0], 0);
+                        }
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1].hashCode();
                             hashFileIndex = (int) (Math.abs(buyerid) % nums);
