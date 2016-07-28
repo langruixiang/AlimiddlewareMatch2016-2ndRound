@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by jiangchao on 2016/7/21.
  */
 public class KeyCache {
+    
+    public static Integer EMPTY_INTEGER_OBJECT = new Integer(0);
 
     public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
 
