@@ -2,6 +2,8 @@ package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.PosInfo;
+import javafx.geometry.Pos;
 
 import java.io.*;
 import java.util.Iterator;
@@ -69,7 +71,7 @@ public class OldGoodIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("index " + index + " file by goodid" + " start.");
-            Map<String, TreeMap<Long, Long>> goodIndex = new TreeMap<String, TreeMap<Long, Long>>();
+            Map<String, TreeMap<Long, PosInfo>> goodIndex = new TreeMap<String, TreeMap<Long, PosInfo>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -94,11 +96,12 @@ public class OldGoodIdIndexFile extends Thread{
                         } else if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
                             if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new TreeMap<Long, Long>());
+                                goodIndex.put(goodid, new TreeMap<Long, PosInfo>());
                             }
                         }
                         if (orderid != null && goodid != null) {
-                            goodIndex.get(goodid).put(Long.valueOf(orderid), count);
+                            PosInfo posInfo = new PosInfo(count, str.getBytes().length);
+                            goodIndex.get(goodid).put(Long.valueOf(orderid), posInfo);
                         }
                     }
                     count += str.getBytes().length + 1;
@@ -113,20 +116,21 @@ public class OldGoodIdIndexFile extends Thread{
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    Map<String, Long> val = (Map<String, Long>) entry.getValue();
+                    Map<String, PosInfo> val = (Map<String, PosInfo>) entry.getValue();
                     StringBuilder content = new StringBuilder(key + ":");
                     //String content = key + ":";
                     Iterator iteratorOrders = val.entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
                         Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
-                        Long pos = (Long)orderEntry.getValue();
-                        content.append(pos);
+                        PosInfo pos = (PosInfo) orderEntry.getValue();
+                        content.append(pos.toString());
                         content.append("|");
                     }
                     val.clear();
                     bufferedWriter.write(content.toString() + '\n');
 
                     if (count%towIndexSize == 0) {
+                        //PosInfo posInfo = new PosInfo(position, content.toString().getBytes().length);
                         twoIndexMap.put(key, position);
                     }
                     position += content.toString().getBytes().length + 1;

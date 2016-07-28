@@ -61,8 +61,12 @@ public class OldBuyerIdQuery {
                 if (createTime < starttime || createTime >= endtime) {
                     continue;
                 }
-                hashRaf.seek(Long.valueOf(posKv[1]));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                String[] posinfo = posKv[1].split("_");
+                byte[] bytes = new byte[Integer.valueOf(posinfo[1])];
+                hashRaf.seek(Long.valueOf(posinfo[0]));
+                hashRaf.read(bytes);
+                //hashRaf.seek(Long.valueOf(posKv[1]));
+                String orderContent = new String(bytes, "UTF-8");
                 orderContents.add(orderContent);
             }
 

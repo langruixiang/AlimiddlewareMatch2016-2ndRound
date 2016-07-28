@@ -8,6 +8,7 @@ import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
+import com.alibaba.middleware.race.model.PosInfo;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -60,8 +61,11 @@ public class OldGoodIdQuery {
 
             List<String> orderConstents = new ArrayList<String>();
             for (String pos : positions) {
-                hashRaf.seek(Long.valueOf(pos));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                String[] poskv = pos.split("_");
+                byte[] bytes = new byte[Integer.valueOf(poskv[1])];
+                hashRaf.seek(Long.valueOf(poskv[0]));
+                hashRaf.read(bytes);
+                String orderContent = new String(bytes, "UTF-8");
                 orderConstents.add(orderContent);
             }
 

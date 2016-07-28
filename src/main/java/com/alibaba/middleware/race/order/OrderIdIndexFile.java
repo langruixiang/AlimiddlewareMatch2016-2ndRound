@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.PosInfo;
 
 import java.io.*;
 import java.util.*;
@@ -68,7 +69,7 @@ public class OrderIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("=================================================================================index " + index + " file by orderid" + " start.");
-            Map<Long, Long> orderIndex = new TreeMap<Long, Long>();
+            Map<Long, PosInfo> orderIndex = new TreeMap<Long, PosInfo>();
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
             FileInputStream order_records = null;
             try {
@@ -89,7 +90,8 @@ public class OrderIdIndexFile extends Thread{
 
                         if ("orderid".equals(keyValue[0])) {
                             orderid = keyValue[1];
-                            orderIndex.put(Long.valueOf(orderid), count);
+                            PosInfo posInfo = new PosInfo(count, str.getBytes().length);
+                            orderIndex.put(Long.valueOf(orderid), posInfo);
                             break;
                         }
                     }
@@ -105,9 +107,9 @@ public class OrderIdIndexFile extends Thread{
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     Long key = (Long) entry.getKey();
-                    Long val = (Long) entry.getValue();
+                    PosInfo val = (PosInfo) entry.getValue();
                     String content = key + ":";
-                    content = content + val;
+                    content = content + val.toString();
                     bufferedWriter.write(content + '\n');
 
                     if (count % towIndexSize == 0) {

@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.buyer;
 
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.PosInfo;
 
 import java.io.*;
 import java.util.*;
@@ -67,7 +68,7 @@ public class OldBuyerIdIndexFile extends Thread{
         @Override
         public void run() {
             System.out.println("index " + index + " file by buyerid" + " start.");
-            TreeMap<String, TreeMap<Long, Long>> buyerIndex = new TreeMap<String, TreeMap<Long, Long>>();
+            TreeMap<String, TreeMap<Long, PosInfo>> buyerIndex = new TreeMap<String, TreeMap<Long, PosInfo>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -92,13 +93,14 @@ public class OldBuyerIdIndexFile extends Thread{
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];
                             if (!buyerIndex.containsKey(buyerid)) {
-                                buyerIndex.put(buyerid, new TreeMap<Long, Long>());
+                                buyerIndex.put(buyerid, new TreeMap<Long, PosInfo>());
                             }
                         } else if ("createtime".equals(keyValue[0])) {
                             createtime = keyValue[1];
                         }
                         if (buyerid != null && createtime != null) {
-                            buyerIndex.get(buyerid).put(Long.valueOf(createtime), count);
+                            PosInfo posInfo = new PosInfo(count, str.getBytes().length);
+                            buyerIndex.get(buyerid).put(Long.valueOf(createtime), posInfo);
                             break;
                         }
                     }
@@ -114,17 +116,17 @@ public class OldBuyerIdIndexFile extends Thread{
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    TreeMap<Long, Long> val = (TreeMap<Long, Long>) entry.getValue();
+                    TreeMap<Long, PosInfo> val = (TreeMap<Long, PosInfo>) entry.getValue();
 
                     StringBuilder content = new StringBuilder(key + "\t");
                     Iterator iteratorOrders = val.descendingMap().entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
                         Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
                         Long createtime = (Long) orderEntry.getKey();
-                        Long pos = (Long)orderEntry.getValue();
+                        PosInfo pos = (PosInfo) orderEntry.getValue();
                         content.append(createtime);
                         content.append(":");
-                        content.append(pos);
+                        content.append(pos.toString());
                         content.append("|");
                     }
                     val.clear();

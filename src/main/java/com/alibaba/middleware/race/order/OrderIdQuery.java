@@ -49,14 +49,17 @@ public class OrderIdQuery {
                     return null;
                 }
             }
+            System.out.println(oneIndex);
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
+            String[] posinfo = keyValue[1].split("_");
 
-            long pos = Long.valueOf(keyValue[1]);
-            hashRaf.seek(Long.valueOf(pos));
-            String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-
+            long pos = Long.valueOf(posinfo[0]);
+            byte[] bytes = new byte[Integer.valueOf(posinfo[1])];
+            hashRaf.seek(pos);
+            hashRaf.read(bytes);
+            String orderContent = new String(bytes, "UTF-8");
             //4.将字符串转成order对象集合
             String[] keyValues = orderContent.split("\t");
             for (int i = 0; i < keyValues.length; i++) {
