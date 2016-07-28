@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 import com.alibaba.middleware.race.buyer.*;
 import com.alibaba.middleware.race.good.*;
 import com.alibaba.middleware.race.util.SwitchThread;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.alibaba.middleware.race.cache.KeyCache;
@@ -20,6 +21,8 @@ import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.file.BuyerHashFile;
 import com.alibaba.middleware.race.file.GoodHashFile;
+import com.alibaba.middleware.race.file.NewBuyerHashFile;
+import com.alibaba.middleware.race.file.NewGoodHashFile;
 import com.alibaba.middleware.race.file.OrderHashFile;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -75,14 +78,14 @@ public class OrderSystemImpl implements OrderSystem {
         System.out.println("begin to build index:");
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
+        NewGoodHashFile goodHashFileThread = new NewGoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
         goodHashFileThread.start();
         //goodCountDownLatch.await();
         System.out.println("good file hash end, time:" + (System.currentTimeMillis() - goodTime));
 
         //将买家文件hash成多个小文件
         long buyerTime = System.currentTimeMillis();
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
+        NewBuyerHashFile buyerHashFile = new NewBuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
         buyerHashFile.start();
         //buyerCountDownLatch.await();
         System.out.println("buyer file hash end, time:" + (System.currentTimeMillis() - buyerTime));
