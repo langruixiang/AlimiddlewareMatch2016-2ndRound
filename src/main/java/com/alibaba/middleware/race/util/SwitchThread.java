@@ -16,7 +16,7 @@ public class SwitchThread extends Thread{
     @Override
     public void run() {
         try {
-            Thread.sleep(3500000);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

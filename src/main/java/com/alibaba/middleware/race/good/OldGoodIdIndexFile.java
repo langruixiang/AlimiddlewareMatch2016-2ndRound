@@ -3,7 +3,6 @@ package com.alibaba.middleware.race.good;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.PosInfo;
-import javafx.geometry.Pos;
 
 import java.io.*;
 import java.util.*;
