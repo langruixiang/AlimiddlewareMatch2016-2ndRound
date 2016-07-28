@@ -10,12 +10,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class KeyCache {
     
-    public static Integer EMPTY_INTEGER_OBJECT = new Integer(0);
+    public static final int INIT_KEY_CACHE_CAPACITY = 20;
 
-    public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
+    public static Object EMPTY_OBJECT = new Object();
 
-    public static ConcurrentHashMap<String, Integer> buyerKeyCache = new ConcurrentHashMap<String, Integer>();
+    public static ConcurrentHashMap<String, Object> orderKeyCache = new ConcurrentHashMap<String, Object>(INIT_KEY_CACHE_CAPACITY);
 
-    public static ConcurrentHashMap<String, Integer> goodKeyCache = new ConcurrentHashMap<String, Integer>();
+    public static ConcurrentHashMap<String, Object> buyerKeyCache = new ConcurrentHashMap<String, Object>(INIT_KEY_CACHE_CAPACITY);
+
+    public static ConcurrentHashMap<String, Object> goodKeyCache = new ConcurrentHashMap<String, Object>(INIT_KEY_CACHE_CAPACITY);
 
 }

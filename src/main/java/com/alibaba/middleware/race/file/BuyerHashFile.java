@@ -49,7 +49,7 @@ public class BuyerHashFile extends Thread{
                     for (int i = 0; i < keyValues.length; i++) {
                         String[] keyValue = keyValues[i].split(":");
                         if (!KeyCache.buyerKeyCache.containsKey(keyValue[0])) {
-                            KeyCache.buyerKeyCache.put(keyValue[0], KeyCache.EMPTY_INTEGER_OBJECT);
+                            KeyCache.buyerKeyCache.put(keyValue[0], KeyCache.EMPTY_OBJECT);
                         }
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1].hashCode();

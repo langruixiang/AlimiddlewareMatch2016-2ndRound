@@ -181,7 +181,7 @@ public class OrderHashFile extends Thread{
 					    for (int i = 0; i < keyValues.length; i++) {
 					        String[] keyValue = keyValues[i].split(":");
                             if (!KeyCache.orderKeyCache.containsKey(keyValue[0])){
-                                KeyCache.orderKeyCache.put(keyValue[0], KeyCache.EMPTY_INTEGER_OBJECT);
+                                KeyCache.orderKeyCache.put(keyValue[0], KeyCache.EMPTY_OBJECT);
                             }
 					        if (type.equals(keyValue[0])) {
 					            goodid = keyValue[1];
