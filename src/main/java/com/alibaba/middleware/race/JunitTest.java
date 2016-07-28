@@ -7,6 +7,7 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
 import com.alibaba.middleware.race.util.FileUtil;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -69,11 +70,11 @@ public class JunitTest {
     public void testSumOrdersByGood() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
-        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "price");
+        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
     }
 
-    @Test
+    @Ignore
     public void testBuyeridIndex() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试buyerid生成一级二级索引: ");

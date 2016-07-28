@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.IDCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -26,8 +27,16 @@ import java.util.regex.Pattern;
  */
 public class OldGoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
-        if (goodId == null) return null;
+        if (goodId == null) return null;        
+        
+        //find in cache
+        List<Order> searchRes = IDCache.goodIDCache.getOrderListByID(goodId);
+        if(searchRes != null){
+        	return searchRes;
+        }
+        
         List<Order> orders = new ArrayList<Order>();
+        
         try {
             File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -88,6 +97,10 @@ public class OldGoodIdQuery {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        //put in cache
+        IDCache.goodIDCache.putOrderLisrByID(goodId, orders);
+        
         return orders;
     }
 

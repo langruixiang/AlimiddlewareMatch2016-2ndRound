@@ -42,8 +42,14 @@ public class FileConstant {
     public static int FILE_GOOD_NUMS = 2000;
 
     public static int FILE_BUYER_NUMS = 2000;
+    
+//    public static int FILE_ORDER_NUMS = 300;
+//
+//    public static int FILE_GOOD_NUMS = 200;
+//
+//    public static int FILE_BUYER_NUMS = 200;
 
-    public static int MAX_CONCURRENT = 200;
+    public static int MAX_CONCURRENT = 500;
 
     public static String FIRST_DISK_PATH = "";
 

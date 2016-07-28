@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.IDCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -23,7 +24,14 @@ import java.util.Map;
  */
 public class OrderIdQuery {
     public static Order findByOrderId(long orderId, int index) {
-        Order order = new Order();
+        
+        //find order in chache
+        Order searchRes = IDCache.orderIDCache.getOrderByOrderID(orderId);
+        if(searchRes != null){
+        	return searchRes;
+        }
+        
+        Order order = new Order();        
         try {
 
             File hashFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
@@ -74,6 +82,10 @@ public class OrderIdQuery {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        //put order in cache
+        IDCache.orderIDCache.putOrderByOrderID(order.getId(), order);
+        
         return order;
     }
 

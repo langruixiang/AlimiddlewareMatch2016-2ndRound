@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.cache.IDCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -25,7 +27,24 @@ public class OldBuyerIdQuery {
     public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
         List<Order> orders = new ArrayList<Order>();
-        try {
+        
+        //search in cache
+        List<Order> searchRes = IDCache.buyerIDCache.getOrderListByID(buyerId);
+        
+        if(searchRes != null){
+        	for(Order order : searchRes){
+        		Long createTime = Long.valueOf(order.getKeyValues().get("createtime").getValue());
+        		if(createTime >= starttime && createTime < endtime){
+        			orders.add(order);
+        		}
+        	}
+        	
+        	return orders;
+        }
+        
+        List<Order> cachelist = new LinkedList<Order>();
+        
+        try {       	
 
             File hashFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
@@ -57,15 +76,15 @@ public class OldBuyerIdQuery {
             List<String> orderContents = new ArrayList<String>();
             for (String pos : positionKvs) {
                 String[] posKv = pos.split(":");
-                Long createTime = Long.valueOf(posKv[0]);
-                if (createTime < starttime || createTime >= endtime) {
-                    continue;
-                }
+//                Long createTime = Long.valueOf(posKv[0]);
+//                if (createTime < starttime || createTime >= endtime) {
+//                    continue;
+//                }
                 hashRaf.seek(Long.valueOf(posKv[1]));
                 String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
                 orderContents.add(orderContent);
             }
-
+            
             for (String orderContent : orderContents) {
                 //4.将字符串转成order对象集合
                 Order order = new Order();
@@ -80,7 +99,12 @@ public class OldBuyerIdQuery {
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
-                orders.add(order);
+                cachelist.add(order);
+                
+                Long createtime = Long.valueOf( order.getKeyValues().get("createtime").getValue());
+                if(createtime >= starttime && createtime < endtime){
+                	orders.add(order);
+                }
             }
             hashRaf.close();
             indexRaf.close();
@@ -89,6 +113,9 @@ public class OldBuyerIdQuery {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        IDCache.buyerIDCache.putOrderLisrByID(buyerId, cachelist);
+        
         return orders;
     }
 
