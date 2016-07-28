@@ -6,10 +6,7 @@ import com.alibaba.middleware.race.model.PosInfo;
 import javafx.geometry.Pos;
 
 import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -87,9 +84,9 @@ public class OldGoodIdIndexFile extends Thread{
                 while ((str = order_br.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("orderid".equals(keyValue[0])) {
                             orderid = keyValue[1];
@@ -102,6 +99,7 @@ public class OldGoodIdIndexFile extends Thread{
                         if (orderid != null && goodid != null) {
                             PosInfo posInfo = new PosInfo(count, str.getBytes().length);
                             goodIndex.get(goodid).put(Long.valueOf(orderid), posInfo);
+                            break;
                         }
                     }
                     count += str.getBytes().length + 1;

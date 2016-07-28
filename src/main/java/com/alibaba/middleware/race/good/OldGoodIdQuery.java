@@ -72,9 +72,10 @@ public class OldGoodIdQuery {
             //4.将字符串转成order对象集合
             for (String orderContent : orderConstents) {
                 Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
+
+                StringTokenizer keyValues = new StringTokenizer(orderContent, "\t");
+                while (keyValues.hasMoreElements()) {
+                    String[] strs = keyValues.nextToken().split(":");
                     KeyValue kv = new KeyValue();
                     kv.setKey(strs[0]);
                     kv.setValue(strs[1]);

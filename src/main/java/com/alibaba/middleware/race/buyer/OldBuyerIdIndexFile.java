@@ -86,9 +86,9 @@ public class OldBuyerIdIndexFile extends Thread{
                 while ((str = order_br.readLine()) != null) {
                     String buyerid = null;
                     String createtime = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];

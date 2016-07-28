@@ -4,6 +4,7 @@ import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -34,9 +35,9 @@ public class GoodIndexFile extends Thread{
                 long position = 0;
                 while ((str = good_br.readLine()) != null) {
                     String goodid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];

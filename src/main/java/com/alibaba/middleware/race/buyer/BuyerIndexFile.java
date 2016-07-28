@@ -5,10 +5,7 @@ import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -39,9 +36,9 @@ public class BuyerIndexFile extends Thread{
                 long position = 0;
                 while ((str = buyer_br.readLine()) != null) {
                     String buyerid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];

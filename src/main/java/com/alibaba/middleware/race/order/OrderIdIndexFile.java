@@ -84,9 +84,9 @@ public class OrderIdIndexFile extends Thread{
                 long count = 0;
                 String orderid = null;
                 while ((str = order_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("orderid".equals(keyValue[0])) {
                             orderid = keyValue[1];

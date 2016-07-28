@@ -17,6 +17,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Created by jiangchao on 2016/7/17.
@@ -73,9 +74,9 @@ public class OldBuyerIdQuery {
             for (String orderContent : orderContents) {
                 //4.将字符串转成order对象集合
                 Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
+                StringTokenizer keyValues = new StringTokenizer(orderContent, "\t");
+                while (keyValues.hasMoreElements()) {
+                    String[] strs = keyValues.nextToken().split(":");
                     KeyValue kv = new KeyValue();
                     kv.setKey(strs[0]);
                     kv.setValue(strs[1]);

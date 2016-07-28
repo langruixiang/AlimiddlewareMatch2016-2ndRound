@@ -5,6 +5,7 @@ import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -81,9 +82,9 @@ public class NewBuyerHashFile extends Thread{
                 String buyerid = null;
                 int hashFileIndex;
                 while ((str = br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
                         if (!KeyCache.buyerKeyCache.containsKey(keyValue[0])) {
                             KeyCache.buyerKeyCache.put(keyValue[0],
                                     KeyCache.EMPTY_OBJECT);
