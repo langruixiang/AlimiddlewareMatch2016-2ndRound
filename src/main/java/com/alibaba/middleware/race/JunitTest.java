@@ -31,7 +31,7 @@ public class JunitTest {
         keys.add("good_name");
         keys.add("orderid");
         System.out.println("\n测试queryOrder接口，按订单号查找某条记录: ");
-        Result result = (Result) orderSystem.queryOrder(2982139, null);
+        Result result = (Result) orderSystem.queryOrder(3009220, null);
         System.out.println(result.get("buyerid").getValue());
         System.out.println(result.get("amount").getValue());
         System.out.println(result.get("buyername").getValue());

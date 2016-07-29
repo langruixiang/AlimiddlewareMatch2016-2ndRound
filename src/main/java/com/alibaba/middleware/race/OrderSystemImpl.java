@@ -29,6 +29,10 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.order.OrderIdIndexFile;
 import com.alibaba.middleware.race.order.OrderIdQuery;
+import com.alibaba.middleware.race.posinfo.NewBuyerIndexFile;
+import com.alibaba.middleware.race.posinfo.NewGoodIndexFile;
+import com.alibaba.middleware.race.posinfo.NewOrderIdIndexFile;
+import com.alibaba.middleware.race.posinfo.NewOrderIdQuery;
 
 /**
  * Created by jiangchao on 2016/7/11.
@@ -117,20 +121,20 @@ public class OrderSystemImpl implements OrderSystem {
 
         //buyer文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
-            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
+            NewBuyerIndexFile buyerIndexFile = new NewBuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i);
             buyerIndexThreadPool.execute(buyerIndexFile);
         }
 
         //good文件生成索引放入内存
         for (int i = 0; i < FileConstant.FILE_GOOD_NUMS; i++) {
-            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
+            NewGoodIndexFile goodIndexFile = new NewGoodIndexFile(goodCountDownLatch, buildIndexLatch, i);
             goodIndexThreadPool.execute(goodIndexFile);
         }
 
         //根据orderid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
             System.out.println("===========================================================orderid index==============================================");
-            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, 10);
+            NewOrderIdIndexFile orderIdIndexFile = new NewOrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, 10);
             orderIdIndexFile.start();
             //orderIdIndexThreadPool.execute(orderIdIndexFile);
         //}
@@ -177,7 +181,7 @@ public class OrderSystemImpl implements OrderSystem {
             System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - startTime));
             flag = 1;
         }
-        return OrderIdQuery.findOrder(orderId, keys);
+        return NewOrderIdQuery.findOrder(orderId, keys);
     }
 
     @Override

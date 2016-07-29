@@ -209,7 +209,7 @@ public class OrderHashFile extends Thread{
 	                    }
 	                }
 				}
-				
+				order_br.close();
 				countDownLatch.countDown();
                 System.out.println(type + "hash file end :" + orderFile);
 			} catch (FileNotFoundException e) {
