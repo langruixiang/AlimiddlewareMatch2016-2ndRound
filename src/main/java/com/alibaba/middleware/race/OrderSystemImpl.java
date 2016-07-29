@@ -78,14 +78,14 @@ public class OrderSystemImpl implements OrderSystem {
         System.out.println("begin to build index:");
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
-        NewGoodHashFile goodHashFileThread = new NewGoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
+        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch);
         goodHashFileThread.start();
         //goodCountDownLatch.await();
         System.out.println("good file hash end, time:" + (System.currentTimeMillis() - goodTime));
 
         //将买家文件hash成多个小文件
         long buyerTime = System.currentTimeMillis();
-        NewBuyerHashFile buyerHashFile = new NewBuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch);
         buyerHashFile.start();
         //buyerCountDownLatch.await();
         System.out.println("buyer file hash end, time:" + (System.currentTimeMillis() - buyerTime));
