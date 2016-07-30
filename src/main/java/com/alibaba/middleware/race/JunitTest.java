@@ -69,7 +69,7 @@ public class JunitTest {
     public void testSumOrdersByGood() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
-        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "price");
+        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
     }
 
@@ -97,6 +97,7 @@ public class JunitTest {
 //            orderFileList.add("order.3." + i);
 //        }
 
+
         List<String> buyerFileList = new ArrayList<String>();
         buyerFileList.add("buyer_records.txt");
 //        buyerFileList.add("buyer.0.0");
@@ -106,13 +107,14 @@ public class JunitTest {
         goodFileList.add("good_records.txt");
 
         List<String> storeFolderList = new ArrayList<String>();
-        FileUtil.createDir("D:/s1");
-        FileUtil.createDir("D:/s2");
-        FileUtil.createDir("D:/s3");
-        storeFolderList.add("D:/s1/");
-        storeFolderList.add("D:/s2/");
-        storeFolderList.add("D:/s3/");
-        
+
+        FileUtil.createDir("D:/data/s1");
+        FileUtil.createDir("D:/data/s2");
+        FileUtil.createDir("D:/data/s3");
+        storeFolderList.add("D:/data/s1/");
+        storeFolderList.add("D:/data/s2/");
+        storeFolderList.add("D:/data/s3/");
+
         try {
             orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);
 

@@ -7,11 +7,9 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by jiangchao on 2016/7/13.
@@ -23,6 +21,24 @@ public class OrderHashFile extends Thread{
     private int nums;
     private String type;
     private CountDownLatch countDownLatch;
+
+    //private int                            hashWriterThreadPoolSize = nums;
+    private ExecutorService                hashWriterThreadPool;
+    private Map<Integer, StringHashWriter> hashWriters;
+    private CountDownLatch                 hashWriterCountDownLatch;
+
+
+    private void createAllHashWriters (BufferedWriter[] bufferedWriters) {
+        this.hashWriters = new HashMap<Integer, StringHashWriter>(nums, 1);
+        this.hashWriterCountDownLatch = new CountDownLatch(nums);
+        //hashWriterThreadPool = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < nums; i++) {
+            StringHashWriter hashWriter = new StringHashWriter(hashWriterCountDownLatch, i, bufferedWriters[i]);
+            hashWriter.start();
+            hashWriters.put(i, hashWriter);
+            //hashWriterThreadPool.execute(hashWriter);
+        }
+    }
 
     public OrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
                          CountDownLatch countDownLatch) {
@@ -46,15 +62,19 @@ public class OrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
+            createAllHashWriters(bufferedWriters);
+
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
             	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters).start();
             }            
             multiHashLatch.await();
+            System.out.println("=========================send over==============================");
+            indexOver();
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].close();
-            }
+            hashWriterCountDownLatch.await();
+            System.out.println("=========================================order id hash file end :");
+
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -121,17 +141,10 @@ public class OrderHashFile extends Thread{
         countDownLatch.countDown();//完成工作，计数器减一
     }
 
-    public static void main(String args[]) {
-        List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
-
-        List<String> buyerFileList = new ArrayList<String>();
-        buyerFileList.add("buyer_records.txt");
-
-        List<String> goodFileList = new ArrayList<String>();
-        goodFileList.add("good_records.txt");
-
-        //generateBuyerIdHashFile(orderFileList, buyerFileList, goodFileList, orderFileList, 25);
+    private void indexOver() {
+        for (Map.Entry<Integer, StringHashWriter> entry : hashWriters.entrySet()) {
+            entry.getValue().sendIndexOverSignal();
+        }
     }
     
     private class MultiHash extends Thread{
@@ -170,14 +183,12 @@ public class OrderHashFile extends Thread{
 	                        if ("orderid".equals(key)) {
 	                            orderid = Long.valueOf(value);
 	                            hashFileIndex = (int) (orderid % nums);
-	                            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
-								}
-								//bufferedWriters[hashFileIndex].newLine();
+	                            hashWriters.get(hashFileIndex).sendLine(str);
 	                            break;
 	                        }
 	                    }
 	                }
+
 				}else if(type.equals("goodid")){
 					while ((str = order_br.readLine()) != null) {
                         StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
@@ -216,9 +227,9 @@ public class OrderHashFile extends Thread{
 	                    }
 	                }
 				}
-				
+				order_br.close();
 				countDownLatch.countDown();
-                System.out.println(type + "hash file end :" + orderFile);
+                //System.out.println(type + "hash file end :" + orderFile);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

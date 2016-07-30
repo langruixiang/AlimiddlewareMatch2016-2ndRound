@@ -1,5 +1,5 @@
 /**
- * StringIndexRegionHashWriter.java
+ * StringHashWriter.java
  * Copyright 2016 escenter@zju.edu.cn, all rights reserved.
  * any form of usage is subject to approval.
  */
