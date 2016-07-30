@@ -8,6 +8,9 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.posinfo.NewBuyerQuery;
+import com.alibaba.middleware.race.posinfo.NewGoodQuery;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -97,7 +100,7 @@ public class OldBuyerIdQuery {
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
         int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_BUYER_NUMS);
-        Buyer buyer = BuyerQuery.findBuyerById(buyerid, buyerHashIndex);
+        Buyer buyer = NewBuyerQuery.findBuyerById(buyerid, buyerHashIndex);
         if (buyer == null) return results.iterator();
 
         //获取goodid的所有订单信息
@@ -112,7 +115,7 @@ public class OldBuyerIdQuery {
             }
             //加入对应商品的所有属性kv
             int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_GOOD_NUMS);
-            Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue(), goodIdHashIndex);
+            Good good = NewGoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue(), goodIdHashIndex);
 
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());
