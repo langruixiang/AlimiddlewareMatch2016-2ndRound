@@ -68,13 +68,15 @@ public class OldGoodIdQuery {
             //4.将字符串转成order对象集合
             for (String orderContent : orderConstents) {
                 Order order = new Order();
-                String[] keyValues = orderContent.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
+                StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
+                while (stringTokenizer.hasMoreElements()) {
+                    StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                    String key = kvalue.nextToken();
+                    String value = kvalue.nextToken();
                     KeyValue kv = new KeyValue();
-                    kv.setKey(strs[0]);
-                    kv.setValue(strs[1]);
-                    order.getKeyValues().put(strs[0], kv);
+                    kv.setKey(key);
+                    kv.setValue(value);
+                    order.getKeyValues().put(key, kv);
                 }
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));

@@ -4,10 +4,7 @@ import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -85,20 +82,23 @@ public class OldGoodIdIndexFile extends Thread{
                 while ((str = order_br.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        String key = keyValue.nextToken();
+                        String value = keyValue.nextToken();
 
-                        if ("orderid".equals(keyValue[0])) {
-                            orderid = keyValue[1];
-                        } else if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1];
+                        if ("orderid".equals(key)) {
+                            orderid = value;
+                        } else if ("goodid".equals(key)) {
+                            goodid = value;
                             if (!goodIndex.containsKey(goodid)) {
                                 goodIndex.put(goodid, new TreeMap<Long, Long>());
                             }
                         }
                         if (orderid != null && goodid != null) {
                             goodIndex.get(goodid).put(Long.valueOf(orderid), count);
+                            break;
                         }
                     }
                     count += str.getBytes().length + 1;

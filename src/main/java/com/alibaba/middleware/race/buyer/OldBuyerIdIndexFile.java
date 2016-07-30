@@ -85,17 +85,20 @@ public class OldBuyerIdIndexFile extends Thread{
                 while ((str = order_br.readLine()) != null) {
                     String buyerid = null;
                     String createtime = null;
-                    String[] keyValues = str.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        String key = keyValue.nextToken();
+                        String value = keyValue.nextToken();
+                        //String[] keyValue = stringTokenizer.nextToken().split(":");
 
-                        if ("buyerid".equals(keyValue[0])) {
-                            buyerid = keyValue[1];
+                        if ("buyerid".equals(key)) {
+                            buyerid = value;
                             if (!buyerIndex.containsKey(buyerid)) {
                                 buyerIndex.put(buyerid, new TreeMap<Long, Long>());
                             }
-                        } else if ("createtime".equals(keyValue[0])) {
-                            createtime = keyValue[1];
+                        } else if ("createtime".equals(key)) {
+                            createtime = value;
                         }
                         if (buyerid != null && createtime != null) {
                             buyerIndex.get(buyerid).put(Long.valueOf(createtime), count);

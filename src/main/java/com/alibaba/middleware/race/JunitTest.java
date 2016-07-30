@@ -89,20 +89,29 @@ public class JunitTest {
         OrderSystem orderSystem = new OrderSystemImpl();
         List<String> orderFileList = new ArrayList<String>();
         orderFileList.add("order_records.txt");
+//        orderFileList.add("order.0.0");
+//        orderFileList.add("order.0.3");
+//        orderFileList.add("order.1.1");
+//        orderFileList.add("order.2.2");
+//        for (int i = 0; i < 10; i++) {
+//            orderFileList.add("order.3." + i);
+//        }
 
         List<String> buyerFileList = new ArrayList<String>();
         buyerFileList.add("buyer_records.txt");
+//        buyerFileList.add("buyer.0.0");
+//        buyerFileList.add("buyer.1.1");
 
         List<String> goodFileList = new ArrayList<String>();
         goodFileList.add("good_records.txt");
-        
+
         List<String> storeFolderList = new ArrayList<String>();
-        FileUtil.createDir("s1");
-        FileUtil.createDir("s2");
-        FileUtil.createDir("s3");
-        storeFolderList.add("./s1/");
-        storeFolderList.add("./s2/");
-        storeFolderList.add("./s3/");
+        FileUtil.createDir("D:/s1");
+        FileUtil.createDir("D:/s2");
+        FileUtil.createDir("D:/s3");
+        storeFolderList.add("D:/s1/");
+        storeFolderList.add("D:/s2/");
+        storeFolderList.add("D:/s3/");
         
         try {
             orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);

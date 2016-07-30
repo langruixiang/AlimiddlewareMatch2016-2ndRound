@@ -5,6 +5,7 @@ import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -44,15 +45,17 @@ public class GoodHashFile extends Thread{
                 long goodid = 0;
                 int hashFileIndex;
                 while ((str = good_br.readLine()) != null) {
-                    String[] keyValues = str.split("\t");
-                    for (int i = 0; i < keyValues.length; i++) {
-                        String[] keyValue = keyValues[i].split(":");
-                        if (!KeyCache.goodKeyCache.containsKey(keyValue[0])) {
-                            KeyCache.goodKeyCache.put(keyValue[0], 0);
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        String key = keyValue.nextToken();
+                        String value = keyValue.nextToken();
+                        if (!KeyCache.goodKeyCache.containsKey(key)) {
+                            KeyCache.goodKeyCache.put(key, 0);
                             //System.out.println("====================================================================================good key :" + keyValue[0]);
                         }
-                        if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1].hashCode();
+                        if ("goodid".equals(key)) {
+                            goodid = value.hashCode();
                             hashFileIndex = (int) (Math.abs(goodid) % nums);
                             bufferedWriters[hashFileIndex].write(str + '\n');
                             //bufferedWriters[hashFileIndex].newLine();

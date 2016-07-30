@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -161,11 +162,13 @@ public class OrderHashFile extends Thread{
 				int hashFileIndex;
 				if(type.equals("orderid")){
 					while ((str = order_br.readLine()) != null) {
-	                    String[] keyValues = str.split("\t");
-	                    for (int i = 0; i < keyValues.length; i++) {
-	                        String[] keyValue = keyValues[i].split(":");
-	                        if ("orderid".equals(keyValue[0])) {
-	                            orderid = Long.valueOf(keyValue[1]);
+                        StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                        while (stringTokenizer.hasMoreElements()) {
+                            StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                            String key = keyValue.nextToken();
+                            String value = keyValue.nextToken();
+	                        if ("orderid".equals(key)) {
+	                            orderid = Long.valueOf(value);
 	                            hashFileIndex = (int) (orderid % nums);
 	                            synchronized (bufferedWriters[hashFileIndex]) {
 									bufferedWriters[hashFileIndex].write(str + '\n');
@@ -177,14 +180,16 @@ public class OrderHashFile extends Thread{
 	                }
 				}else if(type.equals("goodid")){
 					while ((str = order_br.readLine()) != null) {
-					    String[] keyValues = str.split("\t");
-					    for (int i = 0; i < keyValues.length; i++) {
-					        String[] keyValue = keyValues[i].split(":");
-                            if (!KeyCache.orderKeyCache.containsKey(keyValue[0])){
-                                KeyCache.orderKeyCache.put(keyValue[0], 0);
+                        StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                        while (stringTokenizer.hasMoreElements()) {
+                            StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                            String key = keyValue.nextToken();
+                            String value = keyValue.nextToken();
+                            if (!KeyCache.orderKeyCache.containsKey(key)){
+                                KeyCache.orderKeyCache.put(key, 0);
                             }
-					        if (type.equals(keyValue[0])) {
-					            goodid = keyValue[1];
+					        if (type.equals(key)) {
+					            goodid = value;
 					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
 					            synchronized (bufferedWriters[hashFileIndex]) {
 									bufferedWriters[hashFileIndex].write(str + '\n');
@@ -194,11 +199,13 @@ public class OrderHashFile extends Thread{
 					}
 				}else if(type.equals("buyerid")){
 	                while ((str = order_br.readLine()) != null) {
-	                    String[] keyValues = str.split("\t");
-	                    for (int i = 0; i < keyValues.length; i++) {
-	                        String[] keyValue = keyValues[i].split(":");
-	                        if ("buyerid".equals(keyValue[0])) {
-	                            buyerid = keyValue[1];
+                        StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                        while (stringTokenizer.hasMoreElements()) {
+                            StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                            String key = keyValue.nextToken();
+                            String value = keyValue.nextToken();
+	                        if ("buyerid".equals(key)) {
+	                            buyerid = value;
 	                            hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
 	                            synchronized (bufferedWriters[hashFileIndex]) {
 									bufferedWriters[hashFileIndex].write(str + '\n');

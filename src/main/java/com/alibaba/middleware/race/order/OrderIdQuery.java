@@ -13,10 +13,7 @@ import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by jiangchao on 2016/7/17.
@@ -58,13 +55,15 @@ public class OrderIdQuery {
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
 
             //4.将字符串转成order对象集合
-            String[] keyValues = orderContent.split("\t");
-            for (int i = 0; i < keyValues.length; i++) {
-                String[] strs = keyValues[i].split(":");
+            StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
+            while (stringTokenizer.hasMoreElements()) {
+                StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                String key = kvalue.nextToken();
+                String value = kvalue.nextToken();
                 KeyValue kv = new KeyValue();
-                kv.setKey(strs[0]);
-                kv.setValue(strs[1]);
-                order.getKeyValues().put(strs[0], kv);
+                kv.setKey(key);
+                kv.setValue(value);
+                order.getKeyValues().put(key, kv);
             }
             order.setId(orderId);
             hashRaf.close();
