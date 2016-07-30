@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class KeyCache {
 
-    public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
+    //public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
 
     public static ConcurrentHashMap<String, Integer> buyerKeyCache = new ConcurrentHashMap<String, Integer>();
 

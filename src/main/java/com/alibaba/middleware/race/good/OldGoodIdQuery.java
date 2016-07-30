@@ -140,17 +140,17 @@ public class OldGoodIdQuery {
             return results.iterator();
         }
 
-        List<String> orderSearchKeys = new ArrayList<String>();
+        List<String> maybeOrderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
         List<String> buyerSearchKeys = new ArrayList<String>();
         if (keys != null) {
             for (String key : keys) {
-                if (KeyCache.orderKeyCache.containsKey(key)) {
-                    orderSearchKeys.add(key);
-                } else if (KeyCache.goodKeyCache.containsKey(key)) {
+                if (KeyCache.goodKeyCache.containsKey(key)) {
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.containsKey(key)) {
                     buyerSearchKeys.add(key);
+                } else {
+                    maybeOrderSearchKeys.add(key);
                 }
             }
         }
@@ -221,7 +221,7 @@ public class OldGoodIdQuery {
             if (keys == null) {
                 result.getKeyValues().putAll(order.getKeyValues());
             } else {
-                for (String key : orderSearchKeys) {
+                for (String key : maybeOrderSearchKeys) {
                     if (order.getKeyValues().containsKey(key)) {
                         result.getKeyValues().put(key, order.getKeyValues().get(key));
                     }

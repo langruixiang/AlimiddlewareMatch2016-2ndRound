@@ -185,15 +185,14 @@ public class OrderHashFile extends Thread{
                             StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                             String key = keyValue.nextToken();
                             String value = keyValue.nextToken();
-                            if (!KeyCache.orderKeyCache.containsKey(key)){
-                                KeyCache.orderKeyCache.put(key, 0);
-                            }
+
 					        if (type.equals(key)) {
 					            goodid = value;
 					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
 					            synchronized (bufferedWriters[hashFileIndex]) {
 									bufferedWriters[hashFileIndex].write(str + '\n');
 								}
+                                break;
 					        }
 					    }
 					}
