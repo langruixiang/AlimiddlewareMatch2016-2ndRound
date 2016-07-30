@@ -171,12 +171,12 @@ public class GoodIdQuery {
         List<String> buyerSearchKeys = new ArrayList<String>();
         if (keys != null) {
             for (String key : keys) {
-                if (KeyCache.orderKeyCache.containsKey(key)) {
-                    orderSearchKeys.add(key);
-                } else if (KeyCache.goodKeyCache.containsKey(key)) {
+                if (KeyCache.goodKeyCache.containsKey(key)) {
                     goodSearchKeys.add(key);
                 } else if (KeyCache.buyerKeyCache.containsKey(key)) {
                     buyerSearchKeys.add(key);
+                } else {
+                    orderSearchKeys.add(key);
                 }
             }
         }
