@@ -107,8 +107,8 @@ public class JunitTest {
 
         List<String> buyerFileList = new ArrayList<String>();
         buyerFileList.add("buyerrecords.txt");
-        buyerFileList.add("buyer.0.0");
-        buyerFileList.add("buyer.1.1");
+//        buyerFileList.add("buyer.0.0");
+//        buyerFileList.add("buyer.1.1");
 
         List<String> goodFileList = new ArrayList<String>();
         goodFileList.add("goodrecords.txt");
