@@ -67,7 +67,6 @@ public class BuyerIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            System.out.println("index " + index + " file by buyerid" + " start.");
             Map<String, String> orderRankMap = new TreeMap<String, String>().descendingMap();
             Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();

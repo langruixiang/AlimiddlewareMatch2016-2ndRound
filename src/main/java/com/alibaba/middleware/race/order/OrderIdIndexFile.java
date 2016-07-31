@@ -28,7 +28,7 @@ public class OrderIdIndexFile extends Thread{
         this.orderIdHashTime = orderIdHashTime;
     }
 
-    //订单文件按照goodid生成索引文件，存放到第三块磁盘上
+    //订单文件按照orderid生成索引文件，存放到第三块磁盘上
     public void generateOrderIdIndex() {
 
         for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
@@ -72,8 +72,7 @@ public class OrderIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            System.out.println("=================================================================================index " + index + " file by orderid" + " start.");
-            Map<Long, Long> orderIndex = new TreeMap<Long, Long>();
+            Map<Long, String> orderIndex = new TreeMap<Long, String>();
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
             FileInputStream order_records = null;
             try {
@@ -88,19 +87,11 @@ public class OrderIdIndexFile extends Thread{
                 long count = 0;
                 String orderid = null;
                 while ((str = order_br.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, ":");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
-                        String key = keyValue.nextToken();
-                        String value = keyValue.nextToken();
-
-                        if ("orderid".equals(key)) {
-                            orderid = value;
-                            orderIndex.put(Long.valueOf(orderid), count);
-                            break;
-                        }
+                        orderIndex.put(Long.valueOf(stringTokenizer.nextToken()), str);
+                        break;
                     }
-                    count += str.getBytes().length + 1;
                 }
 
                 int towIndexSize = (int) Math.sqrt(orderIndex.size());
@@ -112,15 +103,13 @@ public class OrderIdIndexFile extends Thread{
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     Long key = (Long) entry.getKey();
-                    Long val = (Long) entry.getValue();
-                    String content = key + ":";
-                    content = content + val;
-                    bufferedWriter.write(content + '\n');
+                    String val = (String) entry.getValue();
+                    bufferedWriter.write(val + '\n');
 
                     if (count % towIndexSize == 0) {
                         twoIndexMap.put(key, position);
                     }
-                    position += content.getBytes().length + 1;
+                    position += val.getBytes().length + 1;
                     count++;
                 }
                 TwoIndexCache.orderIdTwoIndexCache.put(index, twoIndexMap);

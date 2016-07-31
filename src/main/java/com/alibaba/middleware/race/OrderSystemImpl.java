@@ -32,9 +32,9 @@ import com.alibaba.middleware.race.order.OrderIdQuery;
  */
 public class OrderSystemImpl implements OrderSystem {
 
-    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS + FileConstant.FILE_GOOD_NUMS + FileConstant.FILE_BUYER_NUMS);
+    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS);
 
-    private static long startTime;
+    private static long theStartTime;
 
     private static int flag = 0;
     //实现无参构造函数
@@ -50,7 +50,7 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch switchCountDownLatch = new CountDownLatch(1);
         SwitchThread switchThread  = new SwitchThread(switchCountDownLatch);
         switchThread.start();
-        startTime = System.currentTimeMillis();
+        theStartTime = System.currentTimeMillis();
         long beginTime = System.currentTimeMillis();
         if (storeFolders != null && storeFolders.size() >= 3) {
             FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
@@ -113,16 +113,16 @@ public class OrderSystemImpl implements OrderSystem {
 
 
         //buyer文件生成索引放入内存
-        for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
-            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i , buyerIdHashTime);
-            buyerIndexThreadPool.execute(buyerIndexFile);
-        }
-
-        //good文件生成索引放入内存
-        for (int i = 0; i < FileConstant.FILE_GOOD_NUMS; i++) {
-            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i, goodTime);
-            goodIndexThreadPool.execute(goodIndexFile);
-        }
+//        for (int i = 0; i < FileConstant.FILE_BUYER_NUMS; i++) {
+//            BuyerIndexFile buyerIndexFile = new BuyerIndexFile(buyerCountDownLatch, buildIndexLatch, i , buyerIdHashTime);
+//            buyerIndexThreadPool.execute(buyerIndexFile);
+//        }
+//
+//        //good文件生成索引放入内存
+//        for (int i = 0; i < FileConstant.FILE_GOOD_NUMS; i++) {
+//            GoodIndexFile goodIndexFile = new GoodIndexFile(goodCountDownLatch, buildIndexLatch, i, goodTime);
+//            goodIndexThreadPool.execute(goodIndexFile);
+//        }
 
         //根据orderid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
@@ -170,7 +170,7 @@ public class OrderSystemImpl implements OrderSystem {
             e.printStackTrace();
         }
         if (flag == 0) {
-            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - startTime));
+            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
         return OrderIdQuery.findOrder(orderId, keys);
@@ -184,7 +184,7 @@ public class OrderSystemImpl implements OrderSystem {
             e.printStackTrace();
         }
         if (flag == 0) {
-            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - startTime));
+            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
         return OldBuyerIdQuery.findOrdersByBuyer(startTime, endTime, buyerid);
@@ -198,7 +198,7 @@ public class OrderSystemImpl implements OrderSystem {
             e.printStackTrace();
         }
         if (flag == 0) {
-            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - startTime));
+            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
         return OldGoodIdQuery.findOrdersByGood(salerid, goodid, keys);
@@ -212,7 +212,7 @@ public class OrderSystemImpl implements OrderSystem {
             e.printStackTrace();
         }
         if (flag == 0) {
-            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - startTime));
+            System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
         return OldGoodIdQuery.sumValuesByGood(goodid, key);

@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.good;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
+import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
@@ -21,22 +22,21 @@ public class GoodQuery {
         Good good = new Good();
         try {
 
-            File rankFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
-
             String str = null;
 
             //1.查找索引
-            long position = 0;
+            FilePosition positionInfo = null;
             if (!OneIndexCache.goodOneIndexCache.containsKey(goodId)) {
                 return null;
             } else {
-                position = OneIndexCache.goodOneIndexCache.get(goodId);
+                positionInfo = OneIndexCache.goodOneIndexCache.get(goodId);
             }
             //System.out.println(position);
 
             //2.按行读取内容
-            hashRaf.seek(position);
+            File rankFile = new File(positionInfo.getFileName());
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            hashRaf.seek(positionInfo.getPosition());
             String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;
 

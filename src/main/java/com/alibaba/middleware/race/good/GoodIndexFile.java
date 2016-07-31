@@ -43,7 +43,7 @@ public class GoodIndexFile extends Thread{
 
                         if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
-                            OneIndexCache.goodOneIndexCache.put(goodid, position);
+                            //OneIndexCache.goodOneIndexCache.put(goodid, position);
                             break;
                         }
                     }

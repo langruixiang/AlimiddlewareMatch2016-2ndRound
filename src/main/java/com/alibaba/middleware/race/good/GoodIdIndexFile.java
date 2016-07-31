@@ -69,7 +69,6 @@ public class GoodIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            System.out.println("index " + index + " file by goodid" + " start.");
             Map<String, String> orderRankMap = new TreeMap<String, String>();
             Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();

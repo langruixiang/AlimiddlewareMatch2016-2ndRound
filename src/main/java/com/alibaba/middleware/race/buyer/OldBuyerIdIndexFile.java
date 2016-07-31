@@ -71,7 +71,6 @@ public class OldBuyerIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            System.out.println("index " + index + " file by buyerid" + " start.");
             TreeMap<String, TreeMap<Long, Long>> buyerIndex = new TreeMap<String, TreeMap<Long, Long>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {

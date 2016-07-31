@@ -48,7 +48,7 @@ public class BuyerIndexFile extends Thread{
 
                         if ("buyerid".equals(keyValue[0])) {
                             buyerid = keyValue[1];
-                            OneIndexCache.buyerOneIndexCache.put(buyerid, position);
+                            //OneIndexCache.buyerOneIndexCache.put(buyerid, position);
                             break;
                         }
                     }

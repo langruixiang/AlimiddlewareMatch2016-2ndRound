@@ -70,7 +70,6 @@ public class OldGoodIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            System.out.println("index " + index + " file by goodid" + " start.");
             Map<String, TreeMap<Long, Long>> goodIndex = new TreeMap<String, TreeMap<Long, Long>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {

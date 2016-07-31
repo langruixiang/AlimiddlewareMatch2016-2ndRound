@@ -1,5 +1,7 @@
 package com.alibaba.middleware.race.cache;
 
+import com.alibaba.middleware.race.model.FilePosition;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class OneIndexCache {
 
-    public static Map<String, Long> buyerOneIndexCache = new ConcurrentHashMap<String, Long>();
+    public static Map<String, FilePosition> buyerOneIndexCache = new ConcurrentHashMap<String, FilePosition>();
 
-    public static Map<String, Long> goodOneIndexCache = new ConcurrentHashMap<String, Long>();
+    public static Map<String, FilePosition> goodOneIndexCache = new ConcurrentHashMap<String, FilePosition>();
 }

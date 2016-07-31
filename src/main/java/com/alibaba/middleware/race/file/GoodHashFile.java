@@ -1,7 +1,9 @@
 package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.FilePosition;
 
 import java.io.*;
 import java.util.Collection;
@@ -29,13 +31,6 @@ public class GoodHashFile extends Thread{
     public void generateGoodHashFile() {
 
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
-
-            for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + i);
-                FileWriter fw = new FileWriter(file);
-                bufferedWriters[i] = new BufferedWriter(fw);
-            }
             int count = 0;
             for (String goodFile : goodFiles) {
                 FileInputStream good_records = new FileInputStream(goodFile);
@@ -44,6 +39,7 @@ public class GoodHashFile extends Thread{
                 String str = null;
                 long goodid = 0;
                 int hashFileIndex;
+                long position = 0;
                 while ((str = good_br.readLine()) != null) {
                     StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                     while (stringTokenizer.hasMoreElements()) {
@@ -52,23 +48,21 @@ public class GoodHashFile extends Thread{
                         String value = keyValue.nextToken();
                         if (!KeyCache.goodKeyCache.containsKey(key)) {
                             KeyCache.goodKeyCache.put(key, 0);
-                            //System.out.println("====================================================================================good key :" + keyValue[0]);
                         }
                         if ("goodid".equals(key)) {
                             goodid = value.hashCode();
                             hashFileIndex = (int) (Math.abs(goodid) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
+                            FilePosition filePosition = new FilePosition(goodFile, position);
+                            OneIndexCache.goodOneIndexCache.put(value, filePosition);
+                            position += str.getBytes().length + 1;
+                            break;
                         }
                     }
                 }
+                good_br.close();
                 System.out.println("good hash FIle " + count++);
             }
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].flush();
-                bufferedWriters[i].close();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

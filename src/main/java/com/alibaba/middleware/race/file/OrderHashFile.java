@@ -149,7 +149,6 @@ public class OrderHashFile extends Thread{
     	
     	@Override
     	public void run(){
-            System.out.println(orderFile + "hash file by " + type + " start.");
     		try {
 				FileInputStream order_records = new FileInputStream(orderFile);
 				BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -161,6 +160,7 @@ public class OrderHashFile extends Thread{
 				
 				int hashFileIndex;
 				if(type.equals("orderid")){
+                    long position = 0;
 					while ((str = order_br.readLine()) != null) {
                         StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                         while (stringTokenizer.hasMoreElements()) {
@@ -170,11 +170,12 @@ public class OrderHashFile extends Thread{
 	                        if ("orderid".equals(key)) {
 	                            orderid = Long.valueOf(value);
 	                            hashFileIndex = (int) (orderid % nums);
+                                String content = orderid + ":" + orderFile + ":" + position + '\n';
 	                            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
+									bufferedWriters[hashFileIndex].write(content);
 								}
-								//bufferedWriters[hashFileIndex].newLine();
-	                            break;
+                                position += str.getBytes().length + 1;
+                                break;
 	                        }
 	                    }
 	                }

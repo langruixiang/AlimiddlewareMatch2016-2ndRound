@@ -1,7 +1,9 @@
 package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.model.FilePosition;
 
 import java.io.*;
 import java.util.Collection;
@@ -29,13 +31,6 @@ public class BuyerHashFile extends Thread{
     public void generateBuyerHashFile() {
 
         try {
-            BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
-
-            for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + i);
-                FileWriter fw = new FileWriter(file);
-                bufferedWriters[i] = new BufferedWriter(fw);
-            }
 
             int count = 0;
             for (String buyerFile : buyerFiles) {
@@ -45,6 +40,7 @@ public class BuyerHashFile extends Thread{
                 String str = null;
                 long buyerid = 0;
                 int hashFileIndex;
+                long position = 0;
                 while ((str = buyer_br.readLine()) != null) {
                     StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                     while (stringTokenizer.hasMoreElements()) {
@@ -57,18 +53,17 @@ public class BuyerHashFile extends Thread{
                         if ("buyerid".equals(key)) {
                             buyerid = value.hashCode();
                             hashFileIndex = (int) (Math.abs(buyerid) % nums);
-                            bufferedWriters[hashFileIndex].write(str + '\n');
-                            //bufferedWriters[hashFileIndex].newLine();
+                            FilePosition filePosition = new FilePosition(buyerFile, position);
+                            OneIndexCache.buyerOneIndexCache.put(value, filePosition);
+                            position += str.getBytes().length + 1;
+                            break;
                         }
                     }
                 }
                 System.out.println("buyer hash file " + count++);
+                buyer_br.close();
             }
 
-            for (int i = 0; i < nums; i++) {
-                bufferedWriters[i].flush();
-                bufferedWriters[i].close();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }

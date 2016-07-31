@@ -23,9 +23,6 @@ public class OrderIdQuery {
         Order order = new Order();
         try {
 
-            File hashFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
-
             File indexFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
             String str = null;
@@ -46,13 +43,16 @@ public class OrderIdQuery {
                     return null;
                 }
             }
-
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
+            String srcFile = keyValue[1];
+            long pos = Long.valueOf(keyValue[2]);
 
-            long pos = Long.valueOf(keyValue[1]);
+            File hashFile = new File(srcFile);
+            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
             hashRaf.seek(Long.valueOf(pos));
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+            System.out.println("============" + orderContent);
 
             //4.将字符串转成order对象集合
             StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
