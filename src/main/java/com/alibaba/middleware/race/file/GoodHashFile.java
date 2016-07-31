@@ -55,7 +55,6 @@ public class GoodHashFile extends Thread{
                             FilePosition filePosition = new FilePosition(goodFile, position);
                             OneIndexCache.goodOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
-                            break;
                         }
                     }
                 }

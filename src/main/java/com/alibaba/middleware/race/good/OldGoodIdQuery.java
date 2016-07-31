@@ -235,6 +235,7 @@ public class OldGoodIdQuery {
     }
 
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
+        System.out.println("================" + goodid + "=============" + key);
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
@@ -243,7 +244,9 @@ public class OldGoodIdQuery {
         //flag=0表示Long类型，1表示Double类型
         int flag = 0;
 
+
         if (KeyCache.goodKeyCache.containsKey(key)) {
+            System.out.println("==================================good key");
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);

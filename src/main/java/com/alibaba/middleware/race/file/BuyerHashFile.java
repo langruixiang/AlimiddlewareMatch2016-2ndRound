@@ -56,7 +56,6 @@ public class BuyerHashFile extends Thread{
                             FilePosition filePosition = new FilePosition(buyerFile, position);
                             OneIndexCache.buyerOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
-                            break;
                         }
                     }
                 }

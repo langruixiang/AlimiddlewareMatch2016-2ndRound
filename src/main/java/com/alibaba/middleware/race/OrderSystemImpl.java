@@ -33,6 +33,8 @@ import com.alibaba.middleware.race.order.OrderIdQuery;
 public class OrderSystemImpl implements OrderSystem {
 
     private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS);
+    private static CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
+    private static CountDownLatch goodCountDownLatch = new CountDownLatch(1);
 
     private static long theStartTime;
 
@@ -67,8 +69,7 @@ public class OrderSystemImpl implements OrderSystem {
         CountDownLatch goodIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch buyerIdCountDownLatch = new CountDownLatch(1);
         CountDownLatch orderIdCountDownLatch = new CountDownLatch(1);
-        CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
-        CountDownLatch goodCountDownLatch = new CountDownLatch(1);
+
         //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(5);
 
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
@@ -166,6 +167,8 @@ public class OrderSystemImpl implements OrderSystem {
     public Result queryOrder(long orderId, Collection<String> keys) {
         try {
             buildIndexLatch.await();
+            goodCountDownLatch.await();
+            buyerCountDownLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -180,6 +183,8 @@ public class OrderSystemImpl implements OrderSystem {
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
         try {
             buildIndexLatch.await();
+            goodCountDownLatch.await();
+            buyerCountDownLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -194,6 +199,8 @@ public class OrderSystemImpl implements OrderSystem {
     public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         try {
             buildIndexLatch.await();
+            goodCountDownLatch.await();
+            buyerCountDownLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -208,6 +215,8 @@ public class OrderSystemImpl implements OrderSystem {
     public KeyValue sumOrdersByGood(String goodid, String key) {
         try {
             buildIndexLatch.await();
+            goodCountDownLatch.await();
+            buyerCountDownLatch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
