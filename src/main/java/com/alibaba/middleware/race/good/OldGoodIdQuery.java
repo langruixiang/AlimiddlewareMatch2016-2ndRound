@@ -54,7 +54,6 @@ public class OldGoodIdQuery {
                     return null;
                 }
             }
-            System.out.println(oneIndex);
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String[] positions = keyValue[1].split("\\|");
