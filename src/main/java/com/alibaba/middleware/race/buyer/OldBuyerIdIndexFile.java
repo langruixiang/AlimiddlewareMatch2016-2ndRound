@@ -71,7 +71,7 @@ public class OldBuyerIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            TreeMap<String, TreeMap<Long, Long>> buyerIndex = new TreeMap<String, TreeMap<Long, Long>>();
+            TreeMap<String, TreeMap<Long, String>> buyerIndex = new TreeMap<String, TreeMap<Long, String>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -84,51 +84,45 @@ public class OldBuyerIdIndexFile extends Thread{
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
                 String str = null;
-                long count = 0;
 
                 while ((str = order_br.readLine()) != null) {
                     String buyerid = null;
                     String createtime = null;
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    String fileName = null;
+                    String position = null;
+                    String content = null;
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, ":");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
-                        String key = keyValue.nextToken();
-                        String value = keyValue.nextToken();
-                        //String[] keyValue = stringTokenizer.nextToken().split(":");
-
-                        if ("buyerid".equals(key)) {
-                            buyerid = value;
-                            if (!buyerIndex.containsKey(buyerid)) {
-                                buyerIndex.put(buyerid, new TreeMap<Long, Long>());
-                            }
-                        } else if ("createtime".equals(key)) {
-                            createtime = value;
+                        buyerid = stringTokenizer.nextToken();
+                        createtime = stringTokenizer.nextToken();
+                        fileName = stringTokenizer.nextToken();
+                        position = stringTokenizer.nextToken();
+                        content = fileName + "_" + position;
+                        if (!buyerIndex.containsKey(buyerid)) {
+                            buyerIndex.put(buyerid, new TreeMap<Long, String>());
                         }
-                        if (buyerid != null && createtime != null) {
-                            buyerIndex.get(buyerid).put(Long.valueOf(createtime), count);
-                            break;
-                        }
+                        buyerIndex.get(buyerid).put(Long.valueOf(createtime), content);
+                        break;
                     }
-                    count += str.getBytes().length + 1;
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
                 FileConstant.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
-                count = 0;
+                long count = 0;
                 long position = 0;
                 Iterator iterator = buyerIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    TreeMap<Long, Long> val = (TreeMap<Long, Long>) entry.getValue();
+                    TreeMap<Long, String> val = (TreeMap<Long, String>) entry.getValue();
 
                     StringBuilder content = new StringBuilder(key + "\t");
                     Iterator iteratorOrders = val.descendingMap().entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
                         Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
                         Long createtime = (Long) orderEntry.getKey();
-                        Long pos = (Long)orderEntry.getValue();
+                        String pos = (String)orderEntry.getValue();
                         content.append(createtime);
                         content.append(":");
                         content.append(pos);

@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.FilePosition;
 
@@ -36,6 +37,8 @@ public class BuyerHashFile extends Thread{
             for (String buyerFile : buyerFiles) {
                 FileInputStream buyer_records = new FileInputStream(buyerFile);
                 BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
+//                RandomAccessFile ranRaf = new RandomAccessFile(new File(buyerFile), "r");
+//                RandomFile.randomFileMap.put(buyerFile, ranRaf);
 
                 String str = null;
                 long buyerid = 0;

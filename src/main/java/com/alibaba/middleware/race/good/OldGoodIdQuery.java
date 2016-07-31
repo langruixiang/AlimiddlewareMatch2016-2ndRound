@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.good;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
@@ -26,14 +27,15 @@ import java.util.regex.Pattern;
  */
 public class OldGoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
+        System.out.println("---------------goodid:" + goodId + "---------index:" + index);
         if (goodId == null) return null;
         List<Order> orders = new ArrayList<Order>();
         try {
-            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+//            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
+//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
@@ -53,16 +55,21 @@ public class OldGoodIdQuery {
                     return null;
                 }
             }
-
+            System.out.println(oneIndex);
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String[] positions = keyValue[1].split("\\|");
 
             List<String> orderConstents = new ArrayList<String>();
             for (String pos : positions) {
-                hashRaf.seek(Long.valueOf(pos));
+                String[] posinfo = pos.split("_");
+                File hashFile = new File(posinfo[0]);
+                RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
+//                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
+                hashRaf.seek(Long.valueOf(posinfo[1]));
                 String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
                 orderConstents.add(orderContent);
+                hashRaf.close();
             }
 
             //4.将字符串转成order对象集合
@@ -83,7 +90,6 @@ public class OldGoodIdQuery {
                 }
                 orders.add(order);
             }
-            hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -74,6 +74,14 @@ public class JunitTest {
     }
 
     @Test
+    public void testProduceData() {
+        //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
+        System.out.println("\n测试produceData: ");
+        ProduceData.produceOrderData(10000);
+
+    }
+
+    @Test
     public void testBuyeridIndex() {
         //测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试buyerid生成一级二级索引: ");
@@ -88,7 +96,7 @@ public class JunitTest {
 
         OrderSystem orderSystem = new OrderSystemImpl();
         List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
+        orderFileList.add("orderrecords.txt");
 //        orderFileList.add("order.0.0");
 //        orderFileList.add("order.0.3");
 //        orderFileList.add("order.1.1");
@@ -98,12 +106,12 @@ public class JunitTest {
 //        }
 
         List<String> buyerFileList = new ArrayList<String>();
-        buyerFileList.add("buyer_records.txt");
-//        buyerFileList.add("buyer.0.0");
-//        buyerFileList.add("buyer.1.1");
+        buyerFileList.add("buyerrecords.txt");
+        buyerFileList.add("buyer.0.0");
+        buyerFileList.add("buyer.1.1");
 
         List<String> goodFileList = new ArrayList<String>();
-        goodFileList.add("good_records.txt");
+        goodFileList.add("goodrecords.txt");
 
         List<String> storeFolderList = new ArrayList<String>();
         FileUtil.createDir("D:/s1");

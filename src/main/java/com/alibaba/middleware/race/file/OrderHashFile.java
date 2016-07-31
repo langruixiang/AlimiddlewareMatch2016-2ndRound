@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -12,6 +13,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by jiangchao on 2016/7/13.
@@ -46,8 +49,12 @@ public class OrderHashFile extends Thread{
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
 
+            //ExecutorService fixedThreadPool = Executors.newFixedThreadPool(6);
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
-            for (String orderFile : orderFiles) {            	
+            for (String orderFile : orderFiles) {
+//                RandomAccessFile ranRaf = new RandomAccessFile(new File(orderFile), "r");
+//                RandomFile.randomFileMap.put(orderFile, ranRaf);
+                //fixedThreadPool.execute(new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters));
             	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters).start();
             }            
             multiHashLatch.await();
@@ -121,18 +128,7 @@ public class OrderHashFile extends Thread{
         countDownLatch.countDown();//完成工作，计数器减一
     }
 
-    public static void main(String args[]) {
-        List<String> orderFileList = new ArrayList<String>();
-        orderFileList.add("order_records.txt");
 
-        List<String> buyerFileList = new ArrayList<String>();
-        buyerFileList.add("buyer_records.txt");
-
-        List<String> goodFileList = new ArrayList<String>();
-        goodFileList.add("good_records.txt");
-
-        //generateBuyerIdHashFile(orderFileList, buyerFileList, goodFileList, orderFileList, 25);
-    }
     
     private class MultiHash extends Thread{
     	private String orderFile;
@@ -180,43 +176,61 @@ public class OrderHashFile extends Thread{
 	                    }
 	                }
 				}else if(type.equals("goodid")){
+                    long position = 0;
 					while ((str = order_br.readLine()) != null) {
+                        String orderIdStr = null;
+                        String goodIdStr = null;
                         StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                         while (stringTokenizer.hasMoreElements()) {
                             StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                             String key = keyValue.nextToken();
                             String value = keyValue.nextToken();
 
-					        if (type.equals(key)) {
-					            goodid = value;
-					            hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
-					            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
-								}
-                                break;
+                            if ("orderid".equals(key)) {
+                                orderIdStr = value;
+                            } else if (type.equals(key)) {
+                                goodIdStr = value;
 					        }
+                            if (orderIdStr != null && goodIdStr != null) {
+                                hashFileIndex = (int) (Math.abs(goodIdStr.hashCode()) % nums);
+                                String content = goodIdStr + ":" + orderIdStr + ":" + orderFile + ":" + position + '\n';
+                                synchronized (bufferedWriters[hashFileIndex]) {
+                                    //System.out.println(content);
+                                    bufferedWriters[hashFileIndex].write(content);
+                                }
+                                position += str.getBytes().length + 1;
+                                break;
+                            }
 					    }
 					}
 				}else if(type.equals("buyerid")){
+                    long position = 0;
 	                while ((str = order_br.readLine()) != null) {
+                        String buyeridStr = null;
+                        String createtime = null;
                         StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                         while (stringTokenizer.hasMoreElements()) {
                             StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                             String key = keyValue.nextToken();
                             String value = keyValue.nextToken();
 	                        if ("buyerid".equals(key)) {
-	                            buyerid = value;
-	                            hashFileIndex = (int) (Math.abs(buyerid.hashCode()) % nums);
-	                            synchronized (bufferedWriters[hashFileIndex]) {
-									bufferedWriters[hashFileIndex].write(str + '\n');
-								}
-								//bufferedWriters[hashFileIndex].newLine();
-	                            break;
-	                        }
+                                buyeridStr = value;
+	                        } else if ("createtime".equals(key)) {
+                                createtime = value;
+                            }
+                            if (buyeridStr != null && createtime != null) {
+                                hashFileIndex = (int) (Math.abs(buyeridStr.hashCode()) % nums);
+                                String content = buyeridStr + ":" + createtime + ":" + orderFile + ":" + position + '\n';
+                                synchronized (bufferedWriters[hashFileIndex]) {
+                                    bufferedWriters[hashFileIndex].write(content);
+                                }
+                                position += str.getBytes().length + 1;
+                                break;
+                            }
 	                    }
 	                }
 				}
-				
+				order_br.close();
 				countDownLatch.countDown();
                 System.out.println(type + "hash file end :" + orderFile);
 			} catch (FileNotFoundException e) {

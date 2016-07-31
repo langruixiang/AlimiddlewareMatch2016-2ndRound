@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.cache.OneIndexCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
@@ -36,6 +37,8 @@ public class GoodQuery {
             //2.按行读取内容
             File rankFile = new File(positionInfo.getFileName());
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
+//            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());
+
             hashRaf.seek(positionInfo.getPosition());
             String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;

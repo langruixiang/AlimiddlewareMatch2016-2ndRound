@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
@@ -50,6 +51,7 @@ public class OrderIdQuery {
 
             File hashFile = new File(srcFile);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
+//            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(srcFile);
             hashRaf.seek(Long.valueOf(pos));
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             System.out.println("============" + orderContent);
@@ -66,8 +68,8 @@ public class OrderIdQuery {
                 order.getKeyValues().put(key, kv);
             }
             order.setId(orderId);
-            hashRaf.close();
             indexRaf.close();
+            hashRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

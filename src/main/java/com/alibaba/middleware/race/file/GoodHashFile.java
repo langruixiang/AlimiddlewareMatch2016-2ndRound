@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
+import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.FilePosition;
 
@@ -35,6 +36,8 @@ public class GoodHashFile extends Thread{
             for (String goodFile : goodFiles) {
                 FileInputStream good_records = new FileInputStream(goodFile);
                 BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
+//                RandomAccessFile ranRaf = new RandomAccessFile(new File(goodFile), "r");
+//                RandomFile.randomFileMap.put(goodFile, ranRaf);
 
                 String str = null;
                 long goodid = 0;

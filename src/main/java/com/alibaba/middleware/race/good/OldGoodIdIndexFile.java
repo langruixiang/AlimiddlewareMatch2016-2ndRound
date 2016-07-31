@@ -70,7 +70,7 @@ public class OldGoodIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            Map<String, TreeMap<Long, Long>> goodIndex = new TreeMap<String, TreeMap<Long, Long>>();
+            Map<String, TreeMap<Long, String>> goodIndex = new TreeMap<String, TreeMap<Long, String>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
@@ -82,48 +82,43 @@ public class OldGoodIdIndexFile extends Thread{
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 
                 String str = null;
-                long count = 0;
                 while ((str = order_br.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    String fileName = null;
+                    String position = null;
+                    String content = null;
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, ":");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
-                        String key = keyValue.nextToken();
-                        String value = keyValue.nextToken();
+                        goodid = stringTokenizer.nextToken();
+                        orderid = stringTokenizer.nextToken();
+                        fileName = stringTokenizer.nextToken();
+                        position = stringTokenizer.nextToken();
+                        content = fileName + "_" + position;
 
-                        if ("orderid".equals(key)) {
-                            orderid = value;
-                        } else if ("goodid".equals(key)) {
-                            goodid = value;
-                            if (!goodIndex.containsKey(goodid)) {
-                                goodIndex.put(goodid, new TreeMap<Long, Long>());
-                            }
+                        if (!goodIndex.containsKey(goodid)) {
+                            goodIndex.put(goodid, new TreeMap<Long, String>());
                         }
-                        if (orderid != null && goodid != null) {
-                            goodIndex.get(goodid).put(Long.valueOf(orderid), count);
-                            break;
-                        }
+                        goodIndex.get(goodid).put(Long.valueOf(orderid), content);
+                        break;
                     }
-                    count += str.getBytes().length + 1;
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
                 FileConstant.goodIdIndexRegionSizeMap.put(index, towIndexSize);
-                count = 0;
+                long count = 0;
                 long position = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry entry = (Map.Entry) iterator.next();
                     String key = (String) entry.getKey();
-                    Map<String, Long> val = (Map<String, Long>) entry.getValue();
+                    Map<String, String> val = (Map<String, String>) entry.getValue();
                     StringBuilder content = new StringBuilder(key + ":");
-                    //String content = key + ":";
                     Iterator iteratorOrders = val.entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
                         Map.Entry orderEntry = (Map.Entry) iteratorOrders.next();
-                        Long pos = (Long)orderEntry.getValue();
+                        String pos = (String)orderEntry.getValue();
                         content.append(pos);
                         content.append("|");
                     }
