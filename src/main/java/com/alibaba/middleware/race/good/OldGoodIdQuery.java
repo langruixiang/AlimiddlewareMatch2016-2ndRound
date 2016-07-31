@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
  */
 public class OldGoodIdQuery {
     public static List<Order> findByGoodId(String goodId, int index) {
-        System.out.println("---------------goodid:" + goodId + "---------index:" + index);
         if (goodId == null) return null;
         List<Order> orders = new ArrayList<Order>();
         try {
@@ -241,7 +240,6 @@ public class OldGoodIdQuery {
     }
 
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
-        System.out.println("================" + goodid + "=============" + key);
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
@@ -252,7 +250,6 @@ public class OldGoodIdQuery {
 
 
         if (KeyCache.goodKeyCache.containsKey(key)) {
-            System.out.println("==================================good key");
             //加入对应商品的所有属性kv
             int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);

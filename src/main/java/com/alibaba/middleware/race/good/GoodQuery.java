@@ -19,7 +19,6 @@ import java.io.RandomAccessFile;
 public class GoodQuery {
     public static Good findGoodById(String goodId, int index) {
         if (goodId == null || goodId.isEmpty()) return null;
-        System.out.println("==========:"+goodId + " index:" + index);
         Good good = new Good();
         try {
 

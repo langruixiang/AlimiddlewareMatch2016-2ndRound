@@ -60,7 +60,6 @@ public class BuyerIdQuery {
                 }
             }
             if (oneIndex == null) return null;
-            System.out.println("===queryOrdersByBuyer===oneindex==buyerid:" + buyerId +  " count: " + count + " time :" + (System.currentTimeMillis() - oneIndexStartTime));
 
             //3.按行读取内容
             long handleStartTime = System.currentTimeMillis();
@@ -97,7 +96,6 @@ public class BuyerIdQuery {
                 }
                 orders.add(order);
             }
-            System.out.println("===queryOrdersByBuyer===handle==buyerid:" + buyerId + " size :" + orders.size() + " time :" + (System.currentTimeMillis() - handleStartTime));
             //twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
@@ -142,7 +140,6 @@ public class BuyerIdQuery {
             result.setOrderid(order.getId());
             results.add(result);
         }
-        System.out.println("queryOrdersByBuyer :" + buyerid + " time :" + (System.currentTimeMillis() - starttime));
         return results.iterator();
     }
 

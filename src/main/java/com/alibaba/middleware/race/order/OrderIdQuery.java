@@ -54,7 +54,6 @@ public class OrderIdQuery {
 //            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(srcFile);
             hashRaf.seek(Long.valueOf(pos));
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
-            System.out.println("============" + orderContent);
 
             //4.将字符串转成order对象集合
             StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
