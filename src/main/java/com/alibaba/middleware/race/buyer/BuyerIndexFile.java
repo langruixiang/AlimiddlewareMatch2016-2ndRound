@@ -22,10 +22,13 @@ public class BuyerIndexFile extends Thread{
 
     private int index;
 
-    public BuyerIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
+    private long buyerHashTime;
+
+    public BuyerIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index, long buyerHashTime) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.index = index;
+        this.buyerHashTime = buyerHashTime;
     }
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
@@ -69,9 +72,11 @@ public class BuyerIndexFile extends Thread{
                 e.printStackTrace();
             }
         }
+        System.out.println("buyer file hash end, time:" + (System.currentTimeMillis() - buyerHashTime));
+        long indexStartTime = System.currentTimeMillis();
         generateBuyerIndex();
         buildIndexCountLatch.countDown();
-        System.out.println("buyer build index " + index + " work end!");
+        System.out.println("buyer build index " + index + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
     }
 
 //    public static long bytes2Long(byte[] byteNum) {

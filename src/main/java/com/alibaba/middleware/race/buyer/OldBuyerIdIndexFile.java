@@ -18,10 +18,13 @@ public class OldBuyerIdIndexFile extends Thread{
 
     private int concurrentNum;
 
-    public OldBuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum) {
+    private long buyerIdHashTime;
+
+    public OldBuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long buyerIdHashTime) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.concurrentNum = concurrentNum;
+        this.buyerIdHashTime = buyerIdHashTime;
     }
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
@@ -49,8 +52,10 @@ public class OldBuyerIdIndexFile extends Thread{
                 e.printStackTrace();
             }
         }
+        System.out.println("buyerid hash order end, time:" + (System.currentTimeMillis() - buyerIdHashTime));
+        long indexStartTime = System.currentTimeMillis();
         generateBuyerIdIndex();
-        System.out.println("buyerid build index " + " work end!");
+        System.out.println("buyerid build index " + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
     }
 
     private class MultiIndex extends Thread{

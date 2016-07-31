@@ -19,10 +19,13 @@ public class OrderIdIndexFile extends Thread{
 
     private int concurrentNum;
 
-    public OrderIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum) {
+    private long orderIdHashTime;
+
+    public OrderIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long orderIdHashTime) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.concurrentNum = concurrentNum;
+        this.orderIdHashTime = orderIdHashTime;
     }
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
@@ -50,8 +53,10 @@ public class OrderIdIndexFile extends Thread{
                 e.printStackTrace();
             }
         }
+        System.out.println("orderid hash order end, time:" + (System.currentTimeMillis() - orderIdHashTime));
+        long indexStartTime = System.currentTimeMillis();
         generateOrderIdIndex();
-        System.out.println("orderid build index " + " work end!");
+        System.out.println("orderid build index " + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
     }
 
     private class MultiIndex extends Thread{

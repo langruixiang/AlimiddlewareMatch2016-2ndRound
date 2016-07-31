@@ -17,10 +17,13 @@ public class GoodIndexFile extends Thread{
 
     private int index;
 
-    public GoodIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index) {
+    private long goodHashTime;
+
+    public GoodIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int index, long goodHashTime) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.index = index;
+        this.goodHashTime = goodHashTime;
     }
 
     //Good文件按照Goodid生成索引文件，存放到第二块磁盘上
@@ -64,9 +67,11 @@ public class GoodIndexFile extends Thread{
                 e.printStackTrace();
             }
         }
+        System.out.println("good file hash end, time:" + (System.currentTimeMillis() - goodHashTime));
+        long indexStartTime = System.currentTimeMillis();
         generateGoodIndex();
         buildIndexCountLatch.countDown();
-        System.out.println("good build index " + index + " work end!");
+        System.out.println("good build index " + index + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
     }
 
 //    public static long bytes2Long(byte[] byteNum) {
