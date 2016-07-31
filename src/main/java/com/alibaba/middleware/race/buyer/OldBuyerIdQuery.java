@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.cache.GoodCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -120,7 +121,11 @@ public class OldBuyerIdQuery {
             }
             //加入对应商品的所有属性kv
             int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_GOOD_NUMS);
-            Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue(), goodIdHashIndex);
+
+            Good good = GoodCache.goodMap.get(order.getKeyValues().get("goodid").getValue());
+            if (good == null) {
+               good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue(), goodIdHashIndex);
+            }
 
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());

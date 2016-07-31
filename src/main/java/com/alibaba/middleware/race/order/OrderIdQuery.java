@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.GoodCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
@@ -129,7 +130,10 @@ public class OrderIdQuery {
                 String goodId = order.getKeyValues().get("goodid").getValue();
                 //加入对应商品的所有属性kv
                 int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_GOOD_NUMS);
-                Good good = GoodQuery.findGoodById(goodId, goodIdHashIndex);
+                Good good = GoodCache.goodMap.get(goodId);
+                if (good == null) {
+                    good = GoodQuery.findGoodById(goodId, goodIdHashIndex);
+                }
 
                 if (good != null && good.getKeyValues() != null) {
                     if (keys ==  null) {

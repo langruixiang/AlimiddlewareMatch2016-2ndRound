@@ -1,10 +1,13 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.cache.GoodCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.FilePosition;
+import com.alibaba.middleware.race.model.Good;
+import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
 import java.util.Collection;
@@ -43,12 +46,25 @@ public class GoodHashFile extends Thread{
                 long goodid = 0;
                 int hashFileIndex;
                 long position = 0;
+                int cacheNum = 0;
                 while ((str = good_br.readLine()) != null) {
+                    Good good = null;
+                    if (cacheNum < 500000) {
+                        good = new Good();
+                    }
                     StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                     while (stringTokenizer.hasMoreElements()) {
                         StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
+
+                        if (cacheNum < 500000) {
+                            KeyValue kv = new KeyValue();
+                            kv.setKey(key);
+                            kv.setValue(value);
+                            good.getKeyValues().put(key, kv);
+                        }
+
                         if (!KeyCache.goodKeyCache.containsKey(key)) {
                             KeyCache.goodKeyCache.put(key, 0);
                         }
@@ -59,6 +75,10 @@ public class GoodHashFile extends Thread{
                             OneIndexCache.goodOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
                         }
+                    }
+                    if (good != null) {
+                        good.setId(good.getKeyValues().get("goodid").getValue());
+                        GoodCache.goodMap.put(good.getId(), good);
                     }
                 }
                 good_br.close();
