@@ -24,7 +24,7 @@ public class OrderIdQuery {
         try {
 
             File indexFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
@@ -49,7 +49,7 @@ public class OrderIdQuery {
             long pos = Long.valueOf(keyValue[2]);
 
             File hashFile = new File(srcFile);
-            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
             hashRaf.seek(Long.valueOf(pos));
             String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             System.out.println("============" + orderContent);

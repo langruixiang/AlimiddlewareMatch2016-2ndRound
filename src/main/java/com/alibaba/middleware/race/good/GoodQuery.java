@@ -35,7 +35,7 @@ public class GoodQuery {
 
             //2.按行读取内容
             File rankFile = new File(positionInfo.getFileName());
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
             hashRaf.seek(positionInfo.getPosition());
             String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;

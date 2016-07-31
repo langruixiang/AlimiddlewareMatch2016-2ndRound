@@ -36,7 +36,7 @@ public class BuyerQuery {
             }
 
             File rankFile = new File(positionInfo.getFileName());
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             //2.按行读取内容
             hashRaf.seek(positionInfo.getPosition());
