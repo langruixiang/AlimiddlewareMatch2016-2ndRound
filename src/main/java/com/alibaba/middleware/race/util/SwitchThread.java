@@ -16,7 +16,16 @@ public class SwitchThread extends Thread{
     @Override
     public void run() {
         try {
-            Thread.sleep(3590000);
+            long startTime = System.currentTimeMillis();
+            while (System.currentTimeMillis() - startTime < 50 * 60 * 1000) {
+                System.gc();
+                Thread.sleep(5 * 60 * 1000);
+            }
+            System.gc();
+            while (System.currentTimeMillis() - startTime < 59 * 60 * 1000) {
+                Thread.sleep(20 * 1000);
+            }
+//            Thread.sleep(3590000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
