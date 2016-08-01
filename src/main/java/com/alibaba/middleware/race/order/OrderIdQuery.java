@@ -11,6 +11,8 @@ import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
@@ -26,24 +28,26 @@ public class OrderIdQuery {
 
             File indexFile = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-            String str = null;
 
             //1.查找二·级索引
             long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
             //2.查找一级索引
-            indexRaf.seek(position);
             String oneIndex = null;
             int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
                 String[] keyValue = oneIndex.split(":");
                 if (orderId == Long.valueOf(keyValue[0])) {
                     break;
                 }
                 count++;
                 if (count >= FileConstant.orderIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
                     return null;
                 }
             }
+            indexRaf.close();
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String srcFile = keyValue[1];
@@ -52,8 +56,8 @@ public class OrderIdQuery {
             File hashFile = new File(srcFile);
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(srcFile);
-            hashRaf.seek(Long.valueOf(pos));
-            String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+            String orderContent = oneIndex = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(pos));
+//            String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
 
             //4.将字符串转成order对象集合
             StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
@@ -67,7 +71,6 @@ public class OrderIdQuery {
                 order.getKeyValues().put(key, kv);
             }
             order.setId(orderId);
-            indexRaf.close();
             hashRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -54,8 +54,8 @@ public class ProduceData {
     public static void main(String[] args) {
         try {
 //            proceduceLargeFile();
-            testRandomAccessFileReadLine();
-//            testRandomAccessFileUtilReadLine();
+//            testRandomAccessFileReadLine();
+            testRandomAccessFileUtilReadLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,7 +84,9 @@ public class ProduceData {
         RandomAccessFile raf = new RandomAccessFile("largeFile.txt", "r");
         String line = null;
         boolean flg = false;
+        int lineCount = 0;
         while((line = raf.readLine()) != null) {
+            ++lineCount;
             if (!flg) {
                 flg = !flg;
                 System.out.println(line);
@@ -92,6 +94,7 @@ public class ProduceData {
             }
         }
         raf.close();
+        System.out.println("lineCount : " + lineCount);
         System.out.println("Total used time : " + (System.currentTimeMillis() - startTime));
     }
 
@@ -100,9 +103,11 @@ public class ProduceData {
         RandomAccessFile raf = new RandomAccessFile("largeFile.txt", "r");
         String line = null;
         boolean flg = false;
+        int lineCount = 0;
         long offset = 0;
         while((line = RandomAccessFileUtil.readLine(raf, offset)) != null) {
             offset += (line.getBytes().length + 1);
+            ++lineCount;
             if (!flg) {
                 flg = !flg;
                 System.out.println(line);
@@ -110,6 +115,7 @@ public class ProduceData {
             }
         }
         raf.close();
+        System.out.println("lineCount : " + lineCount);
         System.out.println("Total used time : " + (System.currentTimeMillis() - startTime));
     }
 }

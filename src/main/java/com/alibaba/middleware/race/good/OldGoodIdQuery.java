@@ -11,6 +11,8 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -35,25 +37,27 @@ public class OldGoodIdQuery {
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-            String str = null;
 
             //1.查找二·级索引
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
 
             //2.查找一级索引
-            indexRaf.seek(position);
             String oneIndex = null;
             int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
                     break;
                 }
                 count++;
                 if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
                     return null;
                 }
             }
+            indexRaf.close();
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String[] positions = keyValue[1].split("\\|");
@@ -64,8 +68,9 @@ public class OldGoodIdQuery {
                 File hashFile = new File(posinfo[0]);
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
-                hashRaf.seek(Long.valueOf(posinfo[1]));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                
+                String orderContent = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(posinfo[1]));
+                
                 orderConstents.add(orderContent);
                 hashRaf.close();
             }
@@ -88,7 +93,6 @@ public class OldGoodIdQuery {
                 }
                 orders.add(order);
             }
-            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -110,25 +114,26 @@ public class OldGoodIdQuery {
             long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
 
             //2.查找一级索引
-            indexRaf.seek(position);
             String oneIndex = null;
             int count = 0;
-            while ((oneIndex = indexRaf.readLine()) != null) {
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
                 String[] keyValue = oneIndex.split(":");
                 if (goodId.equals(keyValue[0])) {
                     break;
                 }
                 count++;
                 if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
                     return 0;
                 }
             }
+            indexRaf.close();
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String[] positions = keyValue[1].split("\\|");
-
-            indexRaf.close();
             if (positions != null) return positions.length;
         } catch (FileNotFoundException e) {
             e.printStackTrace();

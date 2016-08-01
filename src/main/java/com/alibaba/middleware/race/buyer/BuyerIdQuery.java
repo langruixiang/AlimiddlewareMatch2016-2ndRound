@@ -107,7 +107,7 @@ public class BuyerIdQuery {
         return orders;
     }
 
-    public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
+    public static Iterator<Result> unusedFindOrdersByBuyer(long startTime, long endTime, String buyerid) {
         //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();

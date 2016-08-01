@@ -23,35 +23,42 @@ public class RandomAccessFileUtil {
         int lineLength = 0;
         while (pos < length) {
             byte[] buffer = new byte[1024];
-            pos += raf.read(buffer);
-            int eofIndex = -1;
-            for(int i = 0; i < buffer.length; ++i) {
-                if (buffer[i] == '\n' || buffer[i] == '\r') {
-                    eofIndex = i;
+            int readLength = raf.read(buffer);
+            pos += readLength;
+            int eolIndex = -1;
+            for(int i = 0; i < 1024; ++i) {
+                if (buffer[i] == '\n' || buffer[i] == '\r' || buffer[i] == -1) {
+                    eolIndex = i;
                     break;
                 }
             }
-            if (eofIndex > 0) {
-                lineLength += eofIndex;
-                bytesList.add(subBytes(buffer, 0, eofIndex));
-                break;
-            } else if (eofIndex < 0) {
-                lineLength += buffer.length;
+            if (eolIndex < 0) {
+                lineLength += readLength;
                 bytesList.add(buffer);
+            } else if (eolIndex == 0) {
+                lineLength += 1;
+                break;
             } else {
+                lineLength += (eolIndex + 1);
+                byte[] b = subBytes(buffer, 0, eolIndex);
+                if (b != null) {
+                    bytesList.add(b);
+                }
                 break;
             }
         }
         if (lineLength > 0) {
-            byte[] lineBuffer = new byte[lineLength];
-            int tmpPos = 0;
-            for (byte[] b : bytesList) {
-                System.arraycopy(b, 0, lineBuffer, tmpPos, b.length);
-                tmpPos += b.length;
+            if (lineLength == 1) {
+                return "";
+            } else {
+                byte[] lineBuffer = new byte[lineLength - 1];
+                int tmpPos = 0;
+                for (byte[] b : bytesList) {
+                    System.arraycopy(b, 0, lineBuffer, tmpPos, b.length);
+                    tmpPos += b.length;
+                }
+                return new String(lineBuffer);
             }
-            return new String(lineBuffer);
-        } else if (pos < length) {
-            return "";
         } else {
             return null;
         }
@@ -59,6 +66,7 @@ public class RandomAccessFileUtil {
 
     public static byte[] subBytes(byte[] src, int beginIndex, int length)
     {
+        if (length <= 0) return null;
         byte[] ret = new byte[length];
         System.arraycopy(src, beginIndex, ret, 0, length);
         return ret;
