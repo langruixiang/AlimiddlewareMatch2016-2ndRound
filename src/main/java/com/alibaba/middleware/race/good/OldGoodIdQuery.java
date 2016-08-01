@@ -195,31 +195,32 @@ public class OldGoodIdQuery {
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
-                    if (keys == null) {
-                        result.getKeyValues().putAll(buyer.getKeyValues());
-                    } else {
-                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
-                        for (String key : buyerSearchKeys) {
-                            if (buyerKeyValues.containsKey(key)) {
-                                result.getKeyValues().put(key, buyerKeyValues.get(key));
-                            }
-                        }
-                    }
-
+//                    if (keys == null) {
+//                        result.getKeyValues().putAll(buyer.getKeyValues());
+//                    } else {
+//                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
+//                        for (String key : buyerSearchKeys) {
+//                            if (buyerKeyValues.containsKey(key)) {
+//                                result.getKeyValues().put(key, buyerKeyValues.get(key));
+//                            }
+//                        }
+//                    }
+                    result.getKeyValues().putAll(buyer.getKeyValues());
                 }
             }
 
             if (good != null) {
-                if (keys == null) {
-                    result.getKeyValues().putAll(good.getKeyValues());
-                } else {
-                    Map<String, KeyValue> goodKeyValues = good.getKeyValues();
-                    for (String key : goodSearchKeys) {
-                        if (goodKeyValues.containsKey(key)) {
-                            result.getKeyValues().put(key, goodKeyValues.get(key));
-                        }
-                    }
-                }
+//                if (keys == null) {
+//                    result.getKeyValues().putAll(good.getKeyValues());
+//                } else {
+//                    Map<String, KeyValue> goodKeyValues = good.getKeyValues();
+//                    for (String key : goodSearchKeys) {
+//                        if (goodKeyValues.containsKey(key)) {
+//                            result.getKeyValues().put(key, goodKeyValues.get(key));
+//                        }
+//                    }
+//                }
+                result.getKeyValues().putAll(good.getKeyValues());
             }
 
             //加入订单信息的所有属性kv

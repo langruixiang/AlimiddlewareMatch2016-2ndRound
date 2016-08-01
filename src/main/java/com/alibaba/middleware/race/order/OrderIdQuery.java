@@ -111,16 +111,17 @@ public class OrderIdQuery {
                 Buyer buyer = BuyerQuery.findBuyerById(buyerId, buyerHashIndex);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
-                    if (keys ==  null) {
-                        result.getKeyValues().putAll(buyer.getKeyValues());
-                    } else {
-                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
-                        for (String key : buyerSearchKeys) {
-                            if (buyerKeyValues.containsKey(key)) {
-                                result.getKeyValues().put(key, buyerKeyValues.get(key));
-                            }
-                        }
-                    }
+//                    if (keys ==  null) {
+//                        result.getKeyValues().putAll(buyer.getKeyValues());
+//                    } else {
+//                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
+//                        for (String key : buyerSearchKeys) {
+//                            if (buyerKeyValues.containsKey(key)) {
+//                                result.getKeyValues().put(key, buyerKeyValues.get(key));
+//                            }
+//                        }
+//                    }
+                    result.getKeyValues().putAll(buyer.getKeyValues());
                 }
             }
         }
@@ -133,16 +134,17 @@ public class OrderIdQuery {
                 Good good = GoodQuery.findGoodById(goodId, goodIdHashIndex);
 
                 if (good != null && good.getKeyValues() != null) {
-                    if (keys ==  null) {
-                        result.getKeyValues().putAll(good.getKeyValues());
-                    } else {
-                        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
-                        for (String key : goodSearchKeys) {
-                            if (goodKeyValues.containsKey(key)) {
-                                result.getKeyValues().put(key, goodKeyValues.get(key));
-                            }
-                        }
-                    }
+//                    if (keys ==  null) {
+//                        result.getKeyValues().putAll(good.getKeyValues());
+//                    } else {
+//                        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
+//                        for (String key : goodSearchKeys) {
+//                            if (goodKeyValues.containsKey(key)) {
+//                                result.getKeyValues().put(key, goodKeyValues.get(key));
+//                            }
+//                        }
+//                    }
+                    result.getKeyValues().putAll(good.getKeyValues());
                 }
             }
 
