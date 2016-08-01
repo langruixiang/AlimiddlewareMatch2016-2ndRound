@@ -27,10 +27,10 @@ public class GoodIdQuery {
         try {
 
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
@@ -104,10 +104,10 @@ public class GoodIdQuery {
         if (goodId == null) return 0;
         try {
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引

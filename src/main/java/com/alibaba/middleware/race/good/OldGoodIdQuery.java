@@ -31,7 +31,7 @@ public class OldGoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 //            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "rw");
+//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
@@ -103,7 +103,7 @@ public class OldGoodIdQuery {
         try {
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
