@@ -5,20 +5,30 @@ package com.alibaba.middleware.race.model;
  */
 public class FilePosition {
 
-    private String fileName;
+    //private String fileName;
+    private int fileNum;
     private long position;
 
-    public FilePosition(String fileName, long position) {
-        this.fileName = fileName;
+    public FilePosition(int fileNum, long position) {
+        //this.fileName = fileName;
+        this.fileNum = fileNum;
         this.position = position;
     }
 
-    public String getFileName() {
-        return fileName;
+//    public String getFileName() {
+//        return fileName;
+//    }
+//
+//    public void setFileName(String fileName) {
+//        this.fileName = fileName;
+//    }
+
+    public int getFileNum() {
+        return fileNum;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileNum(int fileNum) {
+        this.fileNum = fileNum;
     }
 
     public long getPosition() {

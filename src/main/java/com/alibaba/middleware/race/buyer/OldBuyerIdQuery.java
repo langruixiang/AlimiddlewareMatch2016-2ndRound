@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -64,7 +65,7 @@ public class OldBuyerIdQuery {
                     continue;
                 }
                 String[] posinfo = posKv[1].split("_");
-                File hashFile = new File(posinfo[0]);
+                File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
                 hashRaf.seek(Long.valueOf(posinfo[1]));

@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
@@ -61,7 +62,7 @@ public class OldGoodIdQuery {
             List<String> orderConstents = new ArrayList<String>();
             for (String pos : positions) {
                 String[] posinfo = pos.split("_");
-                File hashFile = new File(posinfo[0]);
+                File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
                 hashRaf.seek(Long.valueOf(posinfo[1]));

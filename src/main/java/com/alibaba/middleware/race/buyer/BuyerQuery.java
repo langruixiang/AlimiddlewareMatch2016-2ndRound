@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
@@ -36,7 +37,7 @@ public class BuyerQuery {
                 positionInfo = OneIndexCache.buyerOneIndexCache.get(buyerId);
             }
 
-            File rankFile = new File(positionInfo.getFileName());
+            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             //RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());

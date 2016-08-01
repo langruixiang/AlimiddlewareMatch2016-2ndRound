@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -26,14 +27,16 @@ public class OrderHashFile extends Thread{
     private int nums;
     private String type;
     private CountDownLatch countDownLatch;
+    private int fileBeginNum;
 
     public OrderHashFile(Collection<String> orderFiles,  Collection<String> storeFolders, int nums, String type,
-                         CountDownLatch countDownLatch) {
+                         CountDownLatch countDownLatch, int fileBeginNum) {
         this.orderFiles = orderFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
         this.type = type;
         this.countDownLatch = countDownLatch;
+        this.fileBeginNum = fileBeginNum;
     }
 
     //读取所有订单文件，按照订单号hash到多个小文件中
@@ -52,10 +55,12 @@ public class OrderHashFile extends Thread{
             //ExecutorService fixedThreadPool = Executors.newFixedThreadPool(6);
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
+                FileNameCache.fileNameMap.put(fileBeginNum, orderFile);
 //                RandomAccessFile ranRaf = new RandomAccessFile(new File(orderFile), "r");
 //                RandomFile.randomFileMap.put(orderFile, ranRaf);
                 //fixedThreadPool.execute(new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters));
-            	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters).start();
+            	new MultiHash(orderFile, multiHashLatch, "orderid", bufferedWriters, fileBeginNum).start();
+                fileBeginNum++;
             }            
             multiHashLatch.await();
 
@@ -80,7 +85,8 @@ public class OrderHashFile extends Thread{
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
-            	new MultiHash(orderFile, multiHashLatch, "buyerid", bufferedWriters).start();
+            	new MultiHash(orderFile, multiHashLatch, "buyerid", bufferedWriters, fileBeginNum).start();
+                fileBeginNum++;
             }            
             multiHashLatch.await();
 
@@ -105,7 +111,8 @@ public class OrderHashFile extends Thread{
 
             CountDownLatch multiHashLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {            	
-            	new MultiHash(orderFile, multiHashLatch, "goodid", bufferedWriters).start();
+            	new MultiHash(orderFile, multiHashLatch, "goodid", bufferedWriters, fileBeginNum).start();
+                fileBeginNum++;
             }            
             multiHashLatch.await();
 
@@ -135,12 +142,14 @@ public class OrderHashFile extends Thread{
     	private CountDownLatch countDownLatch;
     	private String type;
     	private BufferedWriter[] bufferedWriters;
+        private int fileNum;
     	
-    	public MultiHash(String orderFile, CountDownLatch countDownLatch, String type, BufferedWriter[] bufferedWriters){
+    	public MultiHash(String orderFile, CountDownLatch countDownLatch, String type, BufferedWriter[] bufferedWriters, int fileNum){
     		this.orderFile = orderFile;
     		this.countDownLatch = countDownLatch;
     		this.type = type;
     		this.bufferedWriters = bufferedWriters;
+            this.fileNum = fileNum;
     	}
     	
     	@Override
@@ -166,7 +175,7 @@ public class OrderHashFile extends Thread{
 	                        if ("orderid".equals(key)) {
 	                            orderid = Long.valueOf(value);
 	                            hashFileIndex = (int) (orderid % nums);
-                                String content = orderid + ":" + orderFile + ":" + position + '\n';
+                                String content = orderid + ":" + fileNum + ":" + position + '\n';
 	                            synchronized (bufferedWriters[hashFileIndex]) {
 									bufferedWriters[hashFileIndex].write(content);
 								}
@@ -193,7 +202,7 @@ public class OrderHashFile extends Thread{
 					        }
                             if (orderIdStr != null && goodIdStr != null) {
                                 hashFileIndex = (int) (Math.abs(goodIdStr.hashCode()) % nums);
-                                String content = goodIdStr + ":" + orderIdStr + ":" + orderFile + ":" + position + '\n';
+                                String content = goodIdStr + ":" + orderIdStr + ":" + fileNum + ":" + position + '\n';
                                 synchronized (bufferedWriters[hashFileIndex]) {
                                     //System.out.println(content);
                                     bufferedWriters[hashFileIndex].write(content);
@@ -220,7 +229,7 @@ public class OrderHashFile extends Thread{
                             }
                             if (buyeridStr != null && createtime != null) {
                                 hashFileIndex = (int) (Math.abs(buyeridStr.hashCode()) % nums);
-                                String content = buyeridStr + ":" + createtime + ":" + orderFile + ":" + position + '\n';
+                                String content = buyeridStr + ":" + createtime + ":" + fileNum + ":" + position + '\n';
                                 synchronized (bufferedWriters[hashFileIndex]) {
                                     bufferedWriters[hashFileIndex].write(content);
                                 }

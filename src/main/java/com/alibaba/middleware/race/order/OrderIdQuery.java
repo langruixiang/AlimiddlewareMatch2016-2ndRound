@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
@@ -49,7 +50,7 @@ public class OrderIdQuery {
             String srcFile = keyValue[1];
             long pos = Long.valueOf(keyValue[2]);
 
-            File hashFile = new File(srcFile);
+            File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(srcFile)));
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(srcFile);
             hashRaf.seek(Long.valueOf(pos));

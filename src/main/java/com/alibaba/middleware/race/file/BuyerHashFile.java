@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.RandomFile;
@@ -20,12 +21,14 @@ public class BuyerHashFile extends Thread{
     private Collection<String> storeFolders;
     private int                nums;
     private CountDownLatch countDownLatch;
+    private int                fileBeginNum;
 
-    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch) {
+    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch, int fileBeginNum) {
         this.buyerFiles = buyerFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
         this.countDownLatch = countDownLatch;
+        this.fileBeginNum = fileBeginNum;
     }
 
     //读取所有买家文件，按照买家号hash到多个小文件中,生成到第二块磁盘中
@@ -35,6 +38,7 @@ public class BuyerHashFile extends Thread{
 
             int count = 0;
             for (String buyerFile : buyerFiles) {
+                FileNameCache.fileNameMap.put(fileBeginNum, buyerFile);
                 FileInputStream buyer_records = new FileInputStream(buyerFile);
                 BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 //                RandomAccessFile ranRaf = new RandomAccessFile(new File(buyerFile), "r");
@@ -56,7 +60,7 @@ public class BuyerHashFile extends Thread{
                         if ("buyerid".equals(key)) {
                             buyerid = value.hashCode();
                             hashFileIndex = (int) (Math.abs(buyerid) % nums);
-                            FilePosition filePosition = new FilePosition(buyerFile, position);
+                            FilePosition filePosition = new FilePosition(fileBeginNum, position);
                             OneIndexCache.buyerOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
                         }
@@ -64,6 +68,7 @@ public class BuyerHashFile extends Thread{
                 }
                 System.out.println("buyer hash file " + count++);
                 buyer_br.close();
+                fileBeginNum++;
             }
 
         } catch (IOException e) {
