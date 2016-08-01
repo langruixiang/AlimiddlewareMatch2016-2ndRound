@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.alibaba.middleware.race.buyer.*;
+import com.alibaba.middleware.race.cache.GoodCache;
 import com.alibaba.middleware.race.good.*;
 import com.alibaba.middleware.race.util.SwitchThread;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -145,6 +146,10 @@ public class OrderSystemImpl implements OrderSystem {
             goodIdIndexFile.start();
             //goodIdIndexThreadPool.execute(goodIdIndexFile);
         //}
+
+        //cache good的线程
+        GoodCache goodCache = new GoodCache(goodFiles, buildIndexLatch);
+        goodCache.start();
 
         //long secondParseTime = System.currentTimeMillis();
         //根据orderid建立索引以及文件
