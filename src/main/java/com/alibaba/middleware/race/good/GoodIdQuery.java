@@ -39,7 +39,6 @@ public class GoodIdQuery {
             //2.查找一级索引
             indexRaf.seek(position);
             String oneIndex = null;
-            String onePlusIndex = null;
             int count = 0;
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
@@ -52,37 +51,29 @@ public class GoodIdQuery {
                 }
             }
             if (oneIndex == null) return null;
-            onePlusIndex = indexRaf.readLine();
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String pos = keyValue[1];
-            int length = 0;
-            if (onePlusIndex != null) {
-                String[] kv = onePlusIndex.split(":");
-                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
-            } else {
-                length = (int) (hashRaf.length() - Long.valueOf(pos));
-            }
+            int length = Integer.valueOf(keyValue[2]);
 
             hashRaf.seek(Long.valueOf(pos));
 
             byte[] bytes = new byte[length];
             hashRaf.read(bytes, 0, length);
             String orderStrs = new String(bytes);
-            String[] constents = orderStrs.split("\n");
-            for (String content : constents) {
+            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs, "\n");
+            while (stringTokenizer.hasMoreElements()) {
                 Order order = new Order();
-                String[] keyValues = content.split("\t");
-                for (int i = 0; i < keyValues.length; i++) {
-                    String[] strs = keyValues[i].split(":");
+                StringTokenizer orderStringTokenizer = new StringTokenizer(stringTokenizer.nextToken(), "\t");
+                while (orderStringTokenizer.hasMoreElements()) {
+                    StringTokenizer strs = new StringTokenizer(orderStringTokenizer.nextToken(), ":");
+                    String key = strs.nextToken();
+                    String value = strs.nextToken();
                     KeyValue kv = new KeyValue();
-                    kv.setKey(strs[0]);
-                    kv.setValue(strs[1]);
-                    order.getKeyValues().put(strs[0], kv);
-                }
-                if (order.getKeyValues().get("goodid").getValue() != null && !goodId.equals(order.getKeyValues().get("goodid").getValue())) {
-                    break;
+                    kv.setKey(key);
+                    kv.setValue(value);
+                    order.getKeyValues().put(key, kv);
                 }
                 if (order.getKeyValues().get("orderid").getValue() != null && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())){
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
@@ -116,7 +107,6 @@ public class GoodIdQuery {
             //2.查找一级索引
             indexRaf.seek(position);
             String oneIndex = null;
-            String onePlusIndex = null;
             int count = 0;
             while ((oneIndex = indexRaf.readLine()) != null) {
                 String[] keyValue = oneIndex.split(":");
@@ -129,29 +119,17 @@ public class GoodIdQuery {
                 }
             }
             if (oneIndex == null) return 0;
-            onePlusIndex = indexRaf.readLine();
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String pos = keyValue[1];
-            int length = 0;
-            if (onePlusIndex != null) {
-                String[] kv = onePlusIndex.split(":");
-                length = (int) (Long.valueOf(kv[1]) - Long.valueOf(pos) -1);
-            } else {
-                length = (int) (hashRaf.length() - Long.valueOf(pos));
-            }
+            int length = Integer.valueOf(keyValue[2]);
 
             hashRaf.seek(Long.valueOf(pos));
 
-            byte[] bytes = new byte[length];
-            hashRaf.read(bytes, 0, length);
-            String orderStrs = new String(bytes);
-            String[] constents = orderStrs.split("\n");
-
             hashRaf.close();
             indexRaf.close();
-            return constents.length;
+            return Integer.valueOf(keyValue[3]);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -159,14 +137,13 @@ public class GoodIdQuery {
         }
         return 0;
     }
-
-    public static Iterator<Result> unusedfindOrdersByGood(String salerid, String goodid, Collection<String> keys) {
-        List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
+    public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
+        List<Result> results = new ArrayList<Result>();
         if (goodid == null) {
             return results.iterator();
         }
 
-        List<String> orderSearchKeys = new ArrayList<String>();
+        List<String> maybeOrderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
         List<String> buyerSearchKeys = new ArrayList<String>();
         if (keys != null) {
@@ -176,14 +153,13 @@ public class GoodIdQuery {
                 } else if (KeyCache.buyerKeyCache.containsKey(key)) {
                     buyerSearchKeys.add(key);
                 } else {
-                    orderSearchKeys.add(key);
+                    maybeOrderSearchKeys.add(key);
                 }
             }
         }
 
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
-        int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
             //加入对应商品的所有属性kv
@@ -200,7 +176,7 @@ public class GoodIdQuery {
         }
         if (keys != null && keys.size() == 0) {
             for (Order order : orders) {
-                com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+                Result result = new Result();
                 result.setOrderid(order.getId());
                 results.add(result);
             }
@@ -209,45 +185,25 @@ public class GoodIdQuery {
         }
 
         for (Order order : orders) {
-            com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+            Result result = new Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 //加入对应买家的所有属性kv
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
 
                 if (buyer != null && buyer.getKeyValues() != null) {
-                    if (keys == null) {
-                        result.getKeyValues().putAll(buyer.getKeyValues());
-                    } else {
-                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
-                        for (String key : buyerSearchKeys) {
-                            if (buyerKeyValues.containsKey(key)) {
-                                result.getKeyValues().put(key, buyerKeyValues.get(key));
-                            }
-                        }
-                    }
-
+                    result.getKeyValues().putAll(buyer.getKeyValues());
                 }
             }
 
             if (good != null) {
-                if (keys == null) {
-                    result.getKeyValues().putAll(good.getKeyValues());
-                } else {
-                    Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
-                    for (String key : goodSearchKeys) {
-                        if (goodKeyValues.containsKey(key)) {
-                            result.getKeyValues().put(key, goodKeyValues.get(key));
-                        }
-                    }
-                }
+                result.getKeyValues().putAll(good.getKeyValues());
             }
 
             //加入订单信息的所有属性kv
             if (keys == null) {
                 result.getKeyValues().putAll(order.getKeyValues());
             } else {
-                for (String key : orderSearchKeys) {
+                for (String key : maybeOrderSearchKeys) {
                     if (order.getKeyValues().containsKey(key)) {
                         result.getKeyValues().put(key, order.getKeyValues().get(key));
                     }
@@ -260,9 +216,9 @@ public class GoodIdQuery {
         return results.iterator();
     }
 
-    public static OrderSystem.KeyValue unusedSumValuesByGood(String goodid, String key) {
+    public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
         if (goodid == null || key == null) return null;
-        com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
+        KeyValue keyValue = new KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
         double value = 0;
         long longValue = 0;
@@ -271,7 +227,6 @@ public class GoodIdQuery {
 
         if (KeyCache.goodKeyCache.containsKey(key)) {
             //加入对应商品的所有属性kv
-            int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = GoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
             Good good = GoodQuery.findGoodById(goodid);
 
@@ -325,7 +280,6 @@ public class GoodIdQuery {
 
             //加入对应买家的所有属性kv
             if (KeyCache.buyerKeyCache.containsKey(key)) {
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
                 if (buyer.getKeyValues().containsKey(key)) {
                     String str = buyer.getKeyValues().get(key).getValue();
@@ -366,11 +320,5 @@ public class GoodIdQuery {
             return false;
         }
         return true;
-    }
-
-    public static void main(String args[]) {
-
-        //OrderIdIndexFile.generateGoodIdIndex();
-        findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }

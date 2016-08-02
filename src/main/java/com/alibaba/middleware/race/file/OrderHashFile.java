@@ -185,29 +185,34 @@ public class OrderHashFile extends Thread{
 	                    }
 	                }
 				}else if(type.equals("goodid")){
-                    long position = 0;
 					while ((str = order_br.readLine()) != null) {
-                        String orderIdStr = null;
-                        String goodIdStr = null;
                         StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                         while (stringTokenizer.hasMoreElements()) {
                             StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                             String key = keyValue.nextToken();
                             String value = keyValue.nextToken();
 
-                            if ("orderid".equals(key)) {
-                                orderIdStr = value;
-                            } else if (type.equals(key)) {
-                                goodIdStr = value;
-					        }
-                            if (orderIdStr != null && goodIdStr != null) {
-                                hashFileIndex = (int) (Math.abs(goodIdStr.hashCode()) % nums);
-                                String content = goodIdStr + ":" + orderIdStr + ":" + fileNum + ":" + position + '\n';
+//                            if ("orderid".equals(key)) {
+//                                orderIdStr = value;
+//                            } else if (type.equals(key)) {
+//                                goodIdStr = value;
+//					        }
+//                            if (orderIdStr != null && goodIdStr != null) {
+//                                hashFileIndex = (int) (Math.abs(goodIdStr.hashCode()) % nums);
+//                                String content = goodIdStr + ":" + orderIdStr + ":" + fileNum + ":" + position + '\n';
+//                                synchronized (bufferedWriters[hashFileIndex]) {
+//                                    //System.out.println(content);
+//                                    bufferedWriters[hashFileIndex].write(content);
+//                                }
+//                                position += str.getBytes().length + 1;
+//                                break;
+//                            }
+                            if (type.equals(key)) {
+                                goodid = value;
+                                hashFileIndex = (int) (Math.abs(goodid.hashCode()) % nums);
                                 synchronized (bufferedWriters[hashFileIndex]) {
-                                    //System.out.println(content);
-                                    bufferedWriters[hashFileIndex].write(content);
+                                    bufferedWriters[hashFileIndex].write(str + '\n');
                                 }
-                                position += str.getBytes().length + 1;
                                 break;
                             }
 					    }

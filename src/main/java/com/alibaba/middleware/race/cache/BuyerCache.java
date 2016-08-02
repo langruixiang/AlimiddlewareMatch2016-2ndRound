@@ -2,9 +2,6 @@ package com.alibaba.middleware.race.cache;
 
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-import net.openhft.chronicle.hash.replication.TcpTransportAndNetworkConfig;
-import net.openhft.chronicle.map.ChronicleMap;
-import net.openhft.chronicle.map.ChronicleMapBuilder;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -15,7 +12,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by jiangchao on 2016/8/1.

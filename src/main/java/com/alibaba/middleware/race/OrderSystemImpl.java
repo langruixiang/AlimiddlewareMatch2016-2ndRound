@@ -140,11 +140,11 @@ public class OrderSystemImpl implements OrderSystem {
         //}
 
         //根据goodid生成一级二级索引
-        //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
-            goodIdIndexFile.start();
-            //goodIdIndexThreadPool.execute(goodIdIndexFile);
-        //}
+//            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
+//            goodIdIndexFile.start();
+        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
+        goodIdIndexFile.start();
+
 
         //long secondParseTime = System.currentTimeMillis();
         //根据orderid建立索引以及文件
@@ -209,7 +209,7 @@ public class OrderSystemImpl implements OrderSystem {
             System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
-        return OldGoodIdQuery.findOrdersByGood(salerid, goodid, keys);
+        return GoodIdQuery.findOrdersByGood(salerid, goodid, keys);
     }
 
     @Override
@@ -225,6 +225,6 @@ public class OrderSystemImpl implements OrderSystem {
             System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
             flag = 1;
         }
-        return OldGoodIdQuery.sumValuesByGood(goodid, key);
+        return GoodIdQuery.sumValuesByGood(goodid, key);
     }
 }
