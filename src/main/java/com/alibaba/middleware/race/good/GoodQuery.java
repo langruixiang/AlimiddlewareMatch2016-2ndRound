@@ -8,6 +8,7 @@ import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -23,8 +24,6 @@ public class GoodQuery {
         Good good = new Good();
         try {
 
-            String str = null;
-
             //1.查找索引
             FilePosition positionInfo = null;
             if (!OneIndexCache.goodOneIndexCache.containsKey(goodId)) {
@@ -39,8 +38,10 @@ public class GoodQuery {
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 //            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());
 
-            hashRaf.seek(positionInfo.getPosition());
-            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+            long offset = positionInfo.getPosition();
+            String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
+//            hashRaf.seek(positionInfo.getPosition());
+//            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;
 
             //3.将字符串转成buyer对象
