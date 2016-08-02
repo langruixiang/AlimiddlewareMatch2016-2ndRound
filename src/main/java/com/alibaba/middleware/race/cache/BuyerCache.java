@@ -50,7 +50,7 @@ public class BuyerCache extends Thread{
                 String str = null;
                 int cacheNum = 0;
                 while ((str = buyer_br.readLine()) != null) {
-                    if (cacheNum >= 1000000) {
+                    if (cacheNum >= 500000) {
                         buyer_br.close();
                         return;
                     }
