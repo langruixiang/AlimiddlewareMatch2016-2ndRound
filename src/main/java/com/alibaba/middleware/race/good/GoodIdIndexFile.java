@@ -69,7 +69,7 @@ public class GoodIdIndexFile extends Thread{
 
         @Override
         public void run() {
-            Map<String, String> orderRankMap = new TreeMap<String, String>();
+            Map<String, TreeMap<Long, String>> orderRankMap = new TreeMap<String, TreeMap<Long, String>>();
             Map<String, Long> goodIndex = new LinkedHashMap<String, Long>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
@@ -89,18 +89,23 @@ public class GoodIdIndexFile extends Thread{
                 while ((rankStr = order_br.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
-                    String[] keyValues = rankStr.split("\t");
-                    for (int j = 0; j < keyValues.length; j++) {
-                        String[] keyValue = keyValues[j].split(":");
+//                    String[] keyValues = rankStr.split("\t");
+//                    for (int j = 0; j < keyValues.length; j++) {
+//                        String[] keyValue = keyValues[j].split(":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(rankStr, "\t");
+                    while (stringTokenizer.hasMoreElements()) {
+                        String[] keyValue = stringTokenizer.nextToken().split(":");
 
                         if ("orderid".equals(keyValue[0])) {
                             orderid = keyValue[1];
                         } else if ("goodid".equals(keyValue[0])) {
                             goodid = keyValue[1];
+                            if (!goodIndex.containsKey(goodid)) {
+                                orderRankMap.put(goodid, new TreeMap<Long, String>());
+                            }
                         }
                         if (orderid != null && goodid != null) {
-                            String key = goodid + "|" + orderid;
-                            orderRankMap.put(key, rankStr);
+                            orderRankMap.get(goodid).put(Long.valueOf(orderid), rankStr);
                             break;
                         }
                     }
@@ -111,15 +116,21 @@ public class GoodIdIndexFile extends Thread{
                 while (orderRankIterator.hasNext()) {
                     Map.Entry entry = (Map.Entry) orderRankIterator.next();
                     String key = (String) entry.getKey();
-                    String val = (String) entry.getValue();
-                    rankBW.write(val + '\n');
+                    Map<Long, String> val = (Map<Long, String>) entry.getValue();
 
-                    String[] keys = key.split("\\|");
-                    String goodid = keys[0];
+                    String goodid = key;
                     if (!goodIndex.containsKey(goodid)) {
                         goodIndex.put(goodid, position);
                     }
-                    position += val.getBytes().length + 1;
+
+                    Iterator orderIdIterator = val.entrySet().iterator();
+                    while (orderIdIterator.hasNext()) {
+                        Map.Entry orderKv = (Map.Entry) orderIdIterator.next();
+                        Long orderKvKey = (Long) orderKv.getKey();
+                        String orderKvValue = (String) orderKv.getValue();
+                        rankBW.write(orderKvValue + '\n');
+                        position += orderKvValue.getBytes().length + 1;
+                    }
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());

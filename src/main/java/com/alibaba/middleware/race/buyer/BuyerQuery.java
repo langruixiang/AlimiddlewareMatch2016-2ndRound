@@ -1,9 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
-import com.alibaba.middleware.race.cache.FileNameCache;
-import com.alibaba.middleware.race.cache.OneIndexCache;
-import com.alibaba.middleware.race.cache.RandomFile;
-import com.alibaba.middleware.race.cache.TwoIndexCache;
+import com.alibaba.middleware.race.cache.*;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
@@ -24,9 +21,15 @@ import java.util.List;
  * Created by jiangchao on 2016/7/17.
  */
 public class BuyerQuery {
-    public static Buyer findBuyerById(String buyerId, int index) {
+    public static Buyer findBuyerById(String buyerId) {
         if (buyerId == null || buyerId.isEmpty()) return null;
-        Buyer buyer = new Buyer();
+
+        Buyer buyer = BuyerCache.buyerMap.get(buyerId);
+        if (buyer != null) {
+            System.out.println("hit buyer cache");
+            return buyer;
+        }
+        buyer = new Buyer();
         try {
 
             String str = null;

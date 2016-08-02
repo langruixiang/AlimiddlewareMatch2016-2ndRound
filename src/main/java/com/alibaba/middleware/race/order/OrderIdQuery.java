@@ -109,9 +109,8 @@ public class OrderIdQuery {
         {
             if (keys == null || buyerSearchKeys.size() > 0) {
                 String buyerId = order.getKeyValues().get("buyerid").getValue();
-                int buyerHashIndex = (int) (Math.abs(buyerId.hashCode()) % FileConstant.FILE_BUYER_NUMS);
                 //加入对应买家的所有属性kv
-                Buyer buyer = BuyerQuery.findBuyerById(buyerId, buyerHashIndex);
+                Buyer buyer = BuyerQuery.findBuyerById(buyerId);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
 //                    if (keys ==  null) {
@@ -133,8 +132,7 @@ public class OrderIdQuery {
             if (keys == null || goodSearchKeys.size() > 0) {
                 String goodId = order.getKeyValues().get("goodid").getValue();
                 //加入对应商品的所有属性kv
-                int goodIdHashIndex = (int) (Math.abs(goodId.hashCode()) % FileConstant.FILE_GOOD_NUMS);
-                Good good = GoodQuery.findGoodById(goodId, goodIdHashIndex);
+                Good good = GoodQuery.findGoodById(goodId);
 
                 if (good != null && good.getKeyValues() != null) {
 //                    if (keys ==  null) {

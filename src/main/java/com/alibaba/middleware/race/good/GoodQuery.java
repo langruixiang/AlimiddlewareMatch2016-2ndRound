@@ -19,7 +19,7 @@ import java.io.RandomAccessFile;
  * Created by jiangchao on 2016/7/17.
  */
 public class GoodQuery {
-    public static Good findGoodById(String goodId, int index) {
+    public static Good findGoodById(String goodId) {
         if (goodId == null || goodId.isEmpty()) return null;
         Good good = new Good();
         try {

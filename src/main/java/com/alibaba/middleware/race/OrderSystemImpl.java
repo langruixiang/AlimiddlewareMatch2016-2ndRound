@@ -50,7 +50,7 @@ public class OrderSystemImpl implements OrderSystem {
             throws IOException, InterruptedException {
         //定时器线程启动
         CountDownLatch switchCountDownLatch = new CountDownLatch(1);
-        SwitchThread switchThread  = new SwitchThread(switchCountDownLatch);
+        SwitchThread switchThread  = new SwitchThread(switchCountDownLatch, buyerFiles, buildIndexLatch);
         switchThread.start();
         theStartTime = System.currentTimeMillis();
         long beginTime = System.currentTimeMillis();
@@ -174,6 +174,7 @@ public class OrderSystemImpl implements OrderSystem {
         }
         if (flag == 0) {
             System.out.println("all the build work is end. time : " + (System.currentTimeMillis() - theStartTime));
+
             flag = 1;
         }
         return OrderIdQuery.findOrder(orderId, keys);

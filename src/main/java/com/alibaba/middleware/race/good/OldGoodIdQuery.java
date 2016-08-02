@@ -167,11 +167,10 @@ public class OldGoodIdQuery {
 
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
 
-        int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
             //加入对应商品的所有属性kv
-            good = GoodQuery.findGoodById(goodid, goodHashIndex);
+            good = GoodQuery.findGoodById(goodid);
             if (good == null) return results.iterator();
 
         }
@@ -196,8 +195,7 @@ public class OldGoodIdQuery {
             Result result = new Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 //加入对应买家的所有属性kv
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
 
                 if (buyer != null && buyer.getKeyValues() != null) {
 //                    if (keys == null) {
@@ -257,9 +255,8 @@ public class OldGoodIdQuery {
 
         if (KeyCache.goodKeyCache.containsKey(key)) {
             //加入对应商品的所有属性kv
-            int goodHashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_GOOD_NUMS);
             int num = OldGoodIdQuery.findOrderNumberByGoodKey(goodid, hashIndex);
-            Good good = GoodQuery.findGoodById(goodid, goodHashIndex);
+            Good good = GoodQuery.findGoodById(goodid);
 
             if (good == null) return null;
             if (good.getKeyValues().containsKey(key)) {
@@ -311,8 +308,7 @@ public class OldGoodIdQuery {
 
             //加入对应买家的所有属性kv
             if (KeyCache.buyerKeyCache.containsKey(key)) {
-                int buyeridHashIndex = (int) (Math.abs(order.getKeyValues().get("buyerid").getValue().hashCode()) % FileConstant.FILE_BUYER_NUMS);
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue(), buyeridHashIndex);
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
                 if (buyer.getKeyValues().containsKey(key)) {
                     String str = buyer.getKeyValues().get(key).getValue();
                     if (flag == 0 && str.contains(".")) {
