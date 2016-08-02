@@ -9,6 +9,8 @@ import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -43,8 +45,9 @@ public class BuyerQuery {
             //RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());
 
             //2.按行读取内容
-            hashRaf.seek(positionInfo.getPosition());
-            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+            long offset = positionInfo.getPosition();
+            String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
+//            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;
 
             //3.将字符串转成buyer对象

@@ -10,6 +10,8 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
+
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -35,24 +37,26 @@ public class OldBuyerIdQuery {
 
             File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-            String str = null;
 
             //1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
             //2.查找一级索引
             int count = 0;
-            indexRaf.seek(position);
             String oneIndex = null;
-            while ((oneIndex = indexRaf.readLine()) != null) {
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
                 String[] keyValue = oneIndex.split("\t");
                 if (buyerId.equals(keyValue[0])) {
                     break;
                 }
                 count++;
                 if (count >= FileConstant.buyerIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
                     return null;
                 }
             }
+            indexRaf.close();
             //3.按行读取内容
             String[] keyValue = oneIndex.split("\t");
             String[] positionKvs = keyValue[1].split("\\|");
@@ -68,8 +72,9 @@ public class OldBuyerIdQuery {
                 File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 //                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
-                hashRaf.seek(Long.valueOf(posinfo[1]));
-                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
+                String orderContent = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(posinfo[1]));
+//                hashRaf.seek(Long.valueOf(posinfo[1]));
+//                String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
                 orderContents.add(orderContent);
                 hashRaf.close();
             }
@@ -92,7 +97,6 @@ public class OldBuyerIdQuery {
                 }
                 orders.add(order);
             }
-            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

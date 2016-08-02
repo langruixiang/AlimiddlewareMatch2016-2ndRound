@@ -27,10 +27,10 @@ public class GoodIdQuery {
         try {
 
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
@@ -104,10 +104,10 @@ public class GoodIdQuery {
         if (goodId == null) return 0;
         try {
             File rankFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "rw");
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "rw");
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
             //1.查找二·级索引
@@ -160,7 +160,7 @@ public class GoodIdQuery {
         return 0;
     }
 
-    public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
+    public static Iterator<Result> unusedfindOrdersByGood(String salerid, String goodid, Collection<String> keys) {
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         if (goodid == null) {
             return results.iterator();
@@ -260,7 +260,7 @@ public class GoodIdQuery {
         return results.iterator();
     }
 
-    public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
+    public static OrderSystem.KeyValue unusedSumValuesByGood(String goodid, String key) {
         if (goodid == null || key == null) return null;
         com.alibaba.middleware.race.orderSystemImpl.KeyValue keyValue = new com.alibaba.middleware.race.orderSystemImpl.KeyValue();
         int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
