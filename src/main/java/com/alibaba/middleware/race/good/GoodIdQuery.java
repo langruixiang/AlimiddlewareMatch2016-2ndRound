@@ -10,6 +10,7 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
@@ -50,6 +51,7 @@ public class GoodIdQuery {
                     return null;
                 }
             }
+            //System.out.println(oneIndex);
             if (oneIndex == null) return null;
 
             //3.按行读取内容
@@ -122,10 +124,6 @@ public class GoodIdQuery {
 
             //3.按行读取内容
             String[] keyValue = oneIndex.split(":");
-            String pos = keyValue[1];
-            int length = Integer.valueOf(keyValue[2]);
-
-            hashRaf.seek(Long.valueOf(pos));
 
             hashRaf.close();
             indexRaf.close();

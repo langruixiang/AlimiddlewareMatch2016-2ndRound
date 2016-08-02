@@ -127,14 +127,14 @@ public class OrderSystemImpl implements OrderSystem {
 
         //根据orderid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, 10, orderIdHashTime);
+            OrderIdIndexFile orderIdIndexFile = new OrderIdIndexFile(orderIdCountDownLatch, buildIndexLatch, 8, orderIdHashTime);
             orderIdIndexFile.start();
             //orderIdIndexThreadPool.execute(orderIdIndexFile);
         //}
 
         //根据buyerid生成一级二级索引
         //for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i++) {
-            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, 10, buyerIdHashTime);
+            OldBuyerIdIndexFile buyerIdIndexFile = new OldBuyerIdIndexFile(buyerIdCountDownLatch, buildIndexLatch, 8, buyerIdHashTime);
             buyerIdIndexFile.start();
             //buyerIdIndexThreadPool.execute(buyerIdIndexFile);
         //}
@@ -142,7 +142,7 @@ public class OrderSystemImpl implements OrderSystem {
         //根据goodid生成一级二级索引
 //            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
 //            goodIdIndexFile.start();
-        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
+        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 8, goodIdHashTime);
         goodIdIndexFile.start();
 
 

@@ -98,12 +98,14 @@ public class GoodIdIndexFile extends Thread{
 
                     StringTokenizer stringTokenizer = new StringTokenizer(rankStr, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        String[] keyValue = stringTokenizer.nextToken().split(":");
-
-                        if ("orderid".equals(keyValue[0])) {
-                            orderid = keyValue[1];
-                        } else if ("goodid".equals(keyValue[0])) {
-                            goodid = keyValue[1];
+                        //String[] keyValue = stringTokenizer.nextToken().split(":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        String key = keyValue.nextToken();
+                        String value = keyValue.nextToken();
+                        if ("orderid".equals(key)) {
+                            orderid = value;
+                        } else if ("goodid".equals(key)) {
+                            goodid = value;
                             if (!orderRankMap.containsKey(goodid)) {
                                 orderRankMap.put(goodid, new TreeMap<Long, String>());
                             }
@@ -127,7 +129,6 @@ public class GoodIdIndexFile extends Thread{
                     Iterator orderIdIterator = val.entrySet().iterator();
                     while (orderIdIterator.hasNext()) {
                         Map.Entry orderKv = (Map.Entry) orderIdIterator.next();
-                        Long orderKvKey = (Long) orderKv.getKey();
                         String orderKvValue = (String) orderKv.getValue();
                         rankBW.write(orderKvValue + '\n');
                         length += orderKvValue.getBytes().length + 1;

@@ -41,7 +41,7 @@ public class BuyerCache extends Thread{
 
     //读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
     public void cacheBuyer() {
-
+        System.gc();
         try {
             for (String buyerFile : buyerFiles) {
                 FileInputStream buyer_records = new FileInputStream(buyerFile);

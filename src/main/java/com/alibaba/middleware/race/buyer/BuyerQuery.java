@@ -26,7 +26,7 @@ public class BuyerQuery {
 
         Buyer buyer = BuyerCache.buyerMap.get(buyerId);
         if (buyer != null) {
-            System.out.println("hit buyer cache");
+            //System.out.println("hit buyer cache");
             return buyer;
         }
         buyer = new Buyer();
