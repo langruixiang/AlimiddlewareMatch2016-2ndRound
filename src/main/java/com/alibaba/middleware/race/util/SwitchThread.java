@@ -1,5 +1,8 @@
 package com.alibaba.middleware.race.util;
 
+import com.alibaba.middleware.race.cache.BuyerCache;
+
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -9,14 +12,22 @@ public class SwitchThread extends Thread{
 
     private CountDownLatch countDownLatch;
 
-    public SwitchThread(CountDownLatch countDownLatch) {
+    private Collection<String> buyerFiles;
+
+    private CountDownLatch buildIndexCountDownLatch;
+
+    public SwitchThread(CountDownLatch countDownLatch, Collection<String> buyerFiles, CountDownLatch buildIndexCountDownLatch) {
         this.countDownLatch = countDownLatch;
+        this.buyerFiles = buyerFiles;
+        this.buildIndexCountDownLatch = buildIndexCountDownLatch;
     }
 
     @Override
     public void run() {
         try {
             Thread.sleep(3588000);
+            BuyerCache buyerCache = new BuyerCache(buyerFiles, buildIndexCountDownLatch);
+            buyerCache.start();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
