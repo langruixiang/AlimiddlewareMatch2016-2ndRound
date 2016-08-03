@@ -74,19 +74,6 @@ public class OrderSystemImpl implements OrderSystem {
 
         //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
         System.out.println("begin to build index:");
-        //将商品文件hash成多个小文件
-        long goodTime = System.currentTimeMillis();
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch, 0);
-        goodHashFileThread.start();
-        //goodCountDownLatch.await();
-
-
-        //将买家文件hash成多个小文件
-        long buyerTime = System.currentTimeMillis();
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
-        buyerHashFile.start();
-        //buyerCountDownLatch.await();
-
 
         //按买家ID hash成多个小文件
         long buyerIdHashTime = System.currentTimeMillis();
@@ -144,6 +131,20 @@ public class OrderSystemImpl implements OrderSystem {
 //            goodIdIndexFile.start();
         GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 6, goodIdHashTime);
         goodIdIndexFile.start();
+
+
+        //将商品文件hash成多个小文件
+        long goodTime = System.currentTimeMillis();
+        GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch, 0);
+        goodHashFileThread.start();
+        //goodCountDownLatch.await();
+
+
+        //将买家文件hash成多个小文件
+        long buyerTime = System.currentTimeMillis();
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buildIndexLatch, buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
+        buyerHashFile.start();
+        //buyerCountDownLatch.await();
 
 
         //long secondParseTime = System.currentTimeMillis();

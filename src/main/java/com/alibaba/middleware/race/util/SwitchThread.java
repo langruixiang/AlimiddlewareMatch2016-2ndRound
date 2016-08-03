@@ -25,7 +25,7 @@ public class SwitchThread extends Thread{
     @Override
     public void run() {
         try {
-            Thread.sleep(3588000);
+            Thread.sleep(3580000);
             BuyerCache buyerCache = new BuyerCache(buyerFiles, buildIndexCountDownLatch);
             buyerCache.start();
         } catch (InterruptedException e) {

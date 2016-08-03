@@ -16,14 +16,15 @@ import java.util.concurrent.CountDownLatch;
  * Created by jiangchao on 2016/7/13.
  */
 public class BuyerHashFile extends Thread{
-
+    private CountDownLatch     waitCountDownLatch;
     private Collection<String> buyerFiles;
     private Collection<String> storeFolders;
     private int                nums;
     private CountDownLatch countDownLatch;
     private int                fileBeginNum;
 
-    public BuyerHashFile(Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch, int fileBeginNum) {
+    public BuyerHashFile(CountDownLatch waitCountDownLatch, Collection<String> buyerFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch, int fileBeginNum) {
+        this.waitCountDownLatch = waitCountDownLatch;
         this.buyerFiles = buyerFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
@@ -77,6 +78,12 @@ public class BuyerHashFile extends Thread{
     }
 
     public void run(){
+        try {
+            waitCountDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("buyer file hash begin~");
         generateBuyerHashFile();
         System.out.println("buyer file hash end~");
         countDownLatch.countDown();

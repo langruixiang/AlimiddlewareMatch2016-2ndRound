@@ -17,13 +17,15 @@ import java.util.concurrent.CountDownLatch;
  */
 public class GoodHashFile extends Thread{
 
+    private CountDownLatch     waitCountDownLatch;
     private Collection<String> goodFiles;
     private Collection<String> storeFolders;
     private int                nums;
     private CountDownLatch countDownLatch;
     private int                fileBeginNum;
 
-    public GoodHashFile(Collection<String> goodFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch, int fileBeginNum) {
+    public GoodHashFile(CountDownLatch waitCountDownLatch, Collection<String> goodFiles, Collection<String> storeFolders, int nums, CountDownLatch countDownLatch, int fileBeginNum) {
+        this.waitCountDownLatch = waitCountDownLatch;
         this.goodFiles = goodFiles;
         this.storeFolders = storeFolders;
         this.nums = nums;
@@ -76,6 +78,12 @@ public class GoodHashFile extends Thread{
     }
 
     public void run(){
+        try {
+            waitCountDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("good file hash begin~");
         generateGoodHashFile();
         System.out.println("good file hash end~");
         countDownLatch.countDown();
