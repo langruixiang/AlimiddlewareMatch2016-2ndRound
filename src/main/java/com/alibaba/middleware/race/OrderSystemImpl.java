@@ -129,7 +129,7 @@ public class OrderSystemImpl implements OrderSystem {
         //根据goodid生成一级二级索引
 //            OldGoodIdIndexFile goodIdIndexFile = new OldGoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 10, goodIdHashTime);
 //            goodIdIndexFile.start();
-        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 6, goodIdHashTime);
+        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdCountDownLatch, buildIndexLatch, 8, goodIdHashTime);
         goodIdIndexFile.start();
 
 
