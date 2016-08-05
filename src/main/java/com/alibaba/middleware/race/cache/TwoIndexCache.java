@@ -30,15 +30,6 @@ public class TwoIndexCache {
         return entry == null ? 0L : entry.getValue();
     }
 
-//    public static long findBuyerIdOneIndexPosition (String buyerId, long starttime, long endtime, int index) {
-//        TreeMap<String, Long> map = buyerIdTwoIndexCache.get(index);
-//        String endKey = buyerId;
-//
-//        Entry<String, Long> entry = map.ceilingEntry(endKey);
-//
-//        return entry == null ? 0L : entry.getValue();
-//    }
-
     public static long findBuyerIdOneIndexPosition (String buyerId, long starttime, long endtime, int index) {
         TreeMap<String, Long> map = buyerIdTwoIndexCache.get(index);
 

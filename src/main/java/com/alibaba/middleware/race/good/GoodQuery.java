@@ -2,9 +2,6 @@ package com.alibaba.middleware.race.good;
 
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
-import com.alibaba.middleware.race.cache.RandomFile;
-import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
@@ -31,17 +28,13 @@ public class GoodQuery {
             } else {
                 positionInfo = OneIndexCache.goodOneIndexCache.get(goodId);
             }
-            //System.out.println(position);
 
             //2.按行读取内容
             File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
-//            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());
 
             long offset = positionInfo.getPosition();
             String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
-//            hashRaf.seek(positionInfo.getPosition());
-//            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;
 
             //3.将字符串转成buyer对象
@@ -63,9 +56,4 @@ public class GoodQuery {
         return good;
     }
 
-    public static void main(String args[]) {
-
-        //BuyerIdIndexFile.generateBuyerIdIndex();
-        //findByBuyerId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
-    }
 }

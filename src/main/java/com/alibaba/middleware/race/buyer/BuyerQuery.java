@@ -26,7 +26,6 @@ public class BuyerQuery {
 
         Buyer buyer = BuyerCache.buyerMap.get(buyerId);
         if (buyer != null) {
-            //System.out.println("hit buyer cache");
             return buyer;
         }
         buyer = new Buyer();
@@ -45,12 +44,9 @@ public class BuyerQuery {
             File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
-            //RandomAccessFile hashRaf = RandomFile.randomFileMap.get(positionInfo.getFileName());
-
             //2.按行读取内容
             long offset = positionInfo.getPosition();
             String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
-//            String oneIndex = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
             if (oneIndex == null) return null;
 
             //3.将字符串转成buyer对象
@@ -72,9 +68,4 @@ public class BuyerQuery {
         return buyer;
     }
 
-    public static void main(String args[]) {
-
-        //BuyerIdIndexFile.generateBuyerIdIndex();
-        //findByBuyerId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
-    }
 }

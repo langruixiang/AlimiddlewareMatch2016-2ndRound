@@ -78,14 +78,4 @@ public class BuyerIndexFile extends Thread{
         buildIndexCountLatch.countDown();
         System.out.println("buyer build index " + index + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
     }
-
-//    public static long bytes2Long(byte[] byteNum) {
-//        long num = 0;
-//        for (int ix = 0; ix < 8; ++ix) {
-//            num <<= 8;
-//            num |= (byteNum[ix] & 0xff);
-//        }
-//        return num;
-//    }
-
 }

@@ -53,7 +53,7 @@ public class OrderSystemImplClay implements OrderSystem {
             throws IOException, InterruptedException {
         //定时器线程启动
         CountDownLatch switchCountDownLatch = new CountDownLatch(1);
-        SwitchThread switchThread  = new SwitchThread(switchCountDownLatch);
+        SwitchThread switchThread  = new SwitchThread(switchCountDownLatch, buyerFiles, buildIndexLatch);
         switchThread.start();
         theStartTime = System.currentTimeMillis();
         long beginTime = System.currentTimeMillis();
@@ -80,14 +80,14 @@ public class OrderSystemImplClay implements OrderSystem {
         System.out.println("begin to build index:");
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
-        GoodHashFile goodHashFileThread = new GoodHashFile(goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch, 0);
+        GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch, 0);
         goodHashFileThread.start();
         //goodCountDownLatch.await();
 
 
         //将买家文件hash成多个小文件
         long buyerTime = System.currentTimeMillis();
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buildIndexLatch, buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
         buyerHashFile.start();
         //buyerCountDownLatch.await();
 

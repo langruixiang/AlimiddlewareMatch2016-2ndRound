@@ -72,7 +72,6 @@ public class OldGoodIdIndexFile extends Thread{
         public void run() {
             Map<String, TreeMap<Long, String>> goodIndex = new TreeMap<String, TreeMap<Long, String>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
-            //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
@@ -146,12 +145,4 @@ public class OldGoodIdIndexFile extends Thread{
         }
     }
 
-//    public static long bytes2Long(byte[] byteNum) {
-//        long num = 0;
-//        for (int ix = 0; ix < 8; ++ix) {
-//            num <<= 8;
-//            num |= (byteNum[ix] & 0xff);
-//        }
-//        return num;
-//    }
 }

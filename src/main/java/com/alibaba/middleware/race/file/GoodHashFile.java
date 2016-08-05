@@ -3,8 +3,6 @@ package com.alibaba.middleware.race.file;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
-import com.alibaba.middleware.race.cache.RandomFile;
-import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.FilePosition;
 
 import java.io.*;

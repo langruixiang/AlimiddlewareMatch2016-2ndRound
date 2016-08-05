@@ -25,7 +25,6 @@ public class BuyerIdQuery {
         if (buyerId == null || buyerId.isEmpty()) return null;
         String beginKey = buyerId + "_" + starttime;
         String endKey = buyerId + "_" + endtime;
-        //System.out.println("=======111===:"+buyerId + " index:" + index);
         List<Order> orders = new ArrayList<Order>();
         try {
 
@@ -96,7 +95,6 @@ public class BuyerIdQuery {
                 }
                 orders.add(order);
             }
-            //twoIndexBR.close();
             hashRaf.close();
             indexRaf.close();
         } catch (FileNotFoundException e) {
@@ -108,7 +106,6 @@ public class BuyerIdQuery {
     }
 
     public static Iterator<Result> unusedFindOrdersByBuyer(long startTime, long endTime, String buyerid) {
-        //System.out.println("===queryOrdersByBuyer=====buyerid:" + buyerid + "======starttime:" + startTime + "=========endtime:" + endTime);
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.orderSystemImpl.Result> results = new ArrayList<com.alibaba.middleware.race.orderSystemImpl.Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
@@ -122,7 +119,6 @@ public class BuyerIdQuery {
         if (orders == null || orders.size() == 0) return results.iterator();
 
         for (Order order : orders) {
-            //System.out.println("queryOrdersByBuyer buyerid:"+ buyerid +" : " + order_old.toString());
             com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
             //加入对应买家的所有属性kv
             if (buyer != null && buyer.getKeyValues() != null) {
@@ -141,11 +137,5 @@ public class BuyerIdQuery {
             results.add(result);
         }
         return results.iterator();
-    }
-
-    public static void main(String args[]) {
-
-        //BuyerIdIndexFile.generateBuyerIdIndex();
-        //findByBuyerId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }

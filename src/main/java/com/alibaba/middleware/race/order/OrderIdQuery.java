@@ -4,7 +4,6 @@ import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
-import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
@@ -13,8 +12,6 @@ import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
-
-import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
 import java.util.*;
@@ -56,9 +53,7 @@ public class OrderIdQuery {
 
             File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(srcFile)));
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-//            RandomAccessFile hashRaf = RandomFile.randomFileMap.get(srcFile);
             String orderContent = oneIndex = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(pos));
-//            String orderContent = new String(hashRaf.readLine().getBytes("iso-8859-1"), "UTF-8");
 
             //4.将字符串转成order对象集合
             StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
@@ -113,16 +108,6 @@ public class OrderIdQuery {
                 Buyer buyer = BuyerQuery.findBuyerById(buyerId);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
-//                    if (keys ==  null) {
-//                        result.getKeyValues().putAll(buyer.getKeyValues());
-//                    } else {
-//                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
-//                        for (String key : buyerSearchKeys) {
-//                            if (buyerKeyValues.containsKey(key)) {
-//                                result.getKeyValues().put(key, buyerKeyValues.get(key));
-//                            }
-//                        }
-//                    }
                     result.getKeyValues().putAll(buyer.getKeyValues());
                 }
             }
@@ -135,16 +120,6 @@ public class OrderIdQuery {
                 Good good = GoodQuery.findGoodById(goodId);
 
                 if (good != null && good.getKeyValues() != null) {
-//                    if (keys ==  null) {
-//                        result.getKeyValues().putAll(good.getKeyValues());
-//                    } else {
-//                        Map<String, com.alibaba.middleware.race.orderSystemImpl.KeyValue> goodKeyValues = good.getKeyValues();
-//                        for (String key : goodSearchKeys) {
-//                            if (goodKeyValues.containsKey(key)) {
-//                                result.getKeyValues().put(key, goodKeyValues.get(key));
-//                            }
-//                        }
-//                    }
                     result.getKeyValues().putAll(good.getKeyValues());
                 }
             }
@@ -163,9 +138,4 @@ public class OrderIdQuery {
         return result;
     }
 
-    public static void main(String args[]) {
-
-        //OrderIdIndexFile.generateGoodIdIndex();
-        //findByOrderId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
-    }
 }

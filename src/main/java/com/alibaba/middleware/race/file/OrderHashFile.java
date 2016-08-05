@@ -1,21 +1,12 @@
 package com.alibaba.middleware.race.file;
 
 import com.alibaba.middleware.race.cache.FileNameCache;
-import com.alibaba.middleware.race.cache.KeyCache;
-import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.model.Buyer;
-import com.alibaba.middleware.race.model.Good;
-import com.alibaba.middleware.race.model.Order;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by jiangchao on 2016/7/13.

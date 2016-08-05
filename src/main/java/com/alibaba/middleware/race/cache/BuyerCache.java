@@ -20,19 +20,6 @@ public class BuyerCache extends Thread{
     public static Map<String, Buyer> buyerMap = new ConcurrentHashMap<String, Buyer>();
     private Collection<String> buyerFiles;
     private CountDownLatch countDownLatch;
-//    public static ChronicleMap<String, Buyer> buyerChronicleMap;
-//
-//    public static ChronicleMap createReplicatedMap(){
-//        TcpTransportAndNetworkConfig tcpTransportAndNetworkConfig=TcpTransportAndNetworkConfig.of(8076).heartBeatInterval(1L, TimeUnit.SECONDS);
-//        try {
-//            ChronicleMapBuilder builder=ChronicleMapBuilder.of(String.class,Buyer.class).entries(5000L).replication((byte)200,tcpTransportAndNetworkConfig);
-//            buyerChronicleMap=builder.create();
-//        }
-//        catch (Exception e) {
-//            System.out.println("Error(s) creating instrument cache: " + e);
-//        }
-//        return buyerChronicleMap;
-//    }
 
     public BuyerCache(Collection<String> buyerFiles, CountDownLatch countDownLatch) {
         this.buyerFiles = buyerFiles;
@@ -66,7 +53,6 @@ public class BuyerCache extends Thread{
                         buyer.getKeyValues().put(key, kv);
                     }
                     buyer.setId(buyer.getKeyValues().get("buyerid").getValue());
-                    //System.out.println("===========================cache good===============");
                     BuyerCache.buyerMap.put(buyer.getId(), buyer);
                     cacheNum++;
                 }
@@ -89,21 +75,6 @@ public class BuyerCache extends Thread{
         System.out.println("cache buyer  start~");
         cacheBuyer();
         System.out.println("cache buyer  end~");
-        //countDownLatch.countDown();
     }
 
-    public static void main(String args[]) {
-//        createReplicatedMap();
-//        Buyer buyer = new Buyer();
-//        buyer.setId("jiang");
-//        Buyer buyer1 = new Buyer();
-//        buyer1.setId("ren");
-//        buyerChronicleMap.put("jiangchao", buyer);
-//        buyerChronicleMap.put("renmin", buyer1);
-//
-//        System.out.println(buyerChronicleMap.get("jiangchao").getId());
-//        System.out.println(buyerChronicleMap.get("renmin").getId());
-        System.out.println(Runtime.getRuntime().freeMemory());
-        System.out.println(Runtime.getRuntime().maxMemory());
-    }
 }

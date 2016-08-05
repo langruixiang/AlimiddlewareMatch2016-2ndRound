@@ -42,7 +42,6 @@ public class OldBuyerIdIndexFile extends Thread{
             }
         }
     }
-    //}
 
     public void run(){
         if (hashDownLatch != null) {
@@ -73,7 +72,6 @@ public class OldBuyerIdIndexFile extends Thread{
         public void run() {
             TreeMap<String, TreeMap<Long, String>> buyerIndex = new TreeMap<String, TreeMap<Long, String>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
-            //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(
                         FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
@@ -151,14 +149,4 @@ public class OldBuyerIdIndexFile extends Thread{
             }
         }
     }
-
-//    public static long bytes2Long(byte[] byteNum) {
-//        long num = 0;
-//        for (int ix = 0; ix < 8; ++ix) {
-//            num <<= 8;
-//            num |= (byteNum[ix] & 0xff);
-//        }
-//        return num;
-//    }
-
 }

@@ -4,7 +4,6 @@ import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
-import com.alibaba.middleware.race.cache.RandomFile;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
@@ -20,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,8 +31,6 @@ public class OldGoodIdQuery {
         if (goodId == null) return null;
         List<Order> orders = new ArrayList<Order>();
         try {
-//            File hashFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-//            RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
 
             File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
@@ -68,8 +64,7 @@ public class OldGoodIdQuery {
                 String[] posinfo = pos.split("_");
                 File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-//                RandomAccessFile hashRaf = RandomFile.randomFileMap.get(posinfo[0]);
-                
+
                 String orderContent = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(posinfo[1]));
                 
                 orderConstents.add(orderContent);
@@ -198,31 +193,11 @@ public class OldGoodIdQuery {
                 Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
 
                 if (buyer != null && buyer.getKeyValues() != null) {
-//                    if (keys == null) {
-//                        result.getKeyValues().putAll(buyer.getKeyValues());
-//                    } else {
-//                        Map<String, KeyValue> buyerKeyValues = buyer.getKeyValues();
-//                        for (String key : buyerSearchKeys) {
-//                            if (buyerKeyValues.containsKey(key)) {
-//                                result.getKeyValues().put(key, buyerKeyValues.get(key));
-//                            }
-//                        }
-//                    }
                     result.getKeyValues().putAll(buyer.getKeyValues());
                 }
             }
 
             if (good != null) {
-//                if (keys == null) {
-//                    result.getKeyValues().putAll(good.getKeyValues());
-//                } else {
-//                    Map<String, KeyValue> goodKeyValues = good.getKeyValues();
-//                    for (String key : goodSearchKeys) {
-//                        if (goodKeyValues.containsKey(key)) {
-//                            result.getKeyValues().put(key, goodKeyValues.get(key));
-//                        }
-//                    }
-//                }
                 result.getKeyValues().putAll(good.getKeyValues());
             }
 
@@ -341,18 +316,11 @@ public class OldGoodIdQuery {
     }
 
     public static boolean isNumeric(String str){
-        //Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
         Pattern pattern = Pattern.compile("^[-+]?\\d+(\\.\\d+)?$");
         Matcher isNum = pattern.matcher(str);
         if( !isNum.matches() ){
             return false;
         }
         return true;
-    }
-
-    public static void main(String args[]) {
-
-        //OrderIdIndexFile.generateGoodIdIndex();
-        findByGoodId("aliyun_2d7d53f7-fcf8-4095-ae6a-e54992ca79e5", 0);
     }
 }

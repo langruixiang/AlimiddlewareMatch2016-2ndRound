@@ -51,7 +51,6 @@ public class GoodIdQuery {
                     return null;
                 }
             }
-            //System.out.println(oneIndex);
             if (oneIndex == null) return null;
 
             //3.按行读取内容
@@ -311,7 +310,6 @@ public class GoodIdQuery {
     }
 
     public static boolean isNumeric(String str){
-        //Pattern pattern = Pattern.compile("-?[0-9]+.?[0-9]+");
         Pattern pattern = Pattern.compile("^[-+]?\\d+(\\.\\d+)?$");
         Matcher isNum = pattern.matcher(str);
         if( !isNum.matches() ){

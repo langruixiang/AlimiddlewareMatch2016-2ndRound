@@ -78,7 +78,6 @@ public class GoodIdIndexFile extends Thread{
             Map<String, TreeMap<Long, String>> orderRankMap = new TreeMap<String, TreeMap<Long, String>>();
             Map<String, String> goodIndex = new LinkedHashMap<String, String>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
-            //for (int i = 0; i < FileConstant.FILE_NUMS; i++) {
             try {
                 FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));

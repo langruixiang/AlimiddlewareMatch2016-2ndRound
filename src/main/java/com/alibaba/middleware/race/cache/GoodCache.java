@@ -54,7 +54,6 @@ public class GoodCache extends Thread{
                         good.getKeyValues().put(key, kv);
                     }
                     good.setId(good.getKeyValues().get("goodid").getValue());
-                    //System.out.println("===========================cache good===============");
                     GoodCache.goodMap.put(good.getId(), good);
                     cacheNum++;
                 }
@@ -77,6 +76,5 @@ public class GoodCache extends Thread{
         System.out.println("cache good  start~");
         cacheGood();
         System.out.println("cache good  end~");
-        //countDownLatch.countDown();
     }
 }
