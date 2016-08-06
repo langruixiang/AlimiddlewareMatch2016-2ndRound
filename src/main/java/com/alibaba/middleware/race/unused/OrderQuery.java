@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.model.KeyValue;
 
 /**
  * @author wangweiwei
@@ -30,8 +30,8 @@ public class OrderQuery {
         keyMap = FileUtil.readSIHashMapFromFile(OrderIndexBuilder.ORDER_KEY_MAP_FILE, OrderIndexBuilder.INIT_KEY_MAP_CAPACITY);
     }
 
-    public com.alibaba.middleware.race.orderSystemImpl.Result queryOrder(long orderId, Collection<String> keys) {
-        com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+    public com.alibaba.middleware.race.model.Result queryOrder(long orderId, Collection<String> keys) {
+        com.alibaba.middleware.race.model.Result result = new com.alibaba.middleware.race.model.Result();
         LinkedList<String> filteredKeys = new LinkedList<String>();
         if (keys == null) {
             for (Entry<String, Integer> entry : keyMap.entrySet()) {

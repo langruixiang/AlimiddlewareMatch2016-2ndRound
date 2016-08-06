@@ -4,7 +4,7 @@ import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.Good;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 
 import java.io.File;

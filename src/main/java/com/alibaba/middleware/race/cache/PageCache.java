@@ -3,8 +3,8 @@ package com.alibaba.middleware.race.cache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
+import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Order;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 
 import java.io.*;
 import java.util.HashMap;

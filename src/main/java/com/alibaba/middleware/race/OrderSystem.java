@@ -119,7 +119,7 @@ public interface OrderSystem {
    *          买家Id
    * @return 符合条件的订单集合，按照createtime大到小排列
    */
-  Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime,
+  Iterator<com.alibaba.middleware.race.model.Result> queryOrdersByBuyer(long startTime, long endTime,
                                                                                   String buyerid);
 
   /**
@@ -130,7 +130,7 @@ public interface OrderSystem {
    * @param keys 待查询的字段，如果为null，则查询所有字段，如果为空，则排除所有字段
    * @return 符合条件的订单集合，按照订单id从小至大排序
    */
-  Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid,
+  Iterator<com.alibaba.middleware.race.model.Result> queryOrdersBySaler(String salerid, String goodid,
                                                                                   Collection<String> keys);
 
   /**

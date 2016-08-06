@@ -182,7 +182,7 @@ public class OrderSystemImpl implements OrderSystem {
     }
 
     @Override
-    public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
+    public Iterator<com.alibaba.middleware.race.model.Result> queryOrdersByBuyer(long startTime, long endTime, String buyerid) {
         try {
             buildIndexLatch.await();
             goodCountDownLatch.await();
@@ -198,7 +198,7 @@ public class OrderSystemImpl implements OrderSystem {
     }
 
     @Override
-    public Iterator<com.alibaba.middleware.race.orderSystemImpl.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
+    public Iterator<com.alibaba.middleware.race.model.Result> queryOrdersBySaler(String salerid, String goodid, Collection<String> keys) {
         try {
             buildIndexLatch.await();
             goodCountDownLatch.await();

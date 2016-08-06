@@ -1,11 +1,12 @@
 package com.alibaba.middleware.race;
 
-import com.alibaba.middleware.race.buyer.BuyerIdIndexFile;
-import com.alibaba.middleware.race.buyer.BuyerIdQuery;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.model.KeyValue;
+import com.alibaba.middleware.race.model.Result;
+import com.alibaba.middleware.race.unused.BuyerIdIndexFile;
+import com.alibaba.middleware.race.unused.BuyerIdQuery;
 import com.alibaba.middleware.race.util.FileUtil;
+import com.alibaba.middleware.race.util.ProduceData;
 
 import org.junit.Test;
 
@@ -114,12 +115,12 @@ public class JunitTest {
         goodFileList.add("goodrecords.txt");
 
         List<String> storeFolderList = new ArrayList<String>();
-        FileUtil.createDir("D:/s1");
-        FileUtil.createDir("D:/s2");
-        FileUtil.createDir("D:/s3");
-        storeFolderList.add("D:/s1/");
-        storeFolderList.add("D:/s2/");
-        storeFolderList.add("D:/s3/");
+        FileUtil.createDir("./s1");
+        FileUtil.createDir("./s2");
+        FileUtil.createDir("./s3");
+        storeFolderList.add("./s1/");
+        storeFolderList.add("./s2/");
+        storeFolderList.add("./s3/");
         
         try {
             orderSystem.construct(orderFileList, buyerFileList, goodFileList, storeFolderList);

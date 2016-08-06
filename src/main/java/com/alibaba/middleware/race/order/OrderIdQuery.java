@@ -9,8 +9,8 @@ import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
+import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Order;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 
 import java.io.*;
@@ -77,7 +77,7 @@ public class OrderIdQuery {
     }
 
     public static OrderSystem.Result findOrder(long orderId, Collection<String> keys) {
-        com.alibaba.middleware.race.orderSystemImpl.Result result = new com.alibaba.middleware.race.orderSystemImpl.Result();
+        com.alibaba.middleware.race.model.Result result = new com.alibaba.middleware.race.model.Result();
         int hashIndex = (int) (orderId % FileConstant.FILE_ORDER_NUMS);
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
         List<String> maybeOrderSearchKeys = new ArrayList<String>();

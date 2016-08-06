@@ -1,7 +1,5 @@
 package com.alibaba.middleware.race.model;
 
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
-
 import java.util.HashMap;
 import java.util.Map;
 

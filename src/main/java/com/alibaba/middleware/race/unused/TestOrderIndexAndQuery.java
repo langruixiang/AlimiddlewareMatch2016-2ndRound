@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.middleware.race.orderSystemImpl.Result;
+import com.alibaba.middleware.race.model.Result;
 
 /**
  * @author wangweiwei

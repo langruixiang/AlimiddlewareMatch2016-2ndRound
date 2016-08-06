@@ -10,7 +10,7 @@ import java.io.RandomAccessFile;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.model.KeyValue;
 /**
  * @author wangweiwei
  *

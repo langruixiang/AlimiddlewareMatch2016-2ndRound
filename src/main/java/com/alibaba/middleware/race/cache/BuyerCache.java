@@ -1,7 +1,7 @@
 package com.alibaba.middleware.race.cache;
 
 import com.alibaba.middleware.race.model.Buyer;
-import com.alibaba.middleware.race.orderSystemImpl.KeyValue;
+import com.alibaba.middleware.race.model.KeyValue;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
