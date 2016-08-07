@@ -29,10 +29,10 @@ public class GoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File rankFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+            File rankFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
-            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
@@ -97,10 +97,10 @@ public class GoodIdQuery {
     public static int findOrderNumberByGoodKey(String goodId, int index) {
         if (goodId == null) return 0;
         try {
-            File rankFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+            File rankFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
-            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 

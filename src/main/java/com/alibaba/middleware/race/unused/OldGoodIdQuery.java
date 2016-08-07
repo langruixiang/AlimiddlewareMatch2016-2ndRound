@@ -34,7 +34,7 @@ public class OldGoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             //1.查找二·级索引
@@ -104,7 +104,7 @@ public class OldGoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 

@@ -25,7 +25,9 @@ import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.order.BuyerIdOneIndexBuilder;
-import com.alibaba.middleware.race.order.GoodIdOneIndexBuilder;
+import com.alibaba.middleware.race.order.BuyerIdTwoIndexBuilder;
+import com.alibaba.middleware.race.order.GoodIdHasher;
+import com.alibaba.middleware.race.order.GoodIdIndexBuilder;
 import com.alibaba.middleware.race.order.OrderIdOneIndexBuilder;
 import com.alibaba.middleware.race.order.OrderIdTwoIndexBuilder;
 import com.alibaba.middleware.race.order.OrderIdQuery;
@@ -81,10 +83,9 @@ public class OrderSystemImpl implements OrderSystem {
         buyerIdOneIndexBuilder.start();
 
         //按商品ID将订单hash成多个小文件(未排序)
-        CountDownLatch goodIdOneIndexBuilder = new CountDownLatch(1);
-        long goodIdHashTime = System.currentTimeMillis();
-        GoodIdOneIndexBuilder goodIdHashThread = new GoodIdOneIndexBuilder(orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER, goodIdOneIndexBuilder, orderFilesBeginNo);
-        goodIdHashThread.start();
+        CountDownLatch goodIdHasherLatch = new CountDownLatch(1);
+        GoodIdHasher goodIdHasher = new GoodIdHasher(orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER, goodIdHasherLatch, orderFilesBeginNo);
+        goodIdHasher.start();
 
         //按orderid建立order的一级索引文件(未排序)
         CountDownLatch orderIdOneIndexBuilderLatch = new CountDownLatch(1);
@@ -99,11 +100,11 @@ public class OrderSystemImpl implements OrderSystem {
         BuyerIdTwoIndexBuilder buyerIdIndexFile = new BuyerIdTwoIndexBuilder(buyerIdOneIndexBuilderLatch, buildIndexLatch, Config.BUYER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM);
         buyerIdIndexFile.start();
 
-        //根据goodid生成order的一级二级索引//TODO
-        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdOneIndexBuilder, buildIndexLatch, Config.GOOD_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM, goodIdHashTime);
+        //根据goodid生成order的一级二级索引
+        GoodIdIndexBuilder goodIdIndexFile = new GoodIdIndexBuilder(goodIdHasherLatch, buildIndexLatch, Config.GOOD_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM);
         goodIdIndexFile.start();
 
-        //将商品文件hash成多个小文件
+        //将商品文件hash成多个小文件//TODO
         long goodTime = System.currentTimeMillis();
         GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, Config.FILE_GOOD_NUMS, goodCountDownLatch, 0);
         goodHashFileThread.start();

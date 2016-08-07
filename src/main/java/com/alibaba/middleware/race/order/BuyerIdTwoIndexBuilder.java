@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.buyer;
+package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
@@ -10,6 +10,8 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * 1. 将所有未排序的buyerid一级索引文件排序并存储 2. 根据buyerid一级索引生成buyerid二级索引并缓存
+ * 
+ * 存放位置：第二个硬盘
  * 
  * @author jiangchao
  */

@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.good;
+package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.PageCache;
@@ -6,7 +6,6 @@ import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Order;
-import com.alibaba.middleware.race.order.OrderIdTwoIndexBuilder;
 
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
@@ -15,61 +14,66 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by jiangchao on 2016/7/15.
+ * 1. 将所有 "未排序的按照goodid hash的order记录" 按照 "goodid以及orderid" 排序后存储
+ * 2. 根据排序后的文件生成goodid一级索引文件 以及 二级索引缓存
+ * 
+ * 存放位置：第三个硬盘
+ * 
+ * @author jiangchao
  */
-public class GoodIdIndexFile extends Thread{
+public class GoodIdIndexBuilder extends Thread {
 
     private CountDownLatch hashDownLatch;
 
     private CountDownLatch buildIndexCountLatch;
 
-    private int concurrentNum;
+    private int maxConcurrentNum;
 
-    private long goodIdHashTime;
-
-    public GoodIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long goodIdHashTime) {
+    public GoodIdIndexBuilder(CountDownLatch hashDownLatch,
+            CountDownLatch buildIndexCountLatch, int maxConcurrentNum) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
-        this.concurrentNum = concurrentNum;
-        this.goodIdHashTime = goodIdHashTime;
+        this.maxConcurrentNum = maxConcurrentNum;
     }
 
-    //订单文件按照goodid生成索引文件，存放到第三块磁盘上
-    public void generateGoodIdIndex() {
-        for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i+=concurrentNum) {
-            int num = concurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : concurrentNum;
-            CountDownLatch countDownLatch = new CountDownLatch(num);
-            for (int j = i; j < i + num; j++) {
-                new GoodIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+    public void build() {
+        for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
+            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
+                    : maxConcurrentNum;
+            CountDownLatch multiIndexLatch = new CountDownLatch(concurrentNum);
+            for (int j = i; j < i + concurrentNum; j++) {
+                new GoodIdIndexBuilder.MultiIndex(j, multiIndexLatch,
+                        buildIndexCountLatch).start();
             }
             try {
-                countDownLatch.await();
+                multiIndexLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void run(){
+    public void run() {
         if (hashDownLatch != null) {
             try {
-                hashDownLatch.await();//等待上一个任务的完成
+                hashDownLatch.await();// 等待上一个任务的完成
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println("goodid hash order end, time:" + (System.currentTimeMillis() - goodIdHashTime));
-        long indexStartTime = System.currentTimeMillis();
-        generateGoodIdIndex();
-        System.out.println("goodid build index " + " work end! time: " + (System.currentTimeMillis() - indexStartTime));
+        long startTime = System.currentTimeMillis();
+        build();
+        System.out.println("GoodIdIndexBuilder work end! time: "
+                + (System.currentTimeMillis() - startTime));
     }
 
-    private class MultiIndex extends Thread{
+    private class MultiIndex extends Thread {
         private int index;
         private CountDownLatch selfCountDownLatch;
         private CountDownLatch parentCountDownLatch;
 
-        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch){
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch,
+                CountDownLatch parentCountDownLatch) {
             this.index = index;
             this.selfCountDownLatch = selfCountDownLatch;
             this.parentCountDownLatch = parentCountDownLatch;
@@ -81,26 +85,29 @@ public class GoodIdIndexFile extends Thread{
             Map<String, String> goodIndex = new LinkedHashMap<String, String>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
-                FileInputStream order_records = new FileInputStream(Config.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
-                BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+                BufferedReader orderBr = new BufferedReader(
+                        new InputStreamReader(new FileInputStream(
+                        Config.THIRD_DISK_PATH
+                                + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + index)));
 
-                File fileRank = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
-                FileWriter fwRank = new FileWriter(fileRank);
-                BufferedWriter rankBW = new BufferedWriter(fwRank);
+                BufferedWriter sortedHashBw = new BufferedWriter(new FileWriter(Config.THIRD_DISK_PATH
+                        + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index));
 
-                File file = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bufferedWriter = new BufferedWriter(fw);
+                BufferedWriter sortedOneIndexBw = new BufferedWriter(new FileWriter(Config.THIRD_DISK_PATH
+                        + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index));
 
                 String rankStr = null;
-                while ((rankStr = order_br.readLine()) != null) {
+                while ((rankStr = orderBr.readLine()) != null) {
                     String orderid = null;
                     String goodid = null;
 
-                    StringTokenizer stringTokenizer = new StringTokenizer(rankStr, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(
+                            rankStr, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        //String[] keyValue = stringTokenizer.nextToken().split(":");
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        // String[] keyValue =
+                        // stringTokenizer.nextToken().split(":");
+                        StringTokenizer keyValue = new StringTokenizer(
+                                stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if ("orderid".equals(key)) {
@@ -108,11 +115,13 @@ public class GoodIdIndexFile extends Thread{
                         } else if ("goodid".equals(key)) {
                             goodid = value;
                             if (!orderRankMap.containsKey(goodid)) {
-                                orderRankMap.put(goodid, new TreeMap<Long, String>());
+                                orderRankMap.put(goodid,
+                                        new TreeMap<Long, String>());
                             }
                         }
                         if (orderid != null && goodid != null) {
-                            orderRankMap.get(goodid).put(Long.valueOf(orderid), rankStr);
+                            orderRankMap.get(goodid).put(Long.valueOf(orderid),
+                                    rankStr);
                             break;
                         }
                     }
@@ -123,7 +132,8 @@ public class GoodIdIndexFile extends Thread{
                 while (orderRankIterator.hasNext()) {
                     Map.Entry entry = (Map.Entry) orderRankIterator.next();
                     String key = (String) entry.getKey();
-                    Map<Long, String> val = (Map<Long, String>) entry.getValue();
+                    Map<Long, String> val = (Map<Long, String>) entry
+                            .getValue();
                     int length = 0;
                     String goodid = key;
 
@@ -131,11 +141,12 @@ public class GoodIdIndexFile extends Thread{
                     while (orderIdIterator.hasNext()) {
                         Map.Entry orderKv = (Map.Entry) orderIdIterator.next();
                         String orderKvValue = (String) orderKv.getValue();
-                        rankBW.write(orderKvValue + '\n');
+                        sortedHashBw.write(orderKvValue + '\n');
                         length += orderKvValue.getBytes().length + 1;
                     }
                     if (!goodIndex.containsKey(goodid)) {
-                        String posInfo = position + ":" + length + ":" + val.size();
+                        String posInfo = position + ":" + length + ":"
+                                + val.size();
                         goodIndex.put(goodid, posInfo);
                     }
                     position += length;
@@ -152,9 +163,9 @@ public class GoodIdIndexFile extends Thread{
                     String key = (String) entry.getKey();
                     String val = (String) entry.getValue();
                     String content = key + ":" + val;
-                    bufferedWriter.write(content + '\n');
+                    sortedOneIndexBw.write(content + '\n');
 
-                    if (count%towIndexSize == 0) {
+                    if (count % towIndexSize == 0) {
                         twoIndexMap.put(key, oneIndexPosition);
                     }
                     oneIndexPosition += content.getBytes().length + 1;
@@ -163,11 +174,11 @@ public class GoodIdIndexFile extends Thread{
                 TwoIndexCache.goodIdTwoIndexCache.put(index, twoIndexMap);
                 orderRankMap.clear();
                 goodIndex.clear();
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                rankBW.flush();
-                rankBW.close();
-                order_br.close();
+                sortedOneIndexBw.flush();
+                sortedOneIndexBw.close();
+                sortedHashBw.flush();
+                sortedHashBw.close();
+                orderBr.close();
                 selfCountDownLatch.countDown();
                 parentCountDownLatch.countDown();
             } catch (FileNotFoundException e) {

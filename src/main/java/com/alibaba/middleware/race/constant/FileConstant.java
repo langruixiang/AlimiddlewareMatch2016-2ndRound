@@ -17,11 +17,11 @@ public class FileConstant {
     
     public static final String SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX = "sorted_buyerid_one_index_";
 
-    public static String FILE_INDEX_BY_GOODID = "goodid_hash_";
+    public static final String UNSORTED_GOOD_ID_HASH_FILE_PREFIX = "unsorted_goodid_hash_";
 
-    public static String FILE_RANK_BY_GOODID = "goodid_rank_";
-
-    public static String FILE_ONE_INDEXING_BY_GOODID = "goodid_index_";
+    public static final String SORTED_GOOD_ID_HASH_FILE_PREFIX = "sorted_goodid_hash_";
+    
+    public static final String SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX = "sorted_goodid_one_index_";
 
     public static String FILE_TWO_INDEXING_BY_GOODID = "goodid_two_index_";
 

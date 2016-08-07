@@ -10,7 +10,11 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by jiangchao on 2016/7/13.
+ * 根据order文件生成orderid一级索引文件(未排序)并存储
+ * 
+ * 存放位置：第一个硬盘
+ * 
+ * @author jiangchao
  */
 public class OrderIdOneIndexBuilder extends Thread {
 
@@ -111,7 +115,8 @@ public class OrderIdOneIndexBuilder extends Thread {
                 }
                 orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("orderid" + " SingleFileBuildTask end :" + orderFile);
+                System.out.println("orderid" + " SingleFileBuildTask end :"
+                        + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

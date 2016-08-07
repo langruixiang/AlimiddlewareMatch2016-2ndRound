@@ -9,7 +9,11 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by jiangchao on 2016/7/13.
+ * 根据order文件生成buyerid一级索引文件(未排序)并存储
+ * 
+ * 存放位置：第二个硬盘
+ * 
+ * @author jiangchao
  */
 public class BuyerIdOneIndexBuilder extends Thread {
 

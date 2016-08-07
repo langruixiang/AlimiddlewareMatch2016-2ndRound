@@ -3,7 +3,7 @@ package com.alibaba.middleware.race.unused;
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.good.GoodIdIndexFile;
+import com.alibaba.middleware.race.order.GoodIdIndexBuilder;
 
 import java.io.*;
 import java.util.*;

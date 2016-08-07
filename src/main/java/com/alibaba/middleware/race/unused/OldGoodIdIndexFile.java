@@ -74,10 +74,10 @@ public class OldGoodIdIndexFile extends Thread{
             Map<String, TreeMap<Long, String>> goodIndex = new TreeMap<String, TreeMap<Long, String>>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
-                FileInputStream order_records = new FileInputStream(Config.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
+                FileInputStream order_records = new FileInputStream(Config.THIRD_DISK_PATH + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+                File file = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

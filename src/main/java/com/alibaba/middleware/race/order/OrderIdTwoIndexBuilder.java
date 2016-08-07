@@ -11,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 /**
  * 1. 将所有未排序的orderid一级索引文件排序并存储 2. 根据orderid一级索引生成orderid二级索引并缓存
  * 
+ * 存放位置：第一个硬盘
+ * 
  * @author jiangchao
  */
 public class OrderIdTwoIndexBuilder extends Thread {

@@ -9,16 +9,20 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by jiangchao on 2016/7/13.
+ * 按商品ID将订单hash成多个小文件(未排序)并存储
+ * 
+ * 存放位置：第三个硬盘
+ * 
+ * @author jiangchao
  */
-public class GoodIdOneIndexBuilder extends Thread {
+public class GoodIdHasher extends Thread {
 
     private Collection<String> orderFiles;
     private int indexFileNum;
     private CountDownLatch builderLatch;
     private int fileBeginNo;
 
-    public GoodIdOneIndexBuilder(Collection<String> orderFiles,
+    public GoodIdHasher(Collection<String> orderFiles,
             int indexFileNum, CountDownLatch builderLatch, int fileBeginNum) {
         this.orderFiles = orderFiles;
         this.indexFileNum = indexFileNum;
@@ -33,7 +37,7 @@ public class GoodIdOneIndexBuilder extends Thread {
             for (int i = 0; i < indexFileNum; i++) {
                 bufferedWriters[i] = new BufferedWriter(new FileWriter(
                         Config.THIRD_DISK_PATH
-                                + FileConstant.FILE_INDEX_BY_GOODID + i));
+                                + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + i));
             }
 
             // 每个orderFile 分配一个task
@@ -58,7 +62,7 @@ public class GoodIdOneIndexBuilder extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out.println("GoodIdOneIndexBuilder work end! time : "
+        System.out.println("GoodIdHasher work end! time : "
                 + (System.currentTimeMillis() - startTime));
     }
 

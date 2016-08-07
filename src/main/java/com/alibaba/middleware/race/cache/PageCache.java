@@ -173,7 +173,7 @@ public class PageCache {
         orderMap.clear();
 
         try {
-            FileInputStream order_records = new FileInputStream(FileConstant.FILE_INDEX_BY_GOODID + index);
+            FileInputStream order_records = new FileInputStream(FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + index);
             BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
             String str = null;
