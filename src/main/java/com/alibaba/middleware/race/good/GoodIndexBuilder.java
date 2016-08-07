@@ -53,7 +53,6 @@ public class GoodIndexBuilder extends Thread{
                             FilePosition filePosition = new FilePosition(fileBeginNo, position);
                             OneIndexCache.goodOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
-                            break;
                         }
                     }
                 }
