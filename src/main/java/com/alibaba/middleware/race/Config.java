@@ -11,15 +11,15 @@ package com.alibaba.middleware.race;
  */
 public class Config {
 
-    public static final int ORDER_ONE_INDEX_FILE_NUMBER = 30;
+    public static final int ORDER_ONE_INDEX_FILE_NUMBER = 3000;
 
-    public static final int GOOD_HASH_FILE_NUM = 20;
+    public static final int GOOD_HASH_FILE_NUM = 2000;
 
-    public static final int BUYER_HASH_FILE_NUM = 20;
+    public static final int BUYER_HASH_FILE_NUM = 2000;
 
     public static final int MAX_CONCURRENT = 200;
 
-    public static final int SWITCH_THREAD_SLEEP_TIME = 358;
+    public static final int SWITCH_THREAD_SLEEP_TIME = 3580000;
 
     public static final int RAF_READLINE_BUFFER_SIZE = 1024;
 
