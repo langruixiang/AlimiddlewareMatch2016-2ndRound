@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 /**
  * Created by jiangchao on 2016/7/17.
  */
-public class OldBuyerIdQuery {
+public class BuyerIdQuery {
     public static List<Order> findByBuyerId(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty()) return null;
         List<Order> orders = new ArrayList<Order>();
@@ -101,13 +101,13 @@ public class OldBuyerIdQuery {
 
     public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
         List<Result> results = new ArrayList<Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
 
         Buyer buyer = BuyerQuery.findBuyerById(buyerid);
         if (buyer == null) return results.iterator();
 
         //获取goodid的所有订单信息
-        List<Order> orders = OldBuyerIdQuery.findByBuyerId(buyerid, startTime, endTime, hashIndex);
+        List<Order> orders = BuyerIdQuery.findByBuyerId(buyerid, startTime, endTime, hashIndex);
         if (orders == null || orders.size() == 0) return results.iterator();
 
         for (Order order : orders) {

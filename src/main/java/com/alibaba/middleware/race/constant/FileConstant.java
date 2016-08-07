@@ -9,15 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FileConstant {
 
-    public static String FILE_INDEX_BY_ORDERID = "orderid_hash_";
+    public static final String UNSORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX = "unsorted_orderid_one_index_";
+    
+    public static final String SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX = "sorted_orderid_one_index_";
 
     public static String FILE_INDEX_BY_BUYERID = "buyerid_hash_";
 
     public static String FILE_INDEX_BY_GOODID = "goodid_hash_";
-
-    public static String FILE_ONE_INDEXING_BY_ORDERID = "orderid_index_";
-
-    public static String FILE_TWO_INDEXING_BY_ORDERID = "orderid_two_index_";
 
     public static String FILE_RANK_BY_GOODID = "goodid_rank_";
 

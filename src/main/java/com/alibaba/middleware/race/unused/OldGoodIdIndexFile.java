@@ -30,8 +30,8 @@ public class OldGoodIdIndexFile extends Thread{
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
-        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i+=concurrentNum) {
+            int num = concurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i + num; j++) {
                 new OldGoodIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();

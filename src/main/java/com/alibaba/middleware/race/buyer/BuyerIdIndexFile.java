@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by jiangchao on 2016/7/15.
  */
-public class OldBuyerIdIndexFile extends Thread{
+public class BuyerIdIndexFile extends Thread{
 
     private CountDownLatch hashDownLatch;
 
@@ -21,7 +21,7 @@ public class OldBuyerIdIndexFile extends Thread{
 
     private long buyerIdHashTime;
 
-    public OldBuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long buyerIdHashTime) {
+    public BuyerIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long buyerIdHashTime) {
         this.hashDownLatch = hashDownLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.concurrentNum = concurrentNum;
@@ -30,11 +30,11 @@ public class OldBuyerIdIndexFile extends Thread{
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
-        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i+=concurrentNum) {
+            int num = concurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i+num; j++) {
-                new OldBuyerIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+                new BuyerIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
             }
             try {
                 countDownLatch.await();

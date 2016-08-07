@@ -25,7 +25,7 @@ public class OrderIdQuery {
         Order order = new Order();
         try {
 
-            File indexFile = new File(Config.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
+            File indexFile = new File(Config.FIRST_DISK_PATH + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             //1.查找二·级索引
@@ -79,7 +79,7 @@ public class OrderIdQuery {
 
     public static OrderSystem.Result findOrder(long orderId, Collection<String> keys) {
         com.alibaba.middleware.race.model.Result result = new com.alibaba.middleware.race.model.Result();
-        int hashIndex = (int) (orderId % Config.FILE_ORDER_NUMS);
+        int hashIndex = (int) (orderId % Config.ORDER_ONE_INDEX_FILE_NUMBER);
         Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
         List<String> maybeOrderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();

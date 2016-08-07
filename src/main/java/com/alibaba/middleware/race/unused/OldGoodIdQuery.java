@@ -162,7 +162,7 @@ public class OldGoodIdQuery {
             }
         }
 
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
 
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
@@ -223,7 +223,7 @@ public class OldGoodIdQuery {
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型

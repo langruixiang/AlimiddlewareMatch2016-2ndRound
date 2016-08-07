@@ -9,34 +9,32 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 根据orderid的一级索引生成二级索引
+ * 1. 将所有未排序的orderid一级索引文件排序并存储
+ * 2. 根据orderid一级索引生成orderid二级索引并缓存
  * 
  * @author jiangchao
  */
-public class OrderIdIndexFile extends Thread{
+public class OrderIdTwoIndexBuilder extends Thread {
 
-    private CountDownLatch hashDownLatch;
+    private CountDownLatch orderIdOneIndexBuilderLatch;
 
     private CountDownLatch buildIndexCountLatch;
 
-    private int concurrentNum;
+    private int maxConcurrentNum;
 
-    private long orderIdHashTime;
-
-    public OrderIdIndexFile(CountDownLatch hashDownLatch, CountDownLatch buildIndexCountLatch, int concurrentNum, long orderIdHashTime) {
-        this.hashDownLatch = hashDownLatch;
+    public OrderIdTwoIndexBuilder(CountDownLatch orderIdOneIndexBuilderLatch,
+            CountDownLatch buildIndexCountLatch, int maxConcurrentNum) {
+        this.orderIdOneIndexBuilderLatch = orderIdOneIndexBuilderLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
-        this.concurrentNum = concurrentNum;
-        this.orderIdHashTime = orderIdHashTime;
+        this.maxConcurrentNum = maxConcurrentNum;
     }
 
-    //订单文件按照orderid生成索引文件，存放到第三块磁盘上
-    public void generateOrderIdIndex() {
-
-        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
-            CountDownLatch countDownLatch = new CountDownLatch(num);
-            for (int j = i; j < i+num; j++) {
+    public void build() {
+        for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
+            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
+                    : maxConcurrentNum;
+            CountDownLatch countDownLatch = new CountDownLatch(concurrentNum);
+            for (int j = i; j < i + concurrentNum; j++) {
                 new MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
             }
             try {
@@ -47,26 +45,33 @@ public class OrderIdIndexFile extends Thread{
         }
     }
 
-    public void run(){
-        if (hashDownLatch != null) {
+    public void run() {
+        if (orderIdOneIndexBuilderLatch != null) {
             try {
-                hashDownLatch.await();//等待上一个任务的完成
+                orderIdOneIndexBuilderLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println("orderid hash order end, time:" + (System.currentTimeMillis() - orderIdHashTime));
-        long indexStartTime = System.currentTimeMillis();
-        generateOrderIdIndex();
-        System.out.println("orderid build index " + " work end! time : " + (System.currentTimeMillis() - indexStartTime));
+        long orderIdTwoIndexBuilderStartTime = System.currentTimeMillis();
+        build();
+        System.out.println("OrderIdTwoIndexBuilder work end! time : "
+                + (System.currentTimeMillis() - orderIdTwoIndexBuilderStartTime));
     }
 
-    private class MultiIndex extends Thread{
+    /**
+     * 每个MultiIndex 负责一个一级索引文件，完成的任务有:
+     * 1. 将orderid一级索引文件排序并存储
+     * 2. 根据orderid一级索引生成orderid二级索引并缓存
+     * 
+     */
+    private class MultiIndex extends Thread {
         private int index;
         private CountDownLatch selfCountDownLatch;
         private CountDownLatch parentCountDownLatch;
 
-        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch){
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch,
+                CountDownLatch parentCountDownLatch) {
             this.index = index;
             this.selfCountDownLatch = selfCountDownLatch;
             this.parentCountDownLatch = parentCountDownLatch;
@@ -78,20 +83,27 @@ public class OrderIdIndexFile extends Thread{
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
             FileInputStream order_records = null;
             try {
-                order_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
+                order_records = new FileInputStream(Config.FIRST_DISK_PATH
+                        + FileConstant.UNSORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
+                        + index);
 
-                BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
+                BufferedReader order_br = new BufferedReader(
+                        new InputStreamReader(order_records));
 
-                File file = new File(Config.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
+                File file = new File(Config.FIRST_DISK_PATH
+                        + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
+                        + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
                 String str = null;
                 long count = 0;
                 String orderid = null;
                 while ((str = order_br.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, ":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str,
+                            ":");
                     while (stringTokenizer.hasMoreElements()) {
-                        orderIndex.put(Long.valueOf(stringTokenizer.nextToken()), str);
+                        orderIndex.put(
+                                Long.valueOf(stringTokenizer.nextToken()), str);
                         break;
                     }
                 }
@@ -129,13 +141,13 @@ public class OrderIdIndexFile extends Thread{
         }
     }
 
-//    public static long bytes2Long(byte[] byteNum) {
-//        long num = 0;
-//        for (int ix = 0; ix < 8; ++ix) {
-//            num <<= 8;
-//            num |= (byteNum[ix] & 0xff);
-//        }
-//        return num;
-//    }
+    // public static long bytes2Long(byte[] byteNum) {
+    // long num = 0;
+    // for (int ix = 0; ix < 8; ++ix) {
+    // num <<= 8;
+    // num |= (byteNum[ix] & 0xff);
+    // }
+    // return num;
+    // }
 
 }

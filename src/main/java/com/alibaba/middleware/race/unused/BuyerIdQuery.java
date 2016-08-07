@@ -110,7 +110,7 @@ public class BuyerIdQuery {
     public static Iterator<Result> unusedFindOrdersByBuyer(long startTime, long endTime, String buyerid) {
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.model.Result> results = new ArrayList<com.alibaba.middleware.race.model.Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
 
         int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_BUYER_NUMS);
         Buyer buyer = BuyerQuery.findBuyerById(buyerid);

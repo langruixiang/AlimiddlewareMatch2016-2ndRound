@@ -1,8 +1,5 @@
-package com.alibaba.middleware.race.test;
+package com.alibaba.middleware.race;
 
-import com.alibaba.middleware.race.Config;
-import com.alibaba.middleware.race.OrderSystem;
-import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Result;
@@ -92,7 +89,7 @@ public class OrderSystemTest {
         BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(null, null, 0);
         buyerIdIndexFile.generateBuyerIdIndex();
         String str = "ap_236ed7ca-dcb9-4562-8b35-072834c45d18";
-        int hashIndex = Math.abs(str.hashCode()) % Config.FILE_ORDER_NUMS;
+        int hashIndex = Math.abs(str.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER;
         BuyerIdQuery.findByBuyerId("ap_236ed7ca-dcb9-4562-8b35-072834c45d18", 1463076523, 1465018171, hashIndex);
     }
 

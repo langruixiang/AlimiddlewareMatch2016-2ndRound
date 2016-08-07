@@ -59,7 +59,7 @@ public class OrderHashWithDisruptor extends Thread {
         BufferedWriter[] orderIdHashBufferedWriters = new BufferedWriter[orderIdHashFileNum];
         try {
             for (int i = 0; i < orderIdHashFileNum; i++) {
-                orderIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(Config.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i));
+                orderIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(Config.FIRST_DISK_PATH + FileConstant.UNSORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX + i));
             }
         } catch (IOException e) {
             e.printStackTrace();
