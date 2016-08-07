@@ -16,21 +16,22 @@ public class TwoIndexCache {
 
     public static Map<Integer, TreeMap<String, Long>> buyerIdTwoIndexCache = new ConcurrentHashMap<Integer, TreeMap<String, Long>>();
 
-    public static long findOrderIdOneIndexPosition (long orderId, int index) {
+    public static long findOrderIdOneIndexPosition(long orderId, int index) {
         TreeMap<Long, Long> map = orderIdTwoIndexCache.get(index);
-        
+
         Entry<Long, Long> entry = map.floorEntry(orderId);
         return entry == null ? 0L : entry.getValue();
     }
 
-    public static long findGoodIdOneIndexPosition (String goodId, int index) {
+    public static long findGoodIdOneIndexPosition(String goodId, int index) {
         TreeMap<String, Long> map = goodIdTwoIndexCache.get(index);
-       
+
         Entry<String, Long> entry = map.floorEntry(goodId);
         return entry == null ? 0L : entry.getValue();
     }
 
-    public static long findBuyerIdOneIndexPosition (String buyerId, long starttime, long endtime, int index) {
+    public static long findBuyerIdOneIndexPosition(String buyerId,
+            long starttime, long endtime, int index) {
         TreeMap<String, Long> map = buyerIdTwoIndexCache.get(index);
 
         Entry<String, Long> entry = map.floorEntry(buyerId);

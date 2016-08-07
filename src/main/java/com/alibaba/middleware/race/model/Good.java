@@ -28,10 +28,8 @@ public class Good {
         this.keyValues = keyValues;
     }
 
-    @Override public String toString() {
-        return "Good{" +
-               "id='" + id + '\'' +
-               ", keyValues=" + keyValues +
-               '}';
+    @Override
+    public String toString() {
+        return "Good{" + "id='" + id + '\'' + ", keyValues=" + keyValues + '}';
     }
 }

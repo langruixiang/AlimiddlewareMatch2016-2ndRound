@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
+import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -21,6 +22,77 @@ import java.util.*;
  * Created by jiangchao on 2016/7/17.
  */
 public class OrderIdQuery {
+
+    public static Result findOrder(long orderId, Collection<String> keys) {
+        Result result = new Result();
+        int hashIndex = (int) (orderId % Config.ORDER_ONE_INDEX_FILE_NUMBER);
+        Order order = OrderIdQuery
+                .findByOrderIdAndHashIndex(orderId, hashIndex);
+
+        // 过滤key
+        List<String> maybeOrderSearchKeys = new ArrayList<String>();
+        List<String> goodSearchKeys = new ArrayList<String>();
+        List<String> buyerSearchKeys = new ArrayList<String>();
+        if (keys != null) {
+            for (String key : keys) {
+                if (KeyCache.goodKeyCache.containsKey(key)) {
+                    goodSearchKeys.add(key);
+                } else if (KeyCache.buyerKeyCache.containsKey(key)) {
+                    buyerSearchKeys.add(key);
+                } else {
+                    maybeOrderSearchKeys.add(key);
+                }
+            }
+        }
+
+        // 特殊查询
+        if (order == null) {
+            return null;
+        }
+        if (keys != null && keys.isEmpty()) {
+            result.setOrderId(orderId);
+            return result;
+        }
+
+        // 加入对应买家的所有属性kv
+        {
+            if (keys == null || buyerSearchKeys.size() > 0) {
+                String buyerId = order.getKeyValues().get("buyerid").getValue();
+                Buyer buyer = BuyerQuery.findBuyerById(buyerId);
+                if (buyer != null && buyer.getKeyValues() != null) {
+                    result.getKeyValues().putAll(buyer.getKeyValues());
+                }
+            }
+        }
+
+        // 加入对应商品的所有属性kv
+        {
+            if (keys == null || goodSearchKeys.size() > 0) {
+                String goodId = order.getKeyValues().get("goodid").getValue();
+                Good good = GoodQuery.findGoodById(goodId);
+                if (good != null && good.getKeyValues() != null) {
+                    result.getKeyValues().putAll(good.getKeyValues());
+                }
+            }
+
+        }
+
+        // 加入对应订单的所有属性kv
+        if (keys == null) {
+            result.getKeyValues().putAll(order.getKeyValues());
+        } else {
+            for (String key : maybeOrderSearchKeys) {
+                if (order.getKeyValues().containsKey(key)) {
+                    result.getKeyValues().put(key,
+                            order.getKeyValues().get(key));
+                }
+            }
+        }
+
+        result.setOrderId(orderId);
+        return result;
+    }
+
     private static Order findByOrderIdAndHashIndex(long orderId, int hashIndex) {
         Order order = new Order();
         try {
@@ -44,7 +116,7 @@ public class OrderIdQuery {
                     break;
                 }
                 count++;
-                if (count >= FileConstant.orderIdIndexRegionSizeMap
+                if (count >= IndexSizeCache.orderIdIndexRegionSizeMap
                         .get(hashIndex)) {
                     indexRaf.close();
                     return null;
@@ -85,69 +157,4 @@ public class OrderIdQuery {
         }
         return order;
     }
-
-    public static Result findOrder(long orderId, Collection<String> keys) {
-        Result result = new Result();
-        int hashIndex = (int) (orderId % Config.ORDER_ONE_INDEX_FILE_NUMBER);
-        Order order = OrderIdQuery
-                .findByOrderIdAndHashIndex(orderId, hashIndex);
-        List<String> maybeOrderSearchKeys = new ArrayList<String>();
-        List<String> goodSearchKeys = new ArrayList<String>();
-        List<String> buyerSearchKeys = new ArrayList<String>();
-        if (keys != null) {
-            for (String key : keys) {
-                if (KeyCache.goodKeyCache.containsKey(key)) {
-                    goodSearchKeys.add(key);
-                } else if (KeyCache.buyerKeyCache.containsKey(key)) {
-                    buyerSearchKeys.add(key);
-                } else {
-                    maybeOrderSearchKeys.add(key);
-                }
-            }
-        }
-        if (order == null) {
-            return null;
-        }
-        if (keys != null && keys.isEmpty()) {
-            result.setOrderid(orderId);
-            return result;
-        }
-        {
-            if (keys == null || buyerSearchKeys.size() > 0) {
-                String buyerId = order.getKeyValues().get("buyerid").getValue();
-                // 加入对应买家的所有属性kv
-                Buyer buyer = BuyerQuery.findBuyerById(buyerId);
-
-                if (buyer != null && buyer.getKeyValues() != null) {
-                    result.getKeyValues().putAll(buyer.getKeyValues());
-                }
-            }
-        }
-
-        {
-            if (keys == null || goodSearchKeys.size() > 0) {
-                String goodId = order.getKeyValues().get("goodid").getValue();
-                // 加入对应商品的所有属性kv
-                Good good = GoodQuery.findGoodById(goodId);
-
-                if (good != null && good.getKeyValues() != null) {
-                    result.getKeyValues().putAll(good.getKeyValues());
-                }
-            }
-
-        }
-        if (keys == null) {
-            result.getKeyValues().putAll(order.getKeyValues());
-        } else {
-            for (String key : maybeOrderSearchKeys) {
-                if (order.getKeyValues().containsKey(key)) {
-                    result.getKeyValues().put(key,
-                            order.getKeyValues().get(key));
-                }
-            }
-        }
-        result.setOrderid(orderId);
-        return result;
-    }
-
 }

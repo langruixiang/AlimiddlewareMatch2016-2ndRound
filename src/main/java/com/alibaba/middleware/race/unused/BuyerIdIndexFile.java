@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.unused;
 
 import com.alibaba.middleware.race.Config;
+import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.order.GoodIdIndexBuilder;
@@ -74,7 +75,7 @@ public class BuyerIdIndexFile extends Thread{
                 FileInputStream order_records = new FileInputStream(Config.SECOND_DISK_PATH + FileConstant.UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File fileRank = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
+                File fileRank = new File(Config.SECOND_DISK_PATH + "buyerid_rank_" + index);
                 FileWriter fwRank = new FileWriter(fileRank);
                 BufferedWriter rankBW = new BufferedWriter(fwRank);
 
@@ -119,7 +120,7 @@ public class BuyerIdIndexFile extends Thread{
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
-                FileConstant.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
+                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 int count = 0;
                 long oneIndexPosition = 0;
                 Iterator iterator = buyerIndex.entrySet().iterator();

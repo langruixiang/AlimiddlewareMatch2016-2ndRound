@@ -61,7 +61,7 @@ public class OrderQuery {
         if (orderIdIndex == null) {
             return null;
         } else {
-            result.setOrderid(orderId);
+            result.setOrderId(orderId);
             for (String key : filteredKeys) {
                 result.getKeyValues().put(key, getKeyValueByOrderIdIndexAndKey(orderIdIndex, key));
             }

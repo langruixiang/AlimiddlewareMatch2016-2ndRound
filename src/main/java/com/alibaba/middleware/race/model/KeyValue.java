@@ -5,7 +5,7 @@ import com.alibaba.middleware.race.OrderSystem;
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class KeyValue implements OrderSystem.KeyValue{
+public class KeyValue implements OrderSystem.KeyValue {
 
     private String key;
 
@@ -56,10 +56,9 @@ public class KeyValue implements OrderSystem.KeyValue{
         }
     }
 
-    @Override public String toString() {
-        return "KeyValue{" +
-               "key='" + key + '\'' +
-               ", value='" + value + '\'' +
-               '}';
+    @Override
+    public String toString() {
+        return "KeyValue{" + "key='" + key + '\'' + ", value='" + value + '\''
+                + '}';
     }
 }

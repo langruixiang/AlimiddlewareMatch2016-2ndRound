@@ -30,7 +30,7 @@ public class BuyerIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File rankFile = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
+            File rankFile = new File(Config.SECOND_DISK_PATH + "buyerid_rank_" + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             File indexFile = new File(Config.SECOND_DISK_PATH + FileConstant.SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + index);
@@ -135,7 +135,7 @@ public class BuyerIdQuery {
             }
             //加入订单信息的所有属性kv
             result.getKeyValues().putAll(order.getKeyValues());
-            result.setOrderid(order.getId());
+            result.setOrderId(order.getId());
             results.add(result);
         }
         return results.iterator();

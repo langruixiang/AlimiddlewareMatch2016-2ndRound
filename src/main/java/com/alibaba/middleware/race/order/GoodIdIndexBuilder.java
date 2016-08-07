@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystemImpl;
+import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -157,7 +158,7 @@ public class GoodIdIndexBuilder extends Thread {
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                FileConstant.goodIdIndexRegionSizeMap.put(index, towIndexSize);
+                IndexSizeCache.goodIdIndexRegionSizeMap.put(index, towIndexSize);
                 int count = 0;
                 long oneIndexPosition = 0;
                 Iterator iterator = goodIndex.entrySet().iterator();

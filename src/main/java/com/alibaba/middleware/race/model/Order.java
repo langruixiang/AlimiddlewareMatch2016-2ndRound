@@ -28,10 +28,8 @@ public class Order {
         this.keyValues = keyValues;
     }
 
-    @Override public String toString() {
-        return "Order{" +
-               "id=" + id +
-               ", keyValues=" + keyValues +
-               '}';
+    @Override
+    public String toString() {
+        return "Order{" + "id=" + id + ", keyValues=" + keyValues + '}';
     }
 }

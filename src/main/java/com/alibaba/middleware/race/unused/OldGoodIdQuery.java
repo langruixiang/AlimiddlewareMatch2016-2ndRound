@@ -4,6 +4,7 @@ import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
+import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -51,7 +52,7 @@ public class OldGoodIdQuery {
                     break;
                 }
                 count++;
-                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
                     indexRaf.close();
                     return null;
                 }
@@ -122,7 +123,7 @@ public class OldGoodIdQuery {
                     break;
                 }
                 count++;
-                if (count >= FileConstant.goodIdIndexRegionSizeMap.get(index)) {
+                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
                     indexRaf.close();
                     return 0;
                 }
@@ -181,7 +182,7 @@ public class OldGoodIdQuery {
         if (keys != null && keys.size() == 0) {
             for (Order order : orders) {
                 Result result = new Result();
-                result.setOrderid(order.getId());
+                result.setOrderId(order.getId());
                 results.add(result);
             }
             //对所求结果按照交易订单从小到大排序
@@ -214,7 +215,7 @@ public class OldGoodIdQuery {
                 }
             }
 
-            result.setOrderid(order.getId());
+            result.setOrderId(order.getId());
             results.add(result);
         }
         return results.iterator();

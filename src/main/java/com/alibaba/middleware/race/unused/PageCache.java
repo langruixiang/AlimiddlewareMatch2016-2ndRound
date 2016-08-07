@@ -1,4 +1,4 @@
-package com.alibaba.middleware.race.cache;
+package com.alibaba.middleware.race.unused;
 
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -37,6 +37,72 @@ public class PageCache {
             return size() > Config.MAX_CONCURRENT;
         }
     };
+
+
+
+//    //选择hash后的一个用户文件加载到内存中
+//    public static void unusedCacheBuyerFile(int index) {
+//
+//        //清空缓存
+//        Map<String, Buyer> segmentBuyerMap = new HashMap<String, Buyer>();
+//        try {
+//            FileInputStream buyer_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
+//            BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
+//
+//            String str = null;
+//
+//            while ((str = buyer_br.readLine()) != null) {
+//                Buyer buyer = new Buyer();
+//                String[] keyValues = str.split("\t");
+//                for (int i = 0; i < keyValues.length; i++) {
+//                    String[] strs = keyValues[i].split(":");
+//                    KeyValue keyValue =new KeyValue();
+//                    keyValue.setKey(strs[0]);
+//                    keyValue.setValue(strs[1]);
+//                    buyer.getKeyValues().put(strs[0], keyValue);
+//                }
+//                buyer.setId(buyer.getKeyValues().get("buyerid").getValue());
+//                segmentBuyerMap.put(buyer.getId(), buyer);
+//            }
+//            buyerMap.put(index, segmentBuyerMap);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    //选择hash后的一个商品文件加载到内存中
+//    public static void unusedCacheGoodFile(int index) {
+//
+//        //清空缓存
+//        Map<String, Good> segmentGoodMap = new HashMap<String, Good>();
+//        try {
+//            FileInputStream good_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
+//            BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
+//
+//            String str = null;
+//
+//            while ((str = good_br.readLine()) != null) {
+//                Good good = new Good();
+//                String[] keyValues = str.split("\t");
+//                for (int i = 0; i < keyValues.length; i++) {
+//                    String[] strs = keyValues[i].split(":");
+//                    KeyValue keyValue = new KeyValue();
+//                    keyValue.setKey(strs[0]);
+//                    keyValue.setValue(strs[1]);
+//                    good.getKeyValues().put(strs[0], keyValue);
+//                }
+//                good.setId(good.getKeyValues().get("goodid").getValue());
+//                segmentGoodMap.put(good.getId(), good);
+//            }
+//            goodMap.put(index, segmentGoodMap);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     //选择按订单号hash后的一个订单文件加载到内存中
     public static void cacheOrderIdFile(int index) {

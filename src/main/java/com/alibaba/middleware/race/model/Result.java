@@ -1,6 +1,5 @@
 package com.alibaba.middleware.race.model;
 
-
 import com.alibaba.middleware.race.OrderSystem;
 
 import java.util.HashMap;
@@ -10,18 +9,18 @@ import java.util.Map;
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class Result implements OrderSystem.Result{
+public class Result implements OrderSystem.Result {
 
     Long orderid;
 
     Map<String, KeyValue> keyValues = new HashMap<String, KeyValue>();
 
-    public Long getOrderid() {
+    public Long getOrderId() {
         return orderid;
     }
 
-    public void setOrderid(Long orderid) {
-        this.orderid = orderid;
+    public void setOrderId(Long orderId) {
+        this.orderid = orderId;
     }
 
     public Map<String, KeyValue> getKeyValues() {
@@ -31,7 +30,7 @@ public class Result implements OrderSystem.Result{
     public void setKeyValues(Map<String, KeyValue> keyValues) {
         this.keyValues = keyValues;
     }
-    
+
     public void remove(String key) {
         this.keyValues.remove(key);
     }
@@ -52,10 +51,9 @@ public class Result implements OrderSystem.Result{
         return orderid;
     }
 
-    @Override public String toString() {
-        return "Result{" +
-               "orderid=" + orderid +
-               ", keyValues=" + keyValues +
-               '}';
+    @Override
+    public String toString() {
+        return "Result{" + "orderid=" + orderid + ", keyValues=" + keyValues
+                + '}';
     }
 }

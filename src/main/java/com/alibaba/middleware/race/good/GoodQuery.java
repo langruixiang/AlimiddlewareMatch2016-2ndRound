@@ -8,7 +8,6 @@ import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -17,11 +16,13 @@ import java.io.RandomAccessFile;
  */
 public class GoodQuery {
     public static Good findGoodById(String goodId) {
-        if (goodId == null || goodId.isEmpty()) return null;
+        if (goodId == null || goodId.isEmpty()) {
+            return null;
+        }
+
         Good good = new Good();
         try {
-
-            //1.查找索引
+            // 1.查找索引
             FilePosition positionInfo = null;
             if (!OneIndexCache.goodOneIndexCache.containsKey(goodId)) {
                 return null;
@@ -29,15 +30,19 @@ public class GoodQuery {
                 positionInfo = OneIndexCache.goodOneIndexCache.get(goodId);
             }
 
-            //2.按行读取内容
-            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
+            // 2.按行读取内容
+            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo
+                    .getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             long offset = positionInfo.getPosition();
             String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
-            if (oneIndex == null) return null;
+            hashRaf.close();
+            if (oneIndex == null) {
+                return null;
+            }
 
-            //3.将字符串转成buyer对象
+            // 3.将字符串转成good对象
             String[] keyValues = oneIndex.split("\t");
             for (int i = 0; i < keyValues.length; i++) {
                 String[] strs = keyValues[i].split(":");
@@ -47,9 +52,6 @@ public class GoodQuery {
                 good.getKeyValues().put(strs[0], kv);
             }
             good.setId(goodId);
-            hashRaf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

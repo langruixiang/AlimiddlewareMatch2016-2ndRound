@@ -1,28 +1,24 @@
 package com.alibaba.middleware.race.buyer;
 
 import com.alibaba.middleware.race.cache.*;
-import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.FilePosition;
 import com.alibaba.middleware.race.model.KeyValue;
-import com.alibaba.middleware.race.model.Order;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
-
-import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by jiangchao on 2016/7/17.
  */
 public class BuyerQuery {
     public static Buyer findBuyerById(String buyerId) {
-        if (buyerId == null || buyerId.isEmpty()) return null;
+        if (buyerId == null || buyerId.isEmpty()) {
+            return null;
+        }
 
         Buyer buyer = BuyerCache.buyerMap.get(buyerId);
         if (buyer != null) {
@@ -30,10 +26,7 @@ public class BuyerQuery {
         }
         buyer = new Buyer();
         try {
-
-            String str = null;
-
-            //1.查找索引
+            // 1.查找索引
             FilePosition positionInfo = null;
             if (!OneIndexCache.buyerOneIndexCache.containsKey(buyerId)) {
                 return null;
@@ -41,15 +34,18 @@ public class BuyerQuery {
                 positionInfo = OneIndexCache.buyerOneIndexCache.get(buyerId);
             }
 
-            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
+            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo
+                    .getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
+            hashRaf.close();
 
-            //2.按行读取内容
+            // 2.按行读取内容
             long offset = positionInfo.getPosition();
             String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
-            if (oneIndex == null) return null;
+            if (oneIndex == null)
+                return null;
 
-            //3.将字符串转成buyer对象
+            // 3.将字符串转成buyer对象
             String[] keyValues = oneIndex.split("\t");
             for (int i = 0; i < keyValues.length; i++) {
                 String[] strs = keyValues[i].split(":");
@@ -59,7 +55,6 @@ public class BuyerQuery {
                 buyer.getKeyValues().put(strs[0], kv);
             }
             buyer.setId(buyerId);
-            hashRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

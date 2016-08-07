@@ -13,7 +13,6 @@ public class FilePosition {
         this.position = position;
     }
 
-
     public int getFileNum() {
         return fileNum;
     }

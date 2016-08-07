@@ -62,7 +62,7 @@ public class NewOrderIdIndexRegionQuery extends StringIndexRegionQuery {
         if (stringIndex == null) {
             return null;
         } else {
-            result.setOrderid(orderId);
+            result.setOrderId(orderId);
             for (String key : filteredKeys) {
                 KeyValue keyValue = new KeyValue();
                 keyValue.setKey(key);

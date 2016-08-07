@@ -2,6 +2,7 @@ package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystemImpl;
+import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -125,7 +126,7 @@ public class BuyerIdTwoIndexBuilder extends Thread {
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
-                FileConstant.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
+                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 long count = 0;
                 long position = 0;
                 Iterator iterator = buyerIndex.entrySet().iterator();

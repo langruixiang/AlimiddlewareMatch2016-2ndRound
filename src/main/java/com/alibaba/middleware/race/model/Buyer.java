@@ -28,10 +28,8 @@ public class Buyer {
         this.keyValues = keyValues;
     }
 
-    @Override public String toString() {
-        return "Buyer{" +
-               "id='" + id + '\'' +
-               ", keyValues=" + keyValues +
-               '}';
+    @Override
+    public String toString() {
+        return "Buyer{" + "id='" + id + '\'' + ", keyValues=" + keyValues + '}';
     }
 }
