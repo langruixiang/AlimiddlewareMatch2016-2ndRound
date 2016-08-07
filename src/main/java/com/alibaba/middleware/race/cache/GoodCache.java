@@ -16,7 +16,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by jiangchao on 2016/8/1.
  */
-public class GoodCache extends Thread{
+public class GoodCache extends Thread {
     public static Map<String, Good> goodMap = new ConcurrentHashMap<String, Good>();
 
     private Collection<String> goodFiles;
@@ -27,13 +27,14 @@ public class GoodCache extends Thread{
         this.countDownLatch = countDownLatch;
     }
 
-    //读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
+    // 读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
     public void cacheGood() {
 
         try {
             for (String goodFile : goodFiles) {
                 FileInputStream good_records = new FileInputStream(goodFile);
-                BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
+                BufferedReader good_br = new BufferedReader(
+                        new InputStreamReader(good_records));
 
                 String str = null;
                 int cacheNum = 0;
@@ -43,9 +44,11 @@ public class GoodCache extends Thread{
                         return;
                     }
                     Good good = new Good();
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str,
+                            "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(
+                                stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         KeyValue kv = new KeyValue();
@@ -65,10 +68,10 @@ public class GoodCache extends Thread{
         }
     }
 
-    public void run(){
+    public void run() {
         if (countDownLatch != null) {
             try {
-                countDownLatch.await(); //等待上一个任务的结束
+                countDownLatch.await(); // 等待上一个任务的结束
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

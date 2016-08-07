@@ -9,8 +9,6 @@ import com.alibaba.middleware.race.buyer.*;
 import com.alibaba.middleware.race.good.*;
 import com.alibaba.middleware.race.util.SwitchThread;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.alibaba.middleware.race.order.BuyerIdOneIndexBuilder;
 import com.alibaba.middleware.race.order.BuyerIdTwoIndexBuilder;
 import com.alibaba.middleware.race.order.GoodIdHasher;

@@ -16,23 +16,25 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by jiangchao on 2016/8/1.
  */
-public class BuyerCache extends Thread{
+public class BuyerCache extends Thread {
     public static Map<String, Buyer> buyerMap = new ConcurrentHashMap<String, Buyer>();
     private Collection<String> buyerFiles;
     private CountDownLatch countDownLatch;
 
-    public BuyerCache(Collection<String> buyerFiles, CountDownLatch countDownLatch) {
+    public BuyerCache(Collection<String> buyerFiles,
+            CountDownLatch countDownLatch) {
         this.buyerFiles = buyerFiles;
         this.countDownLatch = countDownLatch;
     }
 
-    //读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
+    // 读取所有商品文件，按照商品号hash到多个小文件中, 生成到第一块磁盘中
     public void cacheBuyer() {
         System.gc();
         try {
             for (String buyerFile : buyerFiles) {
                 FileInputStream buyer_records = new FileInputStream(buyerFile);
-                BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
+                BufferedReader buyer_br = new BufferedReader(
+                        new InputStreamReader(buyer_records));
 
                 String str = null;
                 int cacheNum = 0;
@@ -42,9 +44,11 @@ public class BuyerCache extends Thread{
                         return;
                     }
                     Buyer buyer = new Buyer();
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str,
+                            "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(
+                                stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         KeyValue kv = new KeyValue();
@@ -64,10 +68,10 @@ public class BuyerCache extends Thread{
         }
     }
 
-    public void run(){
+    public void run() {
         if (countDownLatch != null) {
             try {
-                countDownLatch.await(); //等待构建索引的所有任务的结束
+                countDownLatch.await(); // 等待构建索引的所有任务的结束
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

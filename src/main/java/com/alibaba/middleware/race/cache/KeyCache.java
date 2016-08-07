@@ -1,8 +1,5 @@
 package com.alibaba.middleware.race.cache;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -10,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class KeyCache {
 
-    //public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
+    // public static ConcurrentHashMap<String, Integer> orderKeyCache = new ConcurrentHashMap<String, Integer>();
 
     public static ConcurrentHashMap<String, Integer> buyerKeyCache = new ConcurrentHashMap<String, Integer>();
 

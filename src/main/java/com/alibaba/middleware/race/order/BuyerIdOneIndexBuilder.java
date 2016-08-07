@@ -36,9 +36,11 @@ public class BuyerIdOneIndexBuilder extends Thread {
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[indexFileNum];
             for (int i = 0; i < indexFileNum; i++) {
-                bufferedWriters[i] = new BufferedWriter(new FileWriter(
-                        Config.SECOND_DISK_PATH
-                                + FileConstant.UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + i));
+                bufferedWriters[i] = new BufferedWriter(
+                        new FileWriter(
+                                Config.SECOND_DISK_PATH
+                                        + FileConstant.UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX
+                                        + i));
             }
 
             // 每个orderFile 分配一个task
@@ -62,10 +64,11 @@ public class BuyerIdOneIndexBuilder extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out.printf("BuyerIdOneIndexBuilder work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("BuyerIdOneIndexBuilder work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {
@@ -121,7 +124,8 @@ public class BuyerIdOneIndexBuilder extends Thread {
                 }
                 orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("buyerid" + " SingleFileBuildTask end :" + orderFile);
+                System.out.println("buyerid" + " SingleFileBuildTask end :"
+                        + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

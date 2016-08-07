@@ -3,21 +3,16 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.cache.IndexSizeCache;
-import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
-import com.alibaba.middleware.race.model.KeyValue;
-import com.alibaba.middleware.race.model.Order;
-
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 1. 将所有 "未排序的按照goodid hash的order记录" 按照 "goodid以及orderid" 排序后存储
- * 2. 根据排序后的文件生成goodid一级索引文件 以及 二级索引缓存
+ * 1. 将所有 "未排序的按照goodid hash的order记录" 按照 "goodid以及orderid" 排序后存储 2.
+ * 根据排序后的文件生成goodid一级索引文件 以及 二级索引缓存
  * 
  * 存放位置：第三个硬盘
  * 
@@ -65,10 +60,11 @@ public class GoodIdIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out.printf("GoodIdIndexBuilder work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("GoodIdIndexBuilder work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     private class MultiIndex extends Thread {
@@ -90,15 +86,22 @@ public class GoodIdIndexBuilder extends Thread {
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
                 BufferedReader orderBr = new BufferedReader(
-                        new InputStreamReader(new FileInputStream(
-                        Config.THIRD_DISK_PATH
-                                + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + index)));
+                        new InputStreamReader(
+                                new FileInputStream(
+                                        Config.THIRD_DISK_PATH
+                                                + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX
+                                                + index)));
 
-                BufferedWriter sortedHashBw = new BufferedWriter(new FileWriter(Config.THIRD_DISK_PATH
-                        + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index));
+                BufferedWriter sortedHashBw = new BufferedWriter(
+                        new FileWriter(Config.THIRD_DISK_PATH
+                                + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX
+                                + index));
 
-                BufferedWriter sortedOneIndexBw = new BufferedWriter(new FileWriter(Config.THIRD_DISK_PATH
-                        + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index));
+                BufferedWriter sortedOneIndexBw = new BufferedWriter(
+                        new FileWriter(
+                                Config.THIRD_DISK_PATH
+                                        + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX
+                                        + index));
 
                 String rankStr = null;
                 while ((rankStr = orderBr.readLine()) != null) {
@@ -132,18 +135,22 @@ public class GoodIdIndexBuilder extends Thread {
                 }
 
                 long position = 0;
-                Iterator orderRankIterator = orderRankMap.entrySet().iterator();
+                Iterator<Map.Entry<String, TreeMap<Long, String>>> orderRankIterator = orderRankMap
+                        .entrySet().iterator();
                 while (orderRankIterator.hasNext()) {
-                    Map.Entry entry = (Map.Entry) orderRankIterator.next();
+                    Map.Entry<String, TreeMap<Long, String>> entry = orderRankIterator
+                            .next();
                     String key = (String) entry.getKey();
                     Map<Long, String> val = (Map<Long, String>) entry
                             .getValue();
                     int length = 0;
                     String goodid = key;
 
-                    Iterator orderIdIterator = val.entrySet().iterator();
+                    Iterator<Map.Entry<Long, String>> orderIdIterator = val
+                            .entrySet().iterator();
                     while (orderIdIterator.hasNext()) {
-                        Map.Entry orderKv = (Map.Entry) orderIdIterator.next();
+                        Map.Entry<Long, String> orderKv = orderIdIterator
+                                .next();
                         String orderKvValue = (String) orderKv.getValue();
                         sortedHashBw.write(orderKvValue + '\n');
                         length += orderKvValue.getBytes().length + 1;
@@ -158,12 +165,14 @@ public class GoodIdIndexBuilder extends Thread {
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                IndexSizeCache.goodIdIndexRegionSizeMap.put(index, towIndexSize);
+                IndexSizeCache.goodIdIndexRegionSizeMap
+                        .put(index, towIndexSize);
                 int count = 0;
                 long oneIndexPosition = 0;
-                Iterator iterator = goodIndex.entrySet().iterator();
+                Iterator<Map.Entry<String, String>> iterator = goodIndex
+                        .entrySet().iterator();
                 while (iterator.hasNext()) {
-                    Map.Entry entry = (Map.Entry) iterator.next();
+                    Map.Entry<String, String> entry = iterator.next();
                     String key = (String) entry.getKey();
                     String val = (String) entry.getValue();
                     String content = key + ":" + val;

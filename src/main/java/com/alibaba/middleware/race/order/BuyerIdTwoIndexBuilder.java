@@ -59,10 +59,11 @@ public class BuyerIdTwoIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out.printf("BuyerIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("BuyerIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     /**
@@ -126,22 +127,25 @@ public class BuyerIdTwoIndexBuilder extends Thread {
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
-                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
+                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index,
+                        twoIndexSize);
                 long count = 0;
                 long position = 0;
-                Iterator iterator = buyerIndex.entrySet().iterator();
+                Iterator<Map.Entry<String, TreeMap<Long, String>>> iterator = buyerIndex
+                        .entrySet().iterator();
                 while (iterator.hasNext()) {
 
-                    Map.Entry entry = (Map.Entry) iterator.next();
+                    Map.Entry<String, TreeMap<Long, String>> entry = iterator
+                            .next();
                     String key = (String) entry.getKey();
                     TreeMap<Long, String> val = (TreeMap<Long, String>) entry
                             .getValue();
 
                     StringBuilder content = new StringBuilder(key + "\t");
-                    Iterator iteratorOrders = val.descendingMap().entrySet()
-                            .iterator();
+                    Iterator<Map.Entry<Long, String>> iteratorOrders = val
+                            .descendingMap().entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
-                        Map.Entry orderEntry = (Map.Entry) iteratorOrders
+                        Map.Entry<Long, String> orderEntry = iteratorOrders
                                 .next();
                         Long createtime = (Long) orderEntry.getKey();
                         String pos = (String) orderEntry.getValue();

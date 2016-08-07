@@ -66,10 +66,11 @@ public class OrderIdOneIndexBuilder extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out.printf("OrderIdOneIndexBuilder work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("OrderIdOneIndexBuilder work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {

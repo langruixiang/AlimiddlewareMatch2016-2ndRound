@@ -59,10 +59,11 @@ public class OrderIdTwoIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out.printf("OrderIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("OrderIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     /**
@@ -100,7 +101,6 @@ public class OrderIdTwoIndexBuilder extends Thread {
                                         + index));
                 String str = null;
                 long count = 0;
-                String orderid = null;
                 while ((str = oneIndexBr.readLine()) != null) {
                     StringTokenizer stringTokenizer = new StringTokenizer(str,
                             ":");
@@ -112,13 +112,15 @@ public class OrderIdTwoIndexBuilder extends Thread {
                 }
 
                 int towIndexSize = (int) Math.sqrt(orderIndex.size());
-                IndexSizeCache.orderIdIndexRegionSizeMap.put(index, towIndexSize);
+                IndexSizeCache.orderIdIndexRegionSizeMap.put(index,
+                        towIndexSize);
                 count = 0;
                 long position = 0;
-                Iterator iterator = orderIndex.entrySet().iterator();
+                Iterator<Map.Entry<Long, String>> iterator = orderIndex
+                        .entrySet().iterator();
                 while (iterator.hasNext()) {
 
-                    Map.Entry entry = (Map.Entry) iterator.next();
+                    Map.Entry<Long, String> entry = iterator.next();
                     Long key = (Long) entry.getKey();
                     String val = (String) entry.getValue();
                     sortedOneIndexBw.write(val + '\n');

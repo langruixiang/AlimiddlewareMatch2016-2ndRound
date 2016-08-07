@@ -2,10 +2,8 @@ package com.alibaba.middleware.race.cache;
 
 import com.alibaba.middleware.race.model.FilePosition;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by jiangchao on 2016/7/24.

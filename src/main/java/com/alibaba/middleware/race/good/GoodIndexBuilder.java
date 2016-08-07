@@ -12,17 +12,18 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 根据goodid生成good的索引并缓存
- * Created by jiangchao on 2016/7/13.
+ * 根据goodid生成good的索引并缓存 Created by jiangchao on 2016/7/13.
  */
-public class GoodIndexBuilder extends Thread{
+public class GoodIndexBuilder extends Thread {
 
-    private CountDownLatch     waitCountDownLatch;
+    private CountDownLatch waitCountDownLatch;
     private Collection<String> goodFiles;
     private CountDownLatch countDownLatch;
-    private int                fileBeginNo;
+    private int fileBeginNo;
 
-    public GoodIndexBuilder(CountDownLatch waitCountDownLatch, Collection<String> goodFiles, CountDownLatch countDownLatch, int fileBeginNo) {
+    public GoodIndexBuilder(CountDownLatch waitCountDownLatch,
+            Collection<String> goodFiles, CountDownLatch countDownLatch,
+            int fileBeginNo) {
         this.waitCountDownLatch = waitCountDownLatch;
         this.goodFiles = goodFiles;
         this.countDownLatch = countDownLatch;
@@ -36,22 +37,27 @@ public class GoodIndexBuilder extends Thread{
             for (String goodFile : goodFiles) {
                 FileNameCache.fileNameMap.put(fileBeginNo, goodFile);
                 FileInputStream good_records = new FileInputStream(goodFile);
-                BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
+                BufferedReader good_br = new BufferedReader(
+                        new InputStreamReader(good_records));
 
                 String str = null;
                 long position = 0;
                 while ((str = good_br.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str,
+                            "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(
+                                stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if (!KeyCache.goodKeyCache.containsKey(key)) {
                             KeyCache.goodKeyCache.put(key, 0);
                         }
                         if ("goodid".equals(key)) {
-                            FilePosition filePosition = new FilePosition(fileBeginNo, position);
-                            OneIndexCache.goodOneIndexCache.put(value, filePosition);
+                            FilePosition filePosition = new FilePosition(
+                                    fileBeginNo, position);
+                            OneIndexCache.goodOneIndexCache.put(value,
+                                    filePosition);
                             position += str.getBytes().length + 1;
                         }
                     }
@@ -66,7 +72,7 @@ public class GoodIndexBuilder extends Thread{
         }
     }
 
-    public void run(){
+    public void run() {
         try {
             waitCountDownLatch.await();
         } catch (InterruptedException e) {
@@ -75,9 +81,10 @@ public class GoodIndexBuilder extends Thread{
         long startTime = System.currentTimeMillis();
         hash();
         countDownLatch.countDown();
-        System.out.printf("GoodHasher work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("GoodHasher work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 }

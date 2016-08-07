@@ -23,8 +23,8 @@ public class GoodIdHasher extends Thread {
     private CountDownLatch builderLatch;
     private int fileBeginNo;
 
-    public GoodIdHasher(Collection<String> orderFiles,
-            int indexFileNum, CountDownLatch builderLatch, int fileBeginNum) {
+    public GoodIdHasher(Collection<String> orderFiles, int indexFileNum,
+            CountDownLatch builderLatch, int fileBeginNum) {
         this.orderFiles = orderFiles;
         this.indexFileNum = indexFileNum;
         this.builderLatch = builderLatch;
@@ -36,9 +36,11 @@ public class GoodIdHasher extends Thread {
         try {
             BufferedWriter[] bufferedWriters = new BufferedWriter[indexFileNum];
             for (int i = 0; i < indexFileNum; i++) {
-                bufferedWriters[i] = new BufferedWriter(new FileWriter(
-                        Config.THIRD_DISK_PATH
-                                + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX + i));
+                bufferedWriters[i] = new BufferedWriter(
+                        new FileWriter(
+                                Config.THIRD_DISK_PATH
+                                        + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX
+                                        + i));
             }
 
             // 每个orderFile 分配一个task
@@ -63,24 +65,23 @@ public class GoodIdHasher extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out.printf("GoodIdHasher work end! Used time：%d End time : %d %n",
-                System.currentTimeMillis() - startTime,
-                System.currentTimeMillis()
-                        - OrderSystemImpl.constructStartTime);
+        System.out
+                .printf("GoodIdHasher work end! Used time：%d End time : %d %n",
+                        System.currentTimeMillis() - startTime,
+                        System.currentTimeMillis()
+                                - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {
         private String orderFile;
         private CountDownLatch tasksLatch;
         private BufferedWriter[] bufferedWriters;
-        private int fileNum;
 
         public SingleFileBuildTask(String orderFile, CountDownLatch tasksLatch,
                 BufferedWriter[] bufferedWriters, int fileNum) {
             this.orderFile = orderFile;
             this.tasksLatch = tasksLatch;
             this.bufferedWriters = bufferedWriters;
-            this.fileNum = fileNum;
         }
 
         @Override

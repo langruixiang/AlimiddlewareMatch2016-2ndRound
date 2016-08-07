@@ -12,8 +12,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 根据buyerid生成buyer的索引并缓存
- * Created by jiangchao on 2016/7/13.
+ * 根据buyerid生成buyer的索引并缓存 Created by jiangchao on 2016/7/13.
  */
 public class BuyerIndexBuilder extends Thread {
     private CountDownLatch waitCountDownLatch;
