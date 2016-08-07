@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
+import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -57,8 +58,10 @@ public class BuyerIdTwoIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out.println("BuyerIdTwoIndexBuilder work end! time : "
-                + (System.currentTimeMillis() - startTime));
+        System.out.printf("BuyerIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
+                System.currentTimeMillis() - startTime,
+                System.currentTimeMillis()
+                        - OrderSystemImpl.constructStartTime);
     }
 
     /**

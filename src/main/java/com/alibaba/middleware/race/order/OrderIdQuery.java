@@ -1,7 +1,6 @@
 package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
-import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
@@ -12,6 +11,7 @@ import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Order;
+import com.alibaba.middleware.race.model.Result;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
 
 import java.io.*;
@@ -21,16 +21,19 @@ import java.util.*;
  * Created by jiangchao on 2016/7/17.
  */
 public class OrderIdQuery {
-    public static Order findByOrderId(long orderId, int index) {
+    private static Order findByOrderIdAndHashIndex(long orderId, int hashIndex) {
         Order order = new Order();
         try {
-
-            File indexFile = new File(Config.FIRST_DISK_PATH + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX + index);
+            File indexFile = new File(Config.FIRST_DISK_PATH
+                    + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
+                    + hashIndex);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
-            //1.查找二·级索引
-            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, index);
-            //2.查找一级索引
+            // 1.查找二级索引
+            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId,
+                    hashIndex);
+
+            // 2.查找一级索引
             String oneIndex = null;
             int count = 0;
             long offset = position;
@@ -41,25 +44,31 @@ public class OrderIdQuery {
                     break;
                 }
                 count++;
-                if (count >= FileConstant.orderIdIndexRegionSizeMap.get(index)) {
+                if (count >= FileConstant.orderIdIndexRegionSizeMap
+                        .get(hashIndex)) {
                     indexRaf.close();
                     return null;
                 }
             }
             indexRaf.close();
-            //3.按行读取内容
+
+            // 3.按行读取内容
             String[] keyValue = oneIndex.split(":");
             String srcFile = keyValue[1];
             long pos = Long.valueOf(keyValue[2]);
 
-            File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(srcFile)));
+            File hashFile = new File(FileNameCache.fileNameMap.get(Integer
+                    .valueOf(srcFile)));
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-            String orderContent = oneIndex = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(pos));
+            String orderContent = oneIndex = RandomAccessFileUtil.readLine(
+                    hashRaf, Long.valueOf(pos));
 
-            //4.将字符串转成order对象集合
-            StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
+            // 4.将字符串转成order对象集合
+            StringTokenizer stringTokenizer = new StringTokenizer(orderContent,
+                    "\t");
             while (stringTokenizer.hasMoreElements()) {
-                StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
+                StringTokenizer kvalue = new StringTokenizer(
+                        stringTokenizer.nextToken(), ":");
                 String key = kvalue.nextToken();
                 String value = kvalue.nextToken();
                 KeyValue kv = new KeyValue();
@@ -77,10 +86,11 @@ public class OrderIdQuery {
         return order;
     }
 
-    public static OrderSystem.Result findOrder(long orderId, Collection<String> keys) {
-        com.alibaba.middleware.race.model.Result result = new com.alibaba.middleware.race.model.Result();
+    public static Result findOrder(long orderId, Collection<String> keys) {
+        Result result = new Result();
         int hashIndex = (int) (orderId % Config.ORDER_ONE_INDEX_FILE_NUMBER);
-        Order order = OrderIdQuery.findByOrderId(orderId, hashIndex);
+        Order order = OrderIdQuery
+                .findByOrderIdAndHashIndex(orderId, hashIndex);
         List<String> maybeOrderSearchKeys = new ArrayList<String>();
         List<String> goodSearchKeys = new ArrayList<String>();
         List<String> buyerSearchKeys = new ArrayList<String>();
@@ -105,7 +115,7 @@ public class OrderIdQuery {
         {
             if (keys == null || buyerSearchKeys.size() > 0) {
                 String buyerId = order.getKeyValues().get("buyerid").getValue();
-                //加入对应买家的所有属性kv
+                // 加入对应买家的所有属性kv
                 Buyer buyer = BuyerQuery.findBuyerById(buyerId);
 
                 if (buyer != null && buyer.getKeyValues() != null) {
@@ -117,7 +127,7 @@ public class OrderIdQuery {
         {
             if (keys == null || goodSearchKeys.size() > 0) {
                 String goodId = order.getKeyValues().get("goodid").getValue();
-                //加入对应商品的所有属性kv
+                // 加入对应商品的所有属性kv
                 Good good = GoodQuery.findGoodById(goodId);
 
                 if (good != null && good.getKeyValues() != null) {
@@ -131,7 +141,8 @@ public class OrderIdQuery {
         } else {
             for (String key : maybeOrderSearchKeys) {
                 if (order.getKeyValues().containsKey(key)) {
-                    result.getKeyValues().put(key, order.getKeyValues().get(key));
+                    result.getKeyValues().put(key,
+                            order.getKeyValues().get(key));
                 }
             }
         }

@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
+import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -63,8 +64,10 @@ public class GoodIdIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out.println("GoodIdIndexBuilder work end! time: "
-                + (System.currentTimeMillis() - startTime));
+        System.out.printf("GoodIdIndexBuilder work end! Used time：%d End time : %d %n",
+                System.currentTimeMillis() - startTime,
+                System.currentTimeMillis()
+                        - OrderSystemImpl.constructStartTime);
     }
 
     private class MultiIndex extends Thread {

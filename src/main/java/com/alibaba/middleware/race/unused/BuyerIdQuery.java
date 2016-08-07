@@ -112,7 +112,7 @@ public class BuyerIdQuery {
         List<com.alibaba.middleware.race.model.Result> results = new ArrayList<com.alibaba.middleware.race.model.Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
 
-        int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_BUYER_NUMS);
+        int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.BUYER_HASH_FILE_NUM);
         Buyer buyer = BuyerQuery.findBuyerById(buyerid);
         if (buyer == null) return results.iterator();
 
@@ -127,7 +127,7 @@ public class BuyerIdQuery {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % Config.FILE_GOOD_NUMS);
+            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % Config.GOOD_HASH_FILE_NUM);
             Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue());
 
             if (good != null && good.getKeyValues() != null) {

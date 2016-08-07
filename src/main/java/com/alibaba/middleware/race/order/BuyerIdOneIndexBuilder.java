@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.order;
 
 import com.alibaba.middleware.race.Config;
+import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 import java.io.*;
@@ -61,8 +62,10 @@ public class BuyerIdOneIndexBuilder extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out.println("BuyerIdOneIndexBuilder work end! time : "
-                + (System.currentTimeMillis() - startTime));
+        System.out.printf("BuyerIdOneIndexBuilder work end! Used time：%d End time : %d %n",
+                System.currentTimeMillis() - startTime,
+                System.currentTimeMillis()
+                        - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {

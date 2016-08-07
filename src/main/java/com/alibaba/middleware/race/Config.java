@@ -13,9 +13,9 @@ public class Config {
 
     public static final int ORDER_ONE_INDEX_FILE_NUMBER = 30;
 
-    public static final int FILE_GOOD_NUMS = 20;
+    public static final int GOOD_HASH_FILE_NUM = 20;
 
-    public static final int FILE_BUYER_NUMS = 20;
+    public static final int BUYER_HASH_FILE_NUM = 20;
 
     public static final int MAX_CONCURRENT = 200;
 
