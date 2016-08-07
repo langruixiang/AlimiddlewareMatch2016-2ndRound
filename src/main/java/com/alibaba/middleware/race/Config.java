@@ -25,6 +25,10 @@ public class Config {
     
     public static final int ORDER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM = 6;
 
+    public static final int BUYER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM = 6;
+    
+    public static final int GOOD_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM = 8;
+
     public static String FIRST_DISK_PATH = "";
 
     public static String SECOND_DISK_PATH = "";

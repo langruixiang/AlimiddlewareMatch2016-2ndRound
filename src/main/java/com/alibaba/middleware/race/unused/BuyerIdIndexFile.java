@@ -71,14 +71,14 @@ public class BuyerIdIndexFile extends Thread{
             Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
-                FileInputStream order_records = new FileInputStream(Config.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
+                FileInputStream order_records = new FileInputStream(Config.SECOND_DISK_PATH + FileConstant.UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
                 File fileRank = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
                 FileWriter fwRank = new FileWriter(fileRank);
                 BufferedWriter rankBW = new BufferedWriter(fwRank);
 
-                File file = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+                File file = new File(Config.SECOND_DISK_PATH + FileConstant.SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

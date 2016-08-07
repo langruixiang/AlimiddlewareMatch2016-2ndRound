@@ -33,7 +33,7 @@ public class BuyerIdOneIndexBuilder extends Thread {
             for (int i = 0; i < indexFileNum; i++) {
                 bufferedWriters[i] = new BufferedWriter(new FileWriter(
                         Config.SECOND_DISK_PATH
-                                + FileConstant.FILE_INDEX_BY_BUYERID + i));
+                                + FileConstant.UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + i));
             }
 
             // 每个orderFile 分配一个task

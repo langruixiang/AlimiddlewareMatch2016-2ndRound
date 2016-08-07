@@ -13,7 +13,9 @@ public class FileConstant {
     
     public static final String SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX = "sorted_orderid_one_index_";
 
-    public static String FILE_INDEX_BY_BUYERID = "buyerid_hash_";
+    public static final String UNSORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX = "unsorted_buyerid_one_index_";
+    
+    public static final String SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX = "sorted_buyerid_one_index_";
 
     public static String FILE_INDEX_BY_GOODID = "goodid_hash_";
 
@@ -24,8 +26,6 @@ public class FileConstant {
     public static String FILE_TWO_INDEXING_BY_GOODID = "goodid_two_index_";
 
     public static String FILE_RANK_BY_BUYERID = "buyerid_rank_";
-
-    public static String FILE_ONE_INDEXING_BY_BUYERID = "buyerid_index_";
 
     public static String FILE_TWO_INDEXING_BY_BUYERID = "buyerid_two_index_";
 

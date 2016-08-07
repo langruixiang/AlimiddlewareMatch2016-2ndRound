@@ -32,7 +32,7 @@ public class BuyerIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+            File indexFile = new File(Config.SECOND_DISK_PATH + FileConstant.SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             //1.查找二·级索引

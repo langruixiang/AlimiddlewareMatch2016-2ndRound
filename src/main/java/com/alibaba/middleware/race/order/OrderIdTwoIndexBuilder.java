@@ -9,8 +9,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 1. 将所有未排序的orderid一级索引文件排序并存储
- * 2. 根据orderid一级索引生成orderid二级索引并缓存
+ * 1. 将所有未排序的orderid一级索引文件排序并存储 2. 根据orderid一级索引生成orderid二级索引并缓存
  * 
  * @author jiangchao
  */
@@ -33,12 +32,13 @@ public class OrderIdTwoIndexBuilder extends Thread {
         for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
             int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
                     : maxConcurrentNum;
-            CountDownLatch countDownLatch = new CountDownLatch(concurrentNum);
+            CountDownLatch multiIndexLatch = new CountDownLatch(concurrentNum);
             for (int j = i; j < i + concurrentNum; j++) {
-                new MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
+                new MultiIndex(j, multiIndexLatch, buildIndexCountLatch)
+                        .start();
             }
             try {
-                countDownLatch.await();
+                multiIndexLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -53,16 +53,15 @@ public class OrderIdTwoIndexBuilder extends Thread {
                 e.printStackTrace();
             }
         }
-        long orderIdTwoIndexBuilderStartTime = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         build();
         System.out.println("OrderIdTwoIndexBuilder work end! time : "
-                + (System.currentTimeMillis() - orderIdTwoIndexBuilderStartTime));
+                + (System.currentTimeMillis() - startTime));
     }
 
     /**
-     * 每个MultiIndex 负责一个一级索引文件，完成的任务有:
-     * 1. 将orderid一级索引文件排序并存储
-     * 2. 根据orderid一级索引生成orderid二级索引并缓存
+     * 每个MultiIndex 负责一个一级索引文件，完成的任务有: 1. 将orderid一级索引文件排序并存储 2.
+     * 根据orderid一级索引生成orderid二级索引并缓存
      * 
      */
     private class MultiIndex extends Thread {
@@ -81,24 +80,22 @@ public class OrderIdTwoIndexBuilder extends Thread {
         public void run() {
             Map<Long, String> orderIndex = new TreeMap<Long, String>();
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
-            FileInputStream order_records = null;
             try {
-                order_records = new FileInputStream(Config.FIRST_DISK_PATH
-                        + FileConstant.UNSORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
-                        + index);
-
-                BufferedReader order_br = new BufferedReader(
-                        new InputStreamReader(order_records));
-
-                File file = new File(Config.FIRST_DISK_PATH
-                        + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
-                        + index);
-                FileWriter fw = new FileWriter(file);
-                BufferedWriter bufferedWriter = new BufferedWriter(fw);
+                BufferedReader oneIndexBr = new BufferedReader(
+                        new InputStreamReader(
+                                new FileInputStream(
+                                        Config.FIRST_DISK_PATH
+                                                + FileConstant.UNSORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
+                                                + index)));
+                BufferedWriter sortedOneIndexBw = new BufferedWriter(
+                        new FileWriter(
+                                Config.FIRST_DISK_PATH
+                                        + FileConstant.SORTED_ORDER_ID_ONE_INDEX_FILE_PREFIX
+                                        + index));
                 String str = null;
                 long count = 0;
                 String orderid = null;
-                while ((str = order_br.readLine()) != null) {
+                while ((str = oneIndexBr.readLine()) != null) {
                     StringTokenizer stringTokenizer = new StringTokenizer(str,
                             ":");
                     while (stringTokenizer.hasMoreElements()) {
@@ -118,7 +115,7 @@ public class OrderIdTwoIndexBuilder extends Thread {
                     Map.Entry entry = (Map.Entry) iterator.next();
                     Long key = (Long) entry.getKey();
                     String val = (String) entry.getValue();
-                    bufferedWriter.write(val + '\n');
+                    sortedOneIndexBw.write(val + '\n');
 
                     if (count % towIndexSize == 0) {
                         twoIndexMap.put(key, position);
@@ -128,9 +125,9 @@ public class OrderIdTwoIndexBuilder extends Thread {
                 }
                 TwoIndexCache.orderIdTwoIndexCache.put(index, twoIndexMap);
                 orderIndex.clear();
-                bufferedWriter.flush();
-                bufferedWriter.close();
-                order_br.close();
+                sortedOneIndexBw.flush();
+                sortedOneIndexBw.close();
+                oneIndexBr.close();
                 selfCountDownLatch.countDown();
                 parentCountDownLatch.countDown();
             } catch (FileNotFoundException e1) {

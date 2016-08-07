@@ -70,45 +70,39 @@ public class OrderSystemImpl implements OrderSystem {
                     + storeFolders.toArray()[2];
         }
 
-        //CountDownLatch goodAndBuyerCountDownLatch = new CountDownLatch(5);
-
-        //CountDownLatch orderIndexBuilderCountDownLatch = new CountDownLatch(1);
         System.out.println("begin to build index:");
 
         // order files 起始编号
         int orderFilesBeginNo = goodFiles.toArray().length + buyerFiles.toArray().length;
 
-        //按买家ID建立订单的一级索引文件
+        //按买家ID建立订单的一级索引文件(未排序)
         CountDownLatch buyerIdOneIndexBuilderLatch = new CountDownLatch(1);
-        long buyerIdHashTime = System.currentTimeMillis();
         BuyerIdOneIndexBuilder buyerIdOneIndexBuilder = new BuyerIdOneIndexBuilder(orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER, buyerIdOneIndexBuilderLatch, orderFilesBeginNo);
         buyerIdOneIndexBuilder.start();
 
-        //按商品ID将订单hash成多个小文件
+        //按商品ID将订单hash成多个小文件(未排序)
         CountDownLatch goodIdOneIndexBuilder = new CountDownLatch(1);
         long goodIdHashTime = System.currentTimeMillis();
         GoodIdOneIndexBuilder goodIdHashThread = new GoodIdOneIndexBuilder(orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER, goodIdOneIndexBuilder, orderFilesBeginNo);
         goodIdHashThread.start();
 
-        //按orderid建立order的一级索引文件
+        //按orderid建立order的一级索引文件(未排序)
         CountDownLatch orderIdOneIndexBuilderLatch = new CountDownLatch(1);
         OrderIdOneIndexBuilder orderIdHashThread = new OrderIdOneIndexBuilder(orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER, orderIdOneIndexBuilderLatch, orderFilesBeginNo);
         orderIdHashThread.start();
 
-        //根据orderid生成order的二级索引
+        //根据orderid生成order的二级索引(同时生成排序的一级索引文件)
         OrderIdTwoIndexBuilder orderIdTwoIndexBuilder = new OrderIdTwoIndexBuilder(orderIdOneIndexBuilderLatch, buildIndexLatch, Config.ORDER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM);
         orderIdTwoIndexBuilder.start();
 
-      //TODO
-        //根据buyerid生成order的一级二级索引
-        BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(buyerIdOneIndexBuilderLatch, buildIndexLatch, 6, buyerIdHashTime);
+        //根据buyerid生成order的二级索引(同时生成排序的一级索引文件)
+        BuyerIdTwoIndexBuilder buyerIdIndexFile = new BuyerIdTwoIndexBuilder(buyerIdOneIndexBuilderLatch, buildIndexLatch, Config.BUYER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM);
         buyerIdIndexFile.start();
 
-        //根据goodid生成order的一级二级索引
-        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdOneIndexBuilder, buildIndexLatch, 8, goodIdHashTime);
+        //根据goodid生成order的一级二级索引//TODO
+        GoodIdIndexFile goodIdIndexFile = new GoodIdIndexFile(goodIdOneIndexBuilder, buildIndexLatch, Config.GOOD_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM, goodIdHashTime);
         goodIdIndexFile.start();
 
-        
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
         GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, Config.FILE_GOOD_NUMS, goodCountDownLatch, 0);
