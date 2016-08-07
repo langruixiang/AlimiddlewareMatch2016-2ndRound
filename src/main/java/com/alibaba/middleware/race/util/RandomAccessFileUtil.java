@@ -14,19 +14,21 @@ import java.util.LinkedList;
  *
  */
 public class RandomAccessFileUtil {
+    private static final int BUFFER_SIZE = 1024;
 
-    public static String readLine(RandomAccessFile raf, long offset) throws IOException {
+    public static String readLine(RandomAccessFile raf, long offset)
+            throws IOException {
         raf.seek(offset);
         long pos = offset;
         long length = raf.length();
         LinkedList<byte[]> bytesList = new LinkedList<byte[]>();
         int lineLength = 0;
         while (pos < length) {
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
             int readLength = raf.read(buffer);
             pos += readLength;
             int eolIndex = -1;
-            for(int i = 0; i < 1024; ++i) {
+            for (int i = 0; i < BUFFER_SIZE; ++i) {
                 if (buffer[i] == '\n' || buffer[i] == '\r' || buffer[i] == -1) {
                     eolIndex = i;
                     break;
@@ -64,11 +66,11 @@ public class RandomAccessFileUtil {
         }
     }
 
-    public static byte[] subBytes(byte[] src, int beginIndex, int length)
-    {
-        if (length <= 0) return null;
+    public static byte[] subBytes(byte[] src, int beginIndex, int length) {
+        if (length <= 0)
+            return null;
         byte[] ret = new byte[length];
         System.arraycopy(src, beginIndex, ret, 0, length);
         return ret;
-    } 
+    }
 }

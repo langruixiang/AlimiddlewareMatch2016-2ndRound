@@ -18,9 +18,10 @@ public class FileUtil {
             dir.mkdir();
         }
     }
-    
-    public static void writeFixedBytesLineWithFile(RandomAccessFile openedFile, final String encoding,
-            final String content, final int bytesOfLine, final long lineNo) {
+
+    public static void writeFixedBytesLineWithFile(RandomAccessFile openedFile,
+            final String encoding, final String content, final int bytesOfLine,
+            final long lineNo) {
         try {
             /**
              * insert emptyLine if necessary
@@ -30,14 +31,15 @@ public class FileUtil {
                 long fileLineNum = fileBytesNum / bytesOfLine;
                 if (fileLineNum < lineNo) {
                     StringBuilder emptyLine = new StringBuilder();
-                    for(int i = 0; i < bytesOfLine -1 ; ++i) {
+                    for (int i = 0; i < bytesOfLine - 1; ++i) {
                         emptyLine.append(EMPTY_CHAR);
                     }
                     emptyLine.append("\n");
                     long needInsertLineNum = lineNo - fileLineNum;
                     for (long i = 0; i < needInsertLineNum; ++i) {
                         openedFile.seek((fileLineNum + i) * bytesOfLine);
-                        openedFile.write(emptyLine.toString().getBytes(encoding));
+                        openedFile.write(emptyLine.toString()
+                                .getBytes(encoding));
                     }
                 }
             }
@@ -49,14 +51,15 @@ public class FileUtil {
                  */
                 int originalBytes = content.getBytes(encoding).length;
                 if (originalBytes > bytesOfLine - 1) {
-                    throw new IOException(content + " : originalBytes > bytesOfLine - 1");
+                    throw new IOException(content
+                            + " : originalBytes > bytesOfLine - 1");
                 }
                 for (int i = originalBytes; i < bytesOfLine - 1; ++i) {
                     sb.append(EMPTY_CHAR);
                 }
                 sb.append("\n");
             }
-            
+
             long startByteNo = lineNo * bytesOfLine;
             openedFile.seek(startByteNo);
             openedFile.write(sb.toString().getBytes(encoding));
@@ -64,11 +67,13 @@ public class FileUtil {
             e.printStackTrace();
         }
     }
-    
-    public static String getFixedBytesLineWithFile(RandomAccessFile openedFile, final String encoding, final int bytesOfLine, final int lineNo, final boolean removeEmptyChar) {
+
+    public static String getFixedBytesLineWithFile(RandomAccessFile openedFile,
+            final String encoding, final int bytesOfLine, final int lineNo,
+            final boolean removeEmptyChar) {
         String line = null;
         try {
-            
+
             long startByteNo = lineNo * bytesOfLine;
             openedFile.seek(startByteNo);
             byte[] lineBuffer = new byte[bytesOfLine];
@@ -82,13 +87,16 @@ public class FileUtil {
                     }
                 }
                 if (firstEmptyCharIdx > 0) {
-                    line = new String(lineBuffer, 0, firstEmptyCharIdx, encoding);
+                    line = new String(lineBuffer, 0, firstEmptyCharIdx,
+                            encoding);
                 } else {
-                    line = new String(lineBuffer, 0, lineBuffer.length - 1, encoding);
+                    line = new String(lineBuffer, 0, lineBuffer.length - 1,
+                            encoding);
                 }
-                
+
             } else {
-                line = new String(lineBuffer, 0, lineBuffer.length - 1, encoding);
+                line = new String(lineBuffer, 0, lineBuffer.length - 1,
+                        encoding);
             }
         } catch (final IOException e) {
             e.printStackTrace();
@@ -96,9 +104,9 @@ public class FileUtil {
         return line;
     }
 
-    public static void writeFixedBytesLine(
-            final String filePath, final String encoding,
-            final String content, final int bytesOfLine, final long lineNo) {
+    public static void writeFixedBytesLine(final String filePath,
+            final String encoding, final String content, final int bytesOfLine,
+            final long lineNo) {
         RandomAccessFile rf = null;
         try {
             rf = new RandomAccessFile(filePath, "rw");
@@ -110,7 +118,7 @@ public class FileUtil {
                 long fileLineNum = fileBytesNum / bytesOfLine;
                 if (fileLineNum < lineNo) {
                     StringBuilder emptyLine = new StringBuilder();
-                    for(int i = 0; i < bytesOfLine -1 ; ++i) {
+                    for (int i = 0; i < bytesOfLine - 1; ++i) {
                         emptyLine.append(EMPTY_CHAR);
                     }
                     emptyLine.append("\n");
@@ -129,14 +137,15 @@ public class FileUtil {
                  */
                 int originalBytes = content.getBytes(encoding).length;
                 if (originalBytes > bytesOfLine - 1) {
-                    throw new IOException(content + " : originalBytes > bytesOfLine - 1");
+                    throw new IOException(content
+                            + " : originalBytes > bytesOfLine - 1");
                 }
                 for (int i = originalBytes; i < bytesOfLine - 1; ++i) {
                     sb.append(EMPTY_CHAR);
                 }
                 sb.append("\n");
             }
-            
+
             long startByteNo = lineNo * bytesOfLine;
             rf.seek(startByteNo);
             rf.write(sb.toString().getBytes(encoding));
@@ -150,13 +159,15 @@ public class FileUtil {
             }
         }
     }
-    
-    public static String getFixedBytesLine(final String filePath, final String encoding, final int bytesOfLine, final long lineNo, final boolean removeEmptyChar) {
+
+    public static String getFixedBytesLine(final String filePath,
+            final String encoding, final int bytesOfLine, final long lineNo,
+            final boolean removeEmptyChar) {
         RandomAccessFile rf = null;
         String line = null;
         try {
             rf = new RandomAccessFile(filePath, "r");
-            
+
             long startByteNo = lineNo * bytesOfLine;
             rf.seek(startByteNo);
             byte[] lineBuffer = new byte[bytesOfLine];
@@ -170,13 +181,16 @@ public class FileUtil {
                     }
                 }
                 if (firstEmptyCharIdx >= 0) {
-                    line = new String(lineBuffer, 0, firstEmptyCharIdx, encoding);
+                    line = new String(lineBuffer, 0, firstEmptyCharIdx,
+                            encoding);
                 } else {
-                    line = new String(lineBuffer, 0, lineBuffer.length - 1, encoding);
+                    line = new String(lineBuffer, 0, lineBuffer.length - 1,
+                            encoding);
                 }
-                
+
             } else {
-                line = new String(lineBuffer, 0, lineBuffer.length - 1, encoding);
+                line = new String(lineBuffer, 0, lineBuffer.length - 1,
+                        encoding);
             }
         } catch (final IOException e) {
             e.printStackTrace();
@@ -212,8 +226,8 @@ public class FileUtil {
      * @param content
      * @return
      */
-    public static long appendLineWithRandomAccessFile(RandomAccessFile openedFile,
-            String encoding, String content) {
+    public static long appendLineWithRandomAccessFile(
+            RandomAccessFile openedFile, String encoding, String content) {
         long length = 0;
         try {
             content = content.concat("\n");
@@ -227,9 +241,10 @@ public class FileUtil {
         }
         return length;
     }
-    
-    public static long appendFixedBytesLineWithRandomAccessFile(RandomAccessFile openedFile,
-            String encoding, String content, int bytesOfLine) {
+
+    public static long appendFixedBytesLineWithRandomAccessFile(
+            RandomAccessFile openedFile, String encoding, String content,
+            int bytesOfLine) {
         long length = 0;
         try {
             StringBuilder sb = new StringBuilder(content);
@@ -239,7 +254,8 @@ public class FileUtil {
                  */
                 int originalBytes = content.getBytes(encoding).length;
                 if (originalBytes > bytesOfLine - 1) {
-                    throw new IOException(content + " : originalBytes > bytesOfLine - 1");
+                    throw new IOException(content
+                            + " : originalBytes > bytesOfLine - 1");
                 }
                 for (int i = originalBytes; i < bytesOfLine - 1; ++i) {
                     sb.append(EMPTY_CHAR);
@@ -259,7 +275,8 @@ public class FileUtil {
 
     public static HashMap<String, Integer> readSIHashMapFromFile(
             String pathname, int initialCapacity) {
-        HashMap<String, Integer> retMap = new HashMap<String, Integer>(initialCapacity);
+        HashMap<String, Integer> retMap = new HashMap<String, Integer>(
+                initialCapacity);
         BufferedReader bufferedReader;
         try {
             bufferedReader = new BufferedReader(new FileReader(pathname));
@@ -268,9 +285,11 @@ public class FileUtil {
                 while ((line = bufferedReader.readLine()) != null) {
                     String[] splitOfLine = line.split(":");
                     if (splitOfLine.length == 2) {
-                        retMap.put(splitOfLine[0].trim(), Integer.parseInt(splitOfLine[1].trim()));
+                        retMap.put(splitOfLine[0].trim(),
+                                Integer.parseInt(splitOfLine[1].trim()));
                     } else {
-                        throw new IOException("This line is not valid! : " + line);
+                        throw new IOException("This line is not valid! : "
+                                + line);
                     }
                 }
             } finally {
@@ -281,7 +300,7 @@ public class FileUtil {
         }
         return retMap;
     }
-    
+
     public static TreeMap<String, String> readSSTreeMapFromFile(String pathname) {
         TreeMap<String, String> retMap = new TreeMap<String, String>();
         BufferedReader bufferedReader;
@@ -292,9 +311,10 @@ public class FileUtil {
                 while ((line = bufferedReader.readLine()) != null) {
                     String[] splitOfLine = line.split(":");
                     if (splitOfLine.length == 2) {
-                        retMap.put(splitOfLine[0].trim(),splitOfLine[1].trim());
+                        retMap.put(splitOfLine[0].trim(), splitOfLine[1].trim());
                     } else {
-                        throw new IOException("This line is not valid! : " + line);
+                        throw new IOException("This line is not valid! : "
+                                + line);
                     }
                 }
             } finally {

@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by jiangchao on 2016/7/27.
  */
-public class SwitchThread extends Thread{
+public class SwitchThread extends Thread {
 
     private CountDownLatch countDownLatch;
 
@@ -16,7 +16,9 @@ public class SwitchThread extends Thread{
 
     private CountDownLatch buildIndexCountDownLatch;
 
-    public SwitchThread(CountDownLatch countDownLatch, Collection<String> buyerFiles, CountDownLatch buildIndexCountDownLatch) {
+    public SwitchThread(CountDownLatch countDownLatch,
+            Collection<String> buyerFiles,
+            CountDownLatch buildIndexCountDownLatch) {
         this.countDownLatch = countDownLatch;
         this.buyerFiles = buyerFiles;
         this.buildIndexCountDownLatch = buildIndexCountDownLatch;
@@ -26,7 +28,8 @@ public class SwitchThread extends Thread{
     public void run() {
         try {
             Thread.sleep(3580000);
-            BuyerCache buyerCache = new BuyerCache(buyerFiles, buildIndexCountDownLatch);
+            BuyerCache buyerCache = new BuyerCache(buyerFiles,
+                    buildIndexCountDownLatch);
             buyerCache.start();
         } catch (InterruptedException e) {
             e.printStackTrace();
