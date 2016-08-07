@@ -1,6 +1,7 @@
 package com.alibaba.middleware.race.unused;
 
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -29,10 +30,10 @@ public class BuyerIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File rankFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
+            File rankFile = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
-            File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+            File indexFile = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
@@ -109,9 +110,9 @@ public class BuyerIdQuery {
     public static Iterator<Result> unusedFindOrdersByBuyer(long startTime, long endTime, String buyerid) {
         long starttime = System.currentTimeMillis();
         List<com.alibaba.middleware.race.model.Result> results = new ArrayList<com.alibaba.middleware.race.model.Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_ORDER_NUMS);
 
-        int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_BUYER_NUMS);
+        int buyerHashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_BUYER_NUMS);
         Buyer buyer = BuyerQuery.findBuyerById(buyerid);
         if (buyer == null) return results.iterator();
 
@@ -126,7 +127,7 @@ public class BuyerIdQuery {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             //加入对应商品的所有属性kv
-            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % FileConstant.FILE_GOOD_NUMS);
+            int goodIdHashIndex = (int) (Math.abs(order.getKeyValues().get("goodid").getValue().hashCode()) % Config.FILE_GOOD_NUMS);
             Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue());
 
             if (good != null && good.getKeyValues() != null) {

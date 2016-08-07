@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.util;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.BuyerCache;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ public class SwitchThread extends Thread {
     @Override
     public void run() {
         try {
-            Thread.sleep(3580000);
+            Thread.sleep(Config.SWITCH_THREAD_SLEEP_TIME);
             BuyerCache buyerCache = new BuyerCache(buyerFiles,
                     buildIndexCountDownLatch);
             buyerCache.start();

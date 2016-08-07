@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -31,7 +32,7 @@ public class OldBuyerIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+            File indexFile = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             //1.查找二·级索引
@@ -100,7 +101,7 @@ public class OldBuyerIdQuery {
 
     public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
         List<Result> results = new ArrayList<Result>();
-        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.FILE_ORDER_NUMS);
 
         Buyer buyer = BuyerQuery.findBuyerById(buyerid);
         if (buyer == null) return results.iterator();

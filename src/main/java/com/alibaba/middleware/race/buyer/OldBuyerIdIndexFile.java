@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.buyer;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -29,8 +30,8 @@ public class OldBuyerIdIndexFile extends Thread{
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
-        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i+num; j++) {
                 new OldBuyerIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
@@ -74,10 +75,10 @@ public class OldBuyerIdIndexFile extends Thread{
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
                 FileInputStream order_records = new FileInputStream(
-                        FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
+                        Config.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+                File file = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

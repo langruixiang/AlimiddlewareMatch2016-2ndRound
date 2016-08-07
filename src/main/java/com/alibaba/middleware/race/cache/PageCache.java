@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.cache;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -24,16 +25,16 @@ public class PageCache {
 
     //存储买家信息
     //public static Map<String, Buyer> buyerMap = new HashMap<String, Buyer>();
-    public static volatile Map<Integer, Map<String, Buyer>> buyerMap = new LinkedHashMap<Integer, Map<String, Buyer>>(FileConstant.MAX_CONCURRENT, 1) {
+    public static volatile Map<Integer, Map<String, Buyer>> buyerMap = new LinkedHashMap<Integer, Map<String, Buyer>>(Config.MAX_CONCURRENT, 1) {
         protected boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > FileConstant.MAX_CONCURRENT;
+            return size() > Config.MAX_CONCURRENT;
         }
     };
     //存储商品信息
     //public static Map<String, Good> goodMap = new HashMap<String, Good>();
-    public static volatile Map<Integer, Map<String, Good>> goodMap = new LinkedHashMap<Integer, Map<String, Good>>(FileConstant.MAX_CONCURRENT, 1) {
+    public static volatile Map<Integer, Map<String, Good>> goodMap = new LinkedHashMap<Integer, Map<String, Good>>(Config.MAX_CONCURRENT, 1) {
         protected boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > FileConstant.MAX_CONCURRENT;
+            return size() > Config.MAX_CONCURRENT;
         }
     };
 
@@ -45,7 +46,7 @@ public class PageCache {
         //清空缓存
         Map<String, Buyer> segmentBuyerMap = new HashMap<String, Buyer>();
         try {
-            FileInputStream buyer_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
+            FileInputStream buyer_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
             BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
             String str = null;
@@ -77,7 +78,7 @@ public class PageCache {
         //清空缓存
         Map<String, Good> segmentGoodMap = new HashMap<String, Good>();
         try {
-            FileInputStream good_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
+            FileInputStream good_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
             BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
             String str = null;

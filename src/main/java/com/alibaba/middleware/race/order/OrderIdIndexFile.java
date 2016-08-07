@@ -1,6 +1,6 @@
 package com.alibaba.middleware.race.order;
 
-import com.alibaba.middleware.race.cache.KeyCache;
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -9,7 +9,9 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Created by jiangchao on 2016/7/15.
+ * 根据orderid的一级索引生成二级索引
+ * 
+ * @author jiangchao
  */
 public class OrderIdIndexFile extends Thread{
 
@@ -31,8 +33,8 @@ public class OrderIdIndexFile extends Thread{
     //订单文件按照orderid生成索引文件，存放到第三块磁盘上
     public void generateOrderIdIndex() {
 
-        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i+num; j++) {
                 new MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
@@ -76,11 +78,11 @@ public class OrderIdIndexFile extends Thread{
             TreeMap<Long, Long> twoIndexMap = new TreeMap<Long, Long>();
             FileInputStream order_records = null;
             try {
-                order_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
+                order_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + index);
 
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
+                File file = new File(Config.FIRST_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_ORDERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
                 String str = null;

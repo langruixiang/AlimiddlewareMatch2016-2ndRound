@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.unused;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodIdIndexFile;
@@ -27,8 +28,8 @@ public class BuyerIdIndexFile extends Thread{
 
     //订单文件按照buyerid生成索引文件，存放到第二块磁盘上
     public void generateBuyerIdIndex() {
-        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i+num; j++) {
                 new BuyerIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
@@ -70,14 +71,14 @@ public class BuyerIdIndexFile extends Thread{
             Map<String, Long> buyerIndex = new LinkedHashMap<String, Long>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
+                FileInputStream order_records = new FileInputStream(Config.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File fileRank = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
+                File fileRank = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_RANK_BY_BUYERID + index);
                 FileWriter fwRank = new FileWriter(fileRank);
                 BufferedWriter rankBW = new BufferedWriter(fwRank);
 
-                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
+                File file = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_BUYERID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

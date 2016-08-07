@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.unused;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -35,7 +36,7 @@ public class BuyerIndexFile extends Thread{
     public void generateBuyerIndex() {
 
             try {
-                FileInputStream buyer_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
+                FileInputStream buyer_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_BUYER_HASH + index);
                 BufferedReader buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
                 String str = null;

@@ -1,5 +1,8 @@
-package com.alibaba.middleware.race;
+package com.alibaba.middleware.race.test;
 
+import com.alibaba.middleware.race.Config;
+import com.alibaba.middleware.race.OrderSystem;
+import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.model.KeyValue;
 import com.alibaba.middleware.race.model.Result;
@@ -18,7 +21,7 @@ import java.util.List;
 /**
  * Created by jiangchao on 2016/7/13.
  */
-public class JunitTest {
+public class OrderSystemTest {
 
     OrderSystem orderSystem = new OrderSystemImpl();
 
@@ -89,7 +92,7 @@ public class JunitTest {
         BuyerIdIndexFile buyerIdIndexFile = new BuyerIdIndexFile(null, null, 0);
         buyerIdIndexFile.generateBuyerIdIndex();
         String str = "ap_236ed7ca-dcb9-4562-8b35-072834c45d18";
-        int hashIndex = Math.abs(str.hashCode()) % FileConstant.FILE_ORDER_NUMS;
+        int hashIndex = Math.abs(str.hashCode()) % Config.FILE_ORDER_NUMS;
         BuyerIdQuery.findByBuyerId("ap_236ed7ca-dcb9-4562-8b35-072834c45d18", 1463076523, 1465018171, hashIndex);
     }
 

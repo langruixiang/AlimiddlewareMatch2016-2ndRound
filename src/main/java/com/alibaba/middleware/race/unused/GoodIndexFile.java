@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.unused;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.OneIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -29,7 +30,7 @@ public class GoodIndexFile extends Thread{
     //Good文件按照Goodid生成索引文件，存放到第二块磁盘上
     public void generateGoodIndex() {
         try {
-            FileInputStream good_records = new FileInputStream(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
+            FileInputStream good_records = new FileInputStream(Config.FIRST_DISK_PATH + FileConstant.FILE_GOOD_HASH + index);
             BufferedReader good_br = new BufferedReader(new InputStreamReader(good_records));
 
             String str = null;

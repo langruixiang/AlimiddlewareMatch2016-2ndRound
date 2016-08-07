@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -58,7 +59,7 @@ public class OrderHashWithDisruptor extends Thread {
         BufferedWriter[] orderIdHashBufferedWriters = new BufferedWriter[orderIdHashFileNum];
         try {
             for (int i = 0; i < orderIdHashFileNum; i++) {
-                orderIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i));
+                orderIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(Config.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,7 +72,7 @@ public class OrderHashWithDisruptor extends Thread {
         BufferedWriter[] buyerIdHashBufferedWriters = new BufferedWriter[buyerIdHashFileNum];
         try {
             for (int i = 0; i < buyerIdHashFileNum; i++) {
-                buyerIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i));
+                buyerIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(Config.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +85,7 @@ public class OrderHashWithDisruptor extends Thread {
         BufferedWriter[] goodIdHashBufferedWriters = new BufferedWriter[goodIdHashFileNum];
         try {
             for (int i = 0; i < goodIdHashFileNum; i++) {
-                goodIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i));
+                goodIdHashBufferedWriters[i] = new BufferedWriter(new FileWriter(Config.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i));
             }
         } catch (IOException e) {
             e.printStackTrace();

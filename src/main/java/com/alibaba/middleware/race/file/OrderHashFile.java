@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.file;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 
@@ -37,7 +38,7 @@ public class OrderHashFile extends Thread{
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i);
+                File file = new File(Config.FIRST_DISK_PATH + FileConstant.FILE_INDEX_BY_ORDERID + i);
                 FileWriter fw = null;
                 fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
@@ -69,7 +70,7 @@ public class OrderHashFile extends Thread{
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i);
+                File file = new File(Config.SECOND_DISK_PATH + FileConstant.FILE_INDEX_BY_BUYERID + i);
                 FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }
@@ -95,7 +96,7 @@ public class OrderHashFile extends Thread{
             BufferedWriter[] bufferedWriters = new BufferedWriter[nums];
 
             for (int i = 0; i < nums; i++) {
-                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i);
+                File file = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + i);
                 FileWriter fw = new FileWriter(file);
                 bufferedWriters[i] = new BufferedWriter(fw);
             }

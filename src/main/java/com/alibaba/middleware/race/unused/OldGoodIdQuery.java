@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.unused;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystem;
 import com.alibaba.middleware.race.buyer.BuyerQuery;
 import com.alibaba.middleware.race.cache.FileNameCache;
@@ -33,7 +34,7 @@ public class OldGoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             //1.查找二·级索引
@@ -103,7 +104,7 @@ public class OldGoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
             String str = null;
 
@@ -161,7 +162,7 @@ public class OldGoodIdQuery {
             }
         }
 
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.FILE_ORDER_NUMS);
 
         Good good = null;
         if (keys == null || goodSearchKeys.size() > 0) {
@@ -222,7 +223,7 @@ public class OldGoodIdQuery {
     public static OrderSystem.KeyValue sumValuesByGood(String goodid, String key) {
         if (goodid == null || key == null) return null;
         KeyValue keyValue = new KeyValue();
-        int hashIndex = (int) (Math.abs(goodid.hashCode()) % FileConstant.FILE_ORDER_NUMS);
+        int hashIndex = (int) (Math.abs(goodid.hashCode()) % Config.FILE_ORDER_NUMS);
         double value = 0;
         long longValue = 0;
         //flag=0表示Long类型，1表示Double类型

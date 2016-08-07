@@ -32,7 +32,7 @@ import com.alibaba.middleware.race.order.OrderIdQuery;
  */
 public class OrderSystemImpl implements OrderSystem {
 
-    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * FileConstant.FILE_ORDER_NUMS);
+    private static CountDownLatch buildIndexLatch = new CountDownLatch(3 * Config.FILE_ORDER_NUMS);
     private static CountDownLatch buyerCountDownLatch = new CountDownLatch(1);
     private static CountDownLatch goodCountDownLatch = new CountDownLatch(1);
 
@@ -55,9 +55,9 @@ public class OrderSystemImpl implements OrderSystem {
         theStartTime = System.currentTimeMillis();
         long beginTime = System.currentTimeMillis();
         if (storeFolders != null && storeFolders.size() >= 3) {
-            FileConstant.FIRST_DISK_PATH = FileConstant.FIRST_DISK_PATH + storeFolders.toArray()[0];
-            FileConstant.SECOND_DISK_PATH = FileConstant.SECOND_DISK_PATH + storeFolders.toArray()[1];
-            FileConstant.THIRD_DISK_PATH = FileConstant.THIRD_DISK_PATH + storeFolders.toArray()[2];
+            Config.FIRST_DISK_PATH = Config.FIRST_DISK_PATH + storeFolders.toArray()[0];
+            Config.SECOND_DISK_PATH = Config.SECOND_DISK_PATH + storeFolders.toArray()[1];
+            Config.THIRD_DISK_PATH = Config.THIRD_DISK_PATH + storeFolders.toArray()[2];
         }
 
         ExecutorService orderIdIndexThreadPool = Executors.newFixedThreadPool(6);
@@ -77,21 +77,21 @@ public class OrderSystemImpl implements OrderSystem {
 
         //按买家ID hash成多个小文件
         long buyerIdHashTime = System.currentTimeMillis();
-        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
+        OrderHashFile buyerIdHashThread = new OrderHashFile(orderFiles, storeFolders, Config.FILE_ORDER_NUMS, "buyerid", buyerIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
         buyerIdHashThread.start();
         //buyerIdCountDownLatch.await();
 
 
         //按商品ID hash成多个小文件
         long goodIdHashTime = System.currentTimeMillis();
-        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "goodid", goodIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
+        OrderHashFile goodIdHashThread = new OrderHashFile(orderFiles, storeFolders, Config.FILE_ORDER_NUMS, "goodid", goodIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
         goodIdHashThread.start();
         //goodIdCountDownLatch.await();
 
 
         //按订单ID hash成多个小文件
         long orderIdHashTime = System.currentTimeMillis();
-        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, FileConstant.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
+        OrderHashFile orderIdHashThread = new OrderHashFile(orderFiles, storeFolders, Config.FILE_ORDER_NUMS, "orderid", orderIdCountDownLatch, (goodFiles.toArray().length + buyerFiles.toArray().length));
         orderIdHashThread.start();
         //orderIdCountDownLatch.await();
 
@@ -135,14 +135,14 @@ public class OrderSystemImpl implements OrderSystem {
 
         //将商品文件hash成多个小文件
         long goodTime = System.currentTimeMillis();
-        GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, FileConstant.FILE_GOOD_NUMS, goodCountDownLatch, 0);
+        GoodHashFile goodHashFileThread = new GoodHashFile(buildIndexLatch, goodFiles, storeFolders, Config.FILE_GOOD_NUMS, goodCountDownLatch, 0);
         goodHashFileThread.start();
         //goodCountDownLatch.await();
 
 
         //将买家文件hash成多个小文件
         long buyerTime = System.currentTimeMillis();
-        BuyerHashFile buyerHashFile = new BuyerHashFile(buildIndexLatch, buyerFiles, storeFolders, FileConstant.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
+        BuyerHashFile buyerHashFile = new BuyerHashFile(buildIndexLatch, buyerFiles, storeFolders, Config.FILE_BUYER_NUMS, buyerCountDownLatch, goodFiles.toArray().length);
         buyerHashFile.start();
         //buyerCountDownLatch.await();
 

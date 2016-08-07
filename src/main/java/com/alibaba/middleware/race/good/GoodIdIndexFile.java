@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.good;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.cache.PageCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
@@ -35,8 +36,8 @@ public class GoodIdIndexFile extends Thread{
 
     //订单文件按照goodid生成索引文件，存放到第三块磁盘上
     public void generateGoodIdIndex() {
-        for (int i = 0; i < FileConstant.FILE_ORDER_NUMS; i+=concurrentNum) {
-            int num = concurrentNum > (FileConstant.FILE_ORDER_NUMS - i) ? (FileConstant.FILE_ORDER_NUMS - i) : concurrentNum;
+        for (int i = 0; i < Config.FILE_ORDER_NUMS; i+=concurrentNum) {
+            int num = concurrentNum > (Config.FILE_ORDER_NUMS - i) ? (Config.FILE_ORDER_NUMS - i) : concurrentNum;
             CountDownLatch countDownLatch = new CountDownLatch(num);
             for (int j = i; j < i + num; j++) {
                 new GoodIdIndexFile.MultiIndex(j, countDownLatch, buildIndexCountLatch).start();
@@ -80,14 +81,14 @@ public class GoodIdIndexFile extends Thread{
             Map<String, String> goodIndex = new LinkedHashMap<String, String>();
             TreeMap<String, Long> twoIndexMap = new TreeMap<String, Long>();
             try {
-                FileInputStream order_records = new FileInputStream(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
+                FileInputStream order_records = new FileInputStream(Config.THIRD_DISK_PATH + FileConstant.FILE_INDEX_BY_GOODID + index);
                 BufferedReader order_br = new BufferedReader(new InputStreamReader(order_records));
 
-                File fileRank = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
+                File fileRank = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_RANK_BY_GOODID + index);
                 FileWriter fwRank = new FileWriter(fileRank);
                 BufferedWriter rankBW = new BufferedWriter(fwRank);
 
-                File file = new File(FileConstant.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
+                File file = new File(Config.THIRD_DISK_PATH + FileConstant.FILE_ONE_INDEXING_BY_GOODID + index);
                 FileWriter fw = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fw);
 

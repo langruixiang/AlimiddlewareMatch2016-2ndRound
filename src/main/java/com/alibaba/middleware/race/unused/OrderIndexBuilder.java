@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
+import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.constant.FileConstant;
 
 /**
@@ -49,10 +50,10 @@ public class OrderIndexBuilder extends Thread {
         this.orderFiles = orderFiles;
         this.storeFolders = storeFolders;
         this.countDownLatch = countDownLatch;
-        if (FileConstant.THIRD_DISK_PATH.endsWith("/")) {
-            ORDER_ID_INDEX_DIR = FileConstant.THIRD_DISK_PATH + "order_id_index";
+        if (Config.THIRD_DISK_PATH.endsWith("/")) {
+            ORDER_ID_INDEX_DIR = Config.THIRD_DISK_PATH + "order_id_index";
         } else {
-            ORDER_ID_INDEX_DIR = FileConstant.THIRD_DISK_PATH + "/" + "order_id_index";
+            ORDER_ID_INDEX_DIR = Config.THIRD_DISK_PATH + "/" + "order_id_index";
         }
         ORDER_KEY_MAP_FILE = ORDER_ID_INDEX_DIR + "/" + "order_key_map.txt";
         
