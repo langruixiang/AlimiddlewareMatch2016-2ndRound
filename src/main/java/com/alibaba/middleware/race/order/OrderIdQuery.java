@@ -26,8 +26,7 @@ public class OrderIdQuery {
     public static Result findOrder(long orderId, Collection<String> keys) {
         Result result = new Result();
         int hashIndex = (int) (orderId % Config.ORDER_ONE_INDEX_FILE_NUMBER);
-        Order order = OrderIdQuery
-                .findByOrderIdAndHashIndex(orderId, hashIndex);
+        Order order = OrderIdQuery.findByOrderIdAndHashIndex(orderId, hashIndex);
 
         // 过滤key
         List<String> maybeOrderSearchKeys = new ArrayList<String>();
@@ -83,8 +82,7 @@ public class OrderIdQuery {
         } else {
             for (String key : maybeOrderSearchKeys) {
                 if (order.getKeyValues().containsKey(key)) {
-                    result.getKeyValues().put(key,
-                            order.getKeyValues().get(key));
+                    result.getKeyValues().put(key, order.getKeyValues().get(key));
                 }
             }
         }
@@ -102,8 +100,7 @@ public class OrderIdQuery {
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             // 1.查找二级索引
-            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId,
-                    hashIndex);
+            long position = TwoIndexCache.findOrderIdOneIndexPosition(orderId, hashIndex);
 
             // 2.查找一级索引
             String oneIndex = null;
@@ -116,8 +113,7 @@ public class OrderIdQuery {
                     break;
                 }
                 count++;
-                if (count >= IndexSizeCache.orderIdIndexRegionSizeMap
-                        .get(hashIndex)) {
+                if (count >= IndexSizeCache.orderIdIndexRegionSizeMap.get(hashIndex)) {
                     indexRaf.close();
                     return null;
                 }
@@ -129,18 +125,14 @@ public class OrderIdQuery {
             String srcFile = keyValue[1];
             long pos = Long.valueOf(keyValue[2]);
 
-            File hashFile = new File(FileNameCache.fileNameMap.get(Integer
-                    .valueOf(srcFile)));
+            File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(srcFile)));
             RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-            String orderContent = oneIndex = RandomAccessFileUtil.readLine(
-                    hashRaf, Long.valueOf(pos));
+            String orderContent = oneIndex = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(pos));
 
             // 4.将字符串转成order对象集合
-            StringTokenizer stringTokenizer = new StringTokenizer(orderContent,
-                    "\t");
+            StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
             while (stringTokenizer.hasMoreElements()) {
-                StringTokenizer kvalue = new StringTokenizer(
-                        stringTokenizer.nextToken(), ":");
+                StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                 String key = kvalue.nextToken();
                 String value = kvalue.nextToken();
                 KeyValue kv = new KeyValue();

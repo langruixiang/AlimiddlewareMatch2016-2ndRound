@@ -31,8 +31,7 @@ public class GoodQuery {
             }
 
             // 2.按行读取内容
-            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo
-                    .getFileNum()));
+            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
 
             long offset = positionInfo.getPosition();

@@ -34,8 +34,7 @@ public class BuyerQuery {
                 positionInfo = OneIndexCache.buyerOneIndexCache.get(buyerId);
             }
 
-            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo
-                    .getFileNum()));
+            File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
             hashRaf.close();
 

@@ -35,12 +35,10 @@ public class GoodIdIndexBuilder extends Thread {
 
     public void build() {
         for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
-            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
-                    : maxConcurrentNum;
+            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : maxConcurrentNum;
             CountDownLatch multiIndexLatch = new CountDownLatch(concurrentNum);
             for (int j = i; j < i + concurrentNum; j++) {
-                new GoodIdIndexBuilder.MultiIndex(j, multiIndexLatch,
-                        buildIndexCountLatch).start();
+                new GoodIdIndexBuilder.MultiIndex(j, multiIndexLatch, buildIndexCountLatch).start();
             }
             try {
                 multiIndexLatch.await();
@@ -60,11 +58,9 @@ public class GoodIdIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out
-                .printf("GoodIdIndexBuilder work end! Used time：%d End time : %d %n",
+        System.out.printf("GoodIdIndexBuilder work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     private class MultiIndex extends Thread {
@@ -72,8 +68,7 @@ public class GoodIdIndexBuilder extends Thread {
         private CountDownLatch selfCountDownLatch;
         private CountDownLatch parentCountDownLatch;
 
-        public MultiIndex(int index, CountDownLatch selfCountDownLatch,
-                CountDownLatch parentCountDownLatch) {
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch) {
             this.index = index;
             this.selfCountDownLatch = selfCountDownLatch;
             this.parentCountDownLatch = parentCountDownLatch;
@@ -87,8 +82,7 @@ public class GoodIdIndexBuilder extends Thread {
             try {
                 BufferedReader orderBr = new BufferedReader(
                         new InputStreamReader(
-                                new FileInputStream(
-                                        Config.THIRD_DISK_PATH
+                                new FileInputStream(Config.THIRD_DISK_PATH
                                                 + FileConstant.UNSORTED_GOOD_ID_HASH_FILE_PREFIX
                                                 + index)));
 
@@ -98,8 +92,7 @@ public class GoodIdIndexBuilder extends Thread {
                                 + index));
 
                 BufferedWriter sortedOneIndexBw = new BufferedWriter(
-                        new FileWriter(
-                                Config.THIRD_DISK_PATH
+                        new FileWriter(Config.THIRD_DISK_PATH
                                         + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX
                                         + index));
 
@@ -108,13 +101,11 @@ public class GoodIdIndexBuilder extends Thread {
                     String orderid = null;
                     String goodid = null;
 
-                    StringTokenizer stringTokenizer = new StringTokenizer(
-                            rankStr, "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(rankStr, "\t");
                     while (stringTokenizer.hasMoreElements()) {
                         // String[] keyValue =
                         // stringTokenizer.nextToken().split(":");
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if ("orderid".equals(key)) {
@@ -122,42 +113,34 @@ public class GoodIdIndexBuilder extends Thread {
                         } else if ("goodid".equals(key)) {
                             goodid = value;
                             if (!orderRankMap.containsKey(goodid)) {
-                                orderRankMap.put(goodid,
-                                        new TreeMap<Long, String>());
+                                orderRankMap.put(goodid, new TreeMap<Long, String>());
                             }
                         }
                         if (orderid != null && goodid != null) {
-                            orderRankMap.get(goodid).put(Long.valueOf(orderid),
-                                    rankStr);
+                            orderRankMap.get(goodid).put(Long.valueOf(orderid), rankStr);
                             break;
                         }
                     }
                 }
 
                 long position = 0;
-                Iterator<Map.Entry<String, TreeMap<Long, String>>> orderRankIterator = orderRankMap
-                        .entrySet().iterator();
+                Iterator<Map.Entry<String, TreeMap<Long, String>>> orderRankIterator = orderRankMap.entrySet().iterator();
                 while (orderRankIterator.hasNext()) {
-                    Map.Entry<String, TreeMap<Long, String>> entry = orderRankIterator
-                            .next();
+                    Map.Entry<String, TreeMap<Long, String>> entry = orderRankIterator.next();
                     String key = (String) entry.getKey();
-                    Map<Long, String> val = (Map<Long, String>) entry
-                            .getValue();
+                    Map<Long, String> val = (Map<Long, String>) entry.getValue();
                     int length = 0;
                     String goodid = key;
 
-                    Iterator<Map.Entry<Long, String>> orderIdIterator = val
-                            .entrySet().iterator();
+                    Iterator<Map.Entry<Long, String>> orderIdIterator = val.entrySet().iterator();
                     while (orderIdIterator.hasNext()) {
-                        Map.Entry<Long, String> orderKv = orderIdIterator
-                                .next();
+                        Map.Entry<Long, String> orderKv = orderIdIterator.next();
                         String orderKvValue = (String) orderKv.getValue();
                         sortedHashBw.write(orderKvValue + '\n');
                         length += orderKvValue.getBytes().length + 1;
                     }
                     if (!goodIndex.containsKey(goodid)) {
-                        String posInfo = position + ":" + length + ":"
-                                + val.size();
+                        String posInfo = position + ":" + length + ":" + val.size();
                         goodIndex.put(goodid, posInfo);
                     }
                     position += length;
@@ -165,12 +148,10 @@ public class GoodIdIndexBuilder extends Thread {
                 }
 
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
-                IndexSizeCache.goodIdIndexRegionSizeMap
-                        .put(index, towIndexSize);
+                IndexSizeCache.goodIdIndexRegionSizeMap.put(index, towIndexSize);
                 int count = 0;
                 long oneIndexPosition = 0;
-                Iterator<Map.Entry<String, String>> iterator = goodIndex
-                        .entrySet().iterator();
+                Iterator<Map.Entry<String, String>> iterator = goodIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, String> entry = iterator.next();
                     String key = (String) entry.getKey();

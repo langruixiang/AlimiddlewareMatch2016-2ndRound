@@ -24,8 +24,7 @@ public class OrderIdOneIndexBuilder extends Thread {
     private CountDownLatch builderLatch;
     private int fileBeginNo;
 
-    public OrderIdOneIndexBuilder(Collection<String> orderFiles,
-            int indexFileNum, CountDownLatch builderLatch, int fileBeginNum) {
+    public OrderIdOneIndexBuilder(Collection<String> orderFiles, int indexFileNum, CountDownLatch builderLatch, int fileBeginNum) {
         this.orderFiles = orderFiles;
         this.indexFileNum = indexFileNum;
         this.builderLatch = builderLatch;
@@ -48,8 +47,7 @@ public class OrderIdOneIndexBuilder extends Thread {
             CountDownLatch tasksLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
                 FileNameCache.fileNameMap.put(fileBeginNo, orderFile);
-                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters,
-                        fileBeginNo).start();
+                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters, fileBeginNo).start();
                 fileBeginNo++;
             }
             tasksLatch.await();
@@ -69,8 +67,7 @@ public class OrderIdOneIndexBuilder extends Thread {
         System.out
                 .printf("OrderIdOneIndexBuilder work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {
@@ -79,8 +76,7 @@ public class OrderIdOneIndexBuilder extends Thread {
         private BufferedWriter[] bufferedWriters;
         private int fileNum;
 
-        public SingleFileBuildTask(String orderFile, CountDownLatch tasksLatch,
-                BufferedWriter[] bufferedWriters, int fileNum) {
+        public SingleFileBuildTask(String orderFile, CountDownLatch tasksLatch, BufferedWriter[] bufferedWriters, int fileNum) {
             this.orderFile = orderFile;
             this.tasksLatch = tasksLatch;
             this.bufferedWriters = bufferedWriters;
@@ -91,24 +87,20 @@ public class OrderIdOneIndexBuilder extends Thread {
         public void run() {
             try {
                 FileInputStream orderRecords = new FileInputStream(orderFile);
-                BufferedReader orderBr = new BufferedReader(
-                        new InputStreamReader(orderRecords));
+                BufferedReader orderBr = new BufferedReader(new InputStreamReader(orderRecords));
 
                 String line = null;
                 long position = 0;
                 while ((line = orderBr.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(line,
-                            "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(line, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if ("orderid".equals(key)) {
                             Long orderId = Long.valueOf(value);
                             int hashFileIndex = (int) (orderId % indexFileNum);
-                            String indexLine = orderId + ":" + fileNum + ":"
-                                    + position + '\n';
+                            String indexLine = orderId + ":" + fileNum + ":" + position + '\n';
                             synchronized (bufferedWriters[hashFileIndex]) {
                                 bufferedWriters[hashFileIndex].write(indexLine);
                             }
@@ -119,8 +111,7 @@ public class OrderIdOneIndexBuilder extends Thread {
                 }
                 orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("orderid" + " SingleFileBuildTask end :"
-                        + orderFile);
+                System.out.println("orderid" + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

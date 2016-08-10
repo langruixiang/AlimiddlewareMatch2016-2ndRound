@@ -34,12 +34,10 @@ public class BuyerIdTwoIndexBuilder extends Thread {
 
     public void build() {
         for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
-            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
-                    : maxConcurrentNum;
+            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : maxConcurrentNum;
             CountDownLatch multiIndexLatch = new CountDownLatch(concurrentNum);
             for (int j = i; j < i + concurrentNum; j++) {
-                new BuyerIdTwoIndexBuilder.MultiIndex(j, multiIndexLatch,
-                        buildIndexCountLatch).start();
+                new BuyerIdTwoIndexBuilder.MultiIndex(j, multiIndexLatch, buildIndexCountLatch).start();
             }
             try {
                 multiIndexLatch.await();
@@ -59,11 +57,9 @@ public class BuyerIdTwoIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out
-                .printf("BuyerIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
+        System.out.printf("BuyerIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     /**
@@ -108,8 +104,7 @@ public class BuyerIdTwoIndexBuilder extends Thread {
                     String fileName = null;
                     String position = null;
                     String content = null;
-                    StringTokenizer stringTokenizer = new StringTokenizer(line,
-                            ":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(line, ":");
                     while (stringTokenizer.hasMoreElements()) {
                         buyerid = stringTokenizer.nextToken();
                         createtime = stringTokenizer.nextToken();
@@ -117,36 +112,28 @@ public class BuyerIdTwoIndexBuilder extends Thread {
                         position = stringTokenizer.nextToken();
                         content = fileName + "_" + position;
                         if (!buyerIndex.containsKey(buyerid)) {
-                            buyerIndex
-                                    .put(buyerid, new TreeMap<Long, String>());
+                            buyerIndex.put(buyerid, new TreeMap<Long, String>());
                         }
-                        buyerIndex.get(buyerid).put(Long.valueOf(createtime),
-                                content);
+                        buyerIndex.get(buyerid).put(Long.valueOf(createtime), content);
                         break;
                     }
                 }
 
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
-                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index,
-                        twoIndexSize);
+                IndexSizeCache.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 long count = 0;
                 long position = 0;
-                Iterator<Map.Entry<String, TreeMap<Long, String>>> iterator = buyerIndex
-                        .entrySet().iterator();
+                Iterator<Map.Entry<String, TreeMap<Long, String>>> iterator = buyerIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
-                    Map.Entry<String, TreeMap<Long, String>> entry = iterator
-                            .next();
+                    Map.Entry<String, TreeMap<Long, String>> entry = iterator.next();
                     String key = (String) entry.getKey();
-                    TreeMap<Long, String> val = (TreeMap<Long, String>) entry
-                            .getValue();
+                    TreeMap<Long, String> val = (TreeMap<Long, String>) entry.getValue();
 
                     StringBuilder content = new StringBuilder(key + "\t");
-                    Iterator<Map.Entry<Long, String>> iteratorOrders = val
-                            .descendingMap().entrySet().iterator();
+                    Iterator<Map.Entry<Long, String>> iteratorOrders = val.descendingMap().entrySet().iterator();
                     while (iteratorOrders.hasNext()) {
-                        Map.Entry<Long, String> orderEntry = iteratorOrders
-                                .next();
+                        Map.Entry<Long, String> orderEntry = iteratorOrders.next();
                         Long createtime = (Long) orderEntry.getKey();
                         String pos = (String) orderEntry.getValue();
                         content.append(createtime);

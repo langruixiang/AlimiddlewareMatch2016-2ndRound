@@ -25,8 +25,7 @@ public class OrderIdTwoIndexBuilder extends Thread {
 
     private int maxConcurrentNum;
 
-    public OrderIdTwoIndexBuilder(CountDownLatch orderIdOneIndexBuilderLatch,
-            CountDownLatch buildIndexCountLatch, int maxConcurrentNum) {
+    public OrderIdTwoIndexBuilder(CountDownLatch orderIdOneIndexBuilderLatch, CountDownLatch buildIndexCountLatch, int maxConcurrentNum) {
         this.orderIdOneIndexBuilderLatch = orderIdOneIndexBuilderLatch;
         this.buildIndexCountLatch = buildIndexCountLatch;
         this.maxConcurrentNum = maxConcurrentNum;
@@ -34,12 +33,10 @@ public class OrderIdTwoIndexBuilder extends Thread {
 
     public void build() {
         for (int i = 0; i < Config.ORDER_ONE_INDEX_FILE_NUMBER; i += maxConcurrentNum) {
-            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i)
-                    : maxConcurrentNum;
+            int concurrentNum = maxConcurrentNum > (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) ? (Config.ORDER_ONE_INDEX_FILE_NUMBER - i) : maxConcurrentNum;
             CountDownLatch multiIndexLatch = new CountDownLatch(concurrentNum);
             for (int j = i; j < i + concurrentNum; j++) {
-                new MultiIndex(j, multiIndexLatch, buildIndexCountLatch)
-                        .start();
+                new MultiIndex(j, multiIndexLatch, buildIndexCountLatch).start();
             }
             try {
                 multiIndexLatch.await();
@@ -59,11 +56,9 @@ public class OrderIdTwoIndexBuilder extends Thread {
         }
         long startTime = System.currentTimeMillis();
         build();
-        System.out
-                .printf("OrderIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
+        System.out.printf("OrderIdTwoIndexBuilder work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     /**
@@ -76,8 +71,7 @@ public class OrderIdTwoIndexBuilder extends Thread {
         private CountDownLatch selfCountDownLatch;
         private CountDownLatch parentCountDownLatch;
 
-        public MultiIndex(int index, CountDownLatch selfCountDownLatch,
-                CountDownLatch parentCountDownLatch) {
+        public MultiIndex(int index, CountDownLatch selfCountDownLatch, CountDownLatch parentCountDownLatch) {
             this.index = index;
             this.selfCountDownLatch = selfCountDownLatch;
             this.parentCountDownLatch = parentCountDownLatch;
@@ -102,22 +96,18 @@ public class OrderIdTwoIndexBuilder extends Thread {
                 String str = null;
                 long count = 0;
                 while ((str = oneIndexBr.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str,
-                            ":");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, ":");
                     while (stringTokenizer.hasMoreElements()) {
-                        orderIndex.put(
-                                Long.valueOf(stringTokenizer.nextToken()), str);
+                        orderIndex.put(Long.valueOf(stringTokenizer.nextToken()), str);
                         break;
                     }
                 }
 
                 int towIndexSize = (int) Math.sqrt(orderIndex.size());
-                IndexSizeCache.orderIdIndexRegionSizeMap.put(index,
-                        towIndexSize);
+                IndexSizeCache.orderIdIndexRegionSizeMap.put(index, towIndexSize);
                 count = 0;
                 long position = 0;
-                Iterator<Map.Entry<Long, String>> iterator = orderIndex
-                        .entrySet().iterator();
+                Iterator<Map.Entry<Long, String>> iterator = orderIndex.entrySet().iterator();
                 while (iterator.hasNext()) {
 
                     Map.Entry<Long, String> entry = iterator.next();
@@ -145,14 +135,5 @@ public class OrderIdTwoIndexBuilder extends Thread {
             }
         }
     }
-
-    // public static long bytes2Long(byte[] byteNum) {
-    // long num = 0;
-    // for (int ix = 0; ix < 8; ++ix) {
-    // num <<= 8;
-    // num |= (byteNum[ix] & 0xff);
-    // }
-    // return num;
-    // }
 
 }

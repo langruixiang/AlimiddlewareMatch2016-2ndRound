@@ -31,13 +31,11 @@ public class GoodIdQuery {
         List<Order> orders = new ArrayList<Order>();
         try {
 
-            File indexFile = new File(Config.THIRD_DISK_PATH
-                    + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             // 1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId,
-                    index);
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
 
             // 2.查找一级索引
             int count = 0;
@@ -72,15 +70,12 @@ public class GoodIdQuery {
             byte[] bytes = new byte[length];
             hashRaf.read(bytes, 0, length);
             String orderStrs = new String(bytes);
-            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs,
-                    "\n");
+            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs, "\n");
             while (stringTokenizer.hasMoreElements()) {
                 Order order = new Order();
-                StringTokenizer orderStringTokenizer = new StringTokenizer(
-                        stringTokenizer.nextToken(), "\t");
+                StringTokenizer orderStringTokenizer = new StringTokenizer(stringTokenizer.nextToken(), "\t");
                 while (orderStringTokenizer.hasMoreElements()) {
-                    StringTokenizer strs = new StringTokenizer(
-                            orderStringTokenizer.nextToken(), ":");
+                    StringTokenizer strs = new StringTokenizer(orderStringTokenizer.nextToken(), ":");
                     String key = strs.nextToken();
                     String value = strs.nextToken();
                     KeyValue kv = new KeyValue();
@@ -89,10 +84,8 @@ public class GoodIdQuery {
                     order.getKeyValues().put(key, kv);
                 }
                 if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues()
-                                .get("orderid").getValue())) {
-                    order.setId(Long.valueOf(order.getKeyValues()
-                            .get("orderid").getValue()));
+                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
+                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
                 orders.add(order);
             }
@@ -116,8 +109,7 @@ public class GoodIdQuery {
             RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
 
             // 1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId,
-                    index);
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
 
             // 2.查找一级索引
             int count = 0;
@@ -151,8 +143,7 @@ public class GoodIdQuery {
         return 0;
     }
 
-    public static Iterator<Result> findOrdersByGood(String salerid,
-            String goodid, Collection<String> keys) {
+    public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
         List<Result> results = new ArrayList<Result>();
         if (goodid == null) {
             return results.iterator();
@@ -203,8 +194,7 @@ public class GoodIdQuery {
             Result result = new Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 // 加入对应买家的所有属性kv
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues()
-                        .get("buyerid").getValue());
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
 
                 if (buyer != null && buyer.getKeyValues() != null) {
                     result.getKeyValues().putAll(buyer.getKeyValues());
@@ -221,8 +211,7 @@ public class GoodIdQuery {
             } else {
                 for (String key : maybeOrderSearchKeys) {
                     if (order.getKeyValues().containsKey(key)) {
-                        result.getKeyValues().put(key,
-                                order.getKeyValues().get(key));
+                        result.getKeyValues().put(key, order.getKeyValues().get(key));
                     }
                 }
             }
@@ -300,8 +289,7 @@ public class GoodIdQuery {
 
             // 加入对应买家的所有属性kv
             if (KeyCache.buyerKeyCache.containsKey(key)) {
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues()
-                        .get("buyerid").getValue());
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
                 if (buyer.getKeyValues().containsKey(key)) {
                     String str = buyer.getKeyValues().get(key).getValue();
                     if (flag == 0 && str.contains(".")) {

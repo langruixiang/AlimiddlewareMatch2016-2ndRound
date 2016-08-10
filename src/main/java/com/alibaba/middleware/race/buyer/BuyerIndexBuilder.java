@@ -30,45 +30,48 @@ public class BuyerIndexBuilder extends Thread {
     }
 
     public void hash() {
-        try {
-            int count = 0;
-            for (String buyerFile : buyerFiles) {
-                FileNameCache.fileNameMap.put(fileBeginNo, buyerFile);
+
+        int count = 0;
+        for (String buyerFile : buyerFiles) {
+            FileNameCache.fileNameMap.put(fileBeginNo, buyerFile);
+            BufferedReader buyer_br = null;
+            try {
                 FileInputStream buyer_records = new FileInputStream(buyerFile);
-                BufferedReader buyer_br = new BufferedReader(
-                        new InputStreamReader(buyer_records));
+                buyer_br = new BufferedReader(new InputStreamReader(buyer_records));
 
                 String str = null;
                 long position = 0;
                 while ((str = buyer_br.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str,
-                            "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if (!KeyCache.buyerKeyCache.containsKey(key)) {
                             KeyCache.buyerKeyCache.put(key, 0);
                         }
                         if ("buyerid".equals(key)) {
-                            FilePosition filePosition = new FilePosition(
-                                    fileBeginNo, position);
-                            OneIndexCache.buyerOneIndexCache.put(value,
-                                    filePosition);
+                            FilePosition filePosition = new FilePosition(fileBeginNo, position);
+                            OneIndexCache.buyerOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
-                            break;
                         }
                     }
                 }
                 System.out.println("buyer hash file " + count++);
-                buyer_br.close();
                 fileBeginNo++;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (buyer_br != null) {
+                    try {
+                        buyer_br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
     }
 
     public void run() {

@@ -46,8 +46,7 @@ public class GoodIdHasher extends Thread {
             // 每个orderFile 分配一个task
             CountDownLatch tasksLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
-                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters,
-                        fileBeginNo).start();
+                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters, fileBeginNo).start();
                 fileBeginNo++;
             }
             tasksLatch.await();
@@ -65,11 +64,9 @@ public class GoodIdHasher extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out
-                .printf("GoodIdHasher work end! Used time：%d End time : %d %n",
+        System.out.printf("GoodIdHasher work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {
@@ -88,26 +85,21 @@ public class GoodIdHasher extends Thread {
         public void run() {
             try {
                 FileInputStream orderRecords = new FileInputStream(orderFile);
-                BufferedReader orderBr = new BufferedReader(
-                        new InputStreamReader(orderRecords));
+                BufferedReader orderBr = new BufferedReader(new InputStreamReader(orderRecords));
 
                 String line = null;
                 while ((line = orderBr.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(line,
-                            "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(line, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
 
                         if ("goodid".equals(key)) {
                             String goodId = value;
-                            int hashFileIndex = (int) (Math.abs(goodId
-                                    .hashCode()) % indexFileNum);
+                            int hashFileIndex = (int) (Math.abs(goodId.hashCode()) % indexFileNum);
                             synchronized (bufferedWriters[hashFileIndex]) {
-                                bufferedWriters[hashFileIndex]
-                                        .write(line + '\n');
+                                bufferedWriters[hashFileIndex].write(line + '\n');
                             }
                             break;
                         }
@@ -115,8 +107,7 @@ public class GoodIdHasher extends Thread {
                 }
                 orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("goodid" + " SingleFileBuildTask end :"
-                        + orderFile);
+                System.out.println("goodid" + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -46,8 +46,7 @@ public class BuyerIdOneIndexBuilder extends Thread {
             // 每个orderFile 分配一个task
             CountDownLatch tasksLatch = new CountDownLatch(orderFiles.size());
             for (String orderFile : orderFiles) {
-                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters,
-                        fileBeginNo).start();
+                new SingleFileBuildTask(orderFile, tasksLatch, bufferedWriters, fileBeginNo).start();
                 fileBeginNo++;
             }
             tasksLatch.await();
@@ -64,11 +63,9 @@ public class BuyerIdOneIndexBuilder extends Thread {
         long startTime = System.currentTimeMillis();
         build();
         builderLatch.countDown();
-        System.out
-                .printf("BuyerIdOneIndexBuilder work end! Used time：%d End time : %d %n",
+        System.out.printf("BuyerIdOneIndexBuilder work end! Used time：%d End time : %d %n",
                         System.currentTimeMillis() - startTime,
-                        System.currentTimeMillis()
-                                - OrderSystemImpl.constructStartTime);
+                        System.currentTimeMillis() - OrderSystemImpl.constructStartTime);
     }
 
     private class SingleFileBuildTask extends Thread {
@@ -87,21 +84,19 @@ public class BuyerIdOneIndexBuilder extends Thread {
 
         @Override
         public void run() {
+            BufferedReader orderBr = null;
             try {
                 FileInputStream orderRecords = new FileInputStream(orderFile);
-                BufferedReader orderBr = new BufferedReader(
-                        new InputStreamReader(orderRecords));
+                orderBr = new BufferedReader(new InputStreamReader(orderRecords));
 
                 String line = null;
                 long position = 0;
                 while ((line = orderBr.readLine()) != null) {
                     String buyerId = null;
                     String createtime = null;
-                    StringTokenizer stringTokenizer = new StringTokenizer(line,
-                            "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(line, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if ("buyerid".equals(key)) {
@@ -110,10 +105,8 @@ public class BuyerIdOneIndexBuilder extends Thread {
                             createtime = value;
                         }
                         if (buyerId != null && createtime != null) {
-                            int hashFileIndex = (int) (Math.abs(buyerId
-                                    .hashCode()) % indexFileNum);
-                            String indexLine = buyerId + ":" + createtime + ":"
-                                    + fileNum + ":" + position + '\n';
+                            int hashFileIndex = (int) (Math.abs(buyerId.hashCode()) % indexFileNum);
+                            String indexLine = buyerId + ":" + createtime + ":" + fileNum + ":" + position + '\n';
                             synchronized (bufferedWriters[hashFileIndex]) {
                                 bufferedWriters[hashFileIndex].write(indexLine);
                             }
@@ -122,12 +115,18 @@ public class BuyerIdOneIndexBuilder extends Thread {
                         }
                     }
                 }
-                orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("buyerid" + " SingleFileBuildTask end :"
-                        + orderFile);
+                System.out.println("buyerid" + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                if (orderBr != null) {
+                    try {
+                        orderBr.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

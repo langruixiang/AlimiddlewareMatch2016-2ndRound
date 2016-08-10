@@ -29,8 +29,7 @@ import java.util.StringTokenizer;
  */
 public class BuyerIdQuery {
 
-    public static Iterator<Result> findOrdersByBuyer(long startTime,
-            long endTime, String buyerid) {
+    public static Iterator<Result> findOrdersByBuyer(long startTime, long endTime, String buyerid) {
         List<Result> results = new ArrayList<Result>();
         int hashIndex = (int) (Math.abs(buyerid.hashCode()) % Config.ORDER_ONE_INDEX_FILE_NUMBER);
 
@@ -40,8 +39,7 @@ public class BuyerIdQuery {
         }
 
         // 获取buyerid的所有符合条件的订单信息
-        List<Order> orders = BuyerIdQuery.findByBuyerIdAndIndexFileIndex(
-                buyerid, startTime, endTime, hashIndex);
+        List<Order> orders = BuyerIdQuery.findByBuyerIdAndIndexFileIndex(buyerid, startTime, endTime, hashIndex);
         if (orders == null || orders.size() == 0) {
             return results.iterator();
         }
@@ -53,8 +51,7 @@ public class BuyerIdQuery {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             // 加入对应商品的所有属性kv
-            Good good = GoodQuery.findGoodById(order.getKeyValues()
-                    .get("goodid").getValue());
+            Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue());
 
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());
@@ -79,8 +76,7 @@ public class BuyerIdQuery {
                             + index, "r");
 
             // 1.查找二·级索引
-            long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId,
-                    starttime, endtime, index);
+            long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
             // 2.查找一级索引
             int count = 0;
             String oneIndex = null;
@@ -92,8 +88,7 @@ public class BuyerIdQuery {
                     break;
                 }
                 count++;
-                if (count >= IndexSizeCache.buyerIdIndexRegionSizeMap
-                        .get(index)) {
+                if (count >= IndexSizeCache.buyerIdIndexRegionSizeMap.get(index)) {
                     indexRaf.close();
                     return null;
                 }
@@ -111,11 +106,9 @@ public class BuyerIdQuery {
                     continue;
                 }
                 String[] posinfo = posKv[1].split("_");
-                File hashFile = new File(FileNameCache.fileNameMap.get(Integer
-                        .valueOf(posinfo[0])));
+                File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
                 RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-                String orderContent = RandomAccessFileUtil.readLine(hashRaf,
-                        Long.valueOf(posinfo[1]));
+                String orderContent = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(posinfo[1]));
                 orderContents.add(orderContent);
                 hashRaf.close();
             }
@@ -123,11 +116,9 @@ public class BuyerIdQuery {
             for (String orderContent : orderContents) {
                 // 4.将字符串转成order对象集合
                 Order order = new Order();
-                StringTokenizer stringTokenizer = new StringTokenizer(
-                        orderContent, "\t");
+                StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
                 while (stringTokenizer.hasMoreElements()) {
-                    StringTokenizer kvalue = new StringTokenizer(
-                            stringTokenizer.nextToken(), ":");
+                    StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                     String key = kvalue.nextToken();
                     String value = kvalue.nextToken();
                     KeyValue kv = new KeyValue();
@@ -136,10 +127,8 @@ public class BuyerIdQuery {
                     order.getKeyValues().put(key, kv);
                 }
                 if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues()
-                                .get("orderid").getValue())) {
-                    order.setId(Long.valueOf(order.getKeyValues()
-                            .get("orderid").getValue()));
+                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
+                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
                 orders.add(order);
             }

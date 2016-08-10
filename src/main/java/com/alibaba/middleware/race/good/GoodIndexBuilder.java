@@ -32,43 +32,45 @@ public class GoodIndexBuilder extends Thread {
 
     public void hash() {
 
-        try {
-            int count = 0;
-            for (String goodFile : goodFiles) {
-                FileNameCache.fileNameMap.put(fileBeginNo, goodFile);
+        int count = 0;
+        for (String goodFile : goodFiles) {
+            FileNameCache.fileNameMap.put(fileBeginNo, goodFile);
+            BufferedReader good_br = null;
+            try {
                 FileInputStream good_records = new FileInputStream(goodFile);
-                BufferedReader good_br = new BufferedReader(
-                        new InputStreamReader(good_records));
+                good_br = new BufferedReader(new InputStreamReader(good_records));
 
                 String str = null;
                 long position = 0;
                 while ((str = good_br.readLine()) != null) {
-                    StringTokenizer stringTokenizer = new StringTokenizer(str,
-                            "\t");
+                    StringTokenizer stringTokenizer = new StringTokenizer(str, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        StringTokenizer keyValue = new StringTokenizer(
-                                stringTokenizer.nextToken(), ":");
+                        StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
                         if (!KeyCache.goodKeyCache.containsKey(key)) {
                             KeyCache.goodKeyCache.put(key, 0);
                         }
                         if ("goodid".equals(key)) {
-                            FilePosition filePosition = new FilePosition(
-                                    fileBeginNo, position);
-                            OneIndexCache.goodOneIndexCache.put(value,
-                                    filePosition);
+                            FilePosition filePosition = new FilePosition(fileBeginNo, position);
+                            OneIndexCache.goodOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;
                         }
                     }
                 }
-                good_br.close();
                 fileBeginNo++;
                 System.out.println("good hash FIle " + count++);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (good_br != null) {
+                    try {
+                        good_br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
