@@ -64,8 +64,7 @@ public class BuyerIdQuery {
         return results.iterator();
     }
 
-    private static List<Order> findByBuyerIdAndIndexFileIndex(String buyerId,
-            long starttime, long endtime, int index) {
+    private static List<Order> findByBuyerIdAndIndexFileIndex(String buyerId, long starttime, long endtime, int index) {
         if (buyerId == null || buyerId.isEmpty())
             return null;
         List<Order> orders = new ArrayList<Order>();

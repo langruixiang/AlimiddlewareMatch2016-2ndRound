@@ -21,22 +21,22 @@ public class GoodQuery {
         }
 
         Good good = new Good();
-        try {
-            // 1.查找索引
-            FilePosition positionInfo = null;
-            if (!OneIndexCache.goodOneIndexCache.containsKey(goodId)) {
-                return null;
-            } else {
-                positionInfo = OneIndexCache.goodOneIndexCache.get(goodId);
-            }
 
+        // 1.查找索引
+        FilePosition positionInfo = null;
+        if (!OneIndexCache.goodOneIndexCache.containsKey(goodId)) {
+            return null;
+        } else {
+            positionInfo = OneIndexCache.goodOneIndexCache.get(goodId);
+        }
+        RandomAccessFile hashRaf = null;
+        try {
             // 2.按行读取内容
             File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
+            hashRaf = new RandomAccessFile(rankFile, "r");
 
             long offset = positionInfo.getPosition();
             String oneIndex = RandomAccessFileUtil.readLine(hashRaf, offset);
-            hashRaf.close();
             if (oneIndex == null) {
                 return null;
             }
@@ -53,6 +53,14 @@ public class GoodQuery {
             good.setId(goodId);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (hashRaf != null) {
+                try {
+                    hashRaf.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return good;
     }

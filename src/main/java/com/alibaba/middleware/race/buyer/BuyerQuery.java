@@ -25,18 +25,18 @@ public class BuyerQuery {
             return buyer;
         }
         buyer = new Buyer();
-        try {
-            // 1.查找索引
-            FilePosition positionInfo = null;
-            if (!OneIndexCache.buyerOneIndexCache.containsKey(buyerId)) {
-                return null;
-            } else {
-                positionInfo = OneIndexCache.buyerOneIndexCache.get(buyerId);
-            }
 
+        // 1.查找索引
+        FilePosition positionInfo = null;
+        if (!OneIndexCache.buyerOneIndexCache.containsKey(buyerId)) {
+            return null;
+        } else {
+            positionInfo = OneIndexCache.buyerOneIndexCache.get(buyerId);
+        }
+        RandomAccessFile hashRaf = null;
+        try {
             File rankFile = new File(FileNameCache.fileNameMap.get(positionInfo.getFileNum()));
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
-            hashRaf.close();
+            hashRaf = new RandomAccessFile(rankFile, "r");
 
             // 2.按行读取内容
             long offset = positionInfo.getPosition();
@@ -58,6 +58,14 @@ public class BuyerQuery {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (hashRaf != null) {
+                try {
+                    hashRaf.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return buyer;
     }
