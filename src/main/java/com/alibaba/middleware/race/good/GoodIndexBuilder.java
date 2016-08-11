@@ -4,6 +4,7 @@ import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.OneIndexCache;
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.model.FilePosition;
 
 import java.io.*;
@@ -51,7 +52,7 @@ public class GoodIndexBuilder extends Thread {
                         if (!KeyCache.goodKeyCache.containsKey(key)) {
                             KeyCache.goodKeyCache.put(key, 0);
                         }
-                        if ("goodid".equals(key)) {
+                        if (IndexConstant.GOOD_ID.equals(key)) {
                             FilePosition filePosition = new FilePosition(fileBeginNo, position);
                             OneIndexCache.goodOneIndexCache.put(value, filePosition);
                             position += str.getBytes().length + 1;

@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.cache;
 
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.KeyValue;
 
@@ -56,7 +57,7 @@ public class GoodCache extends Thread {
                         kv.setValue(value);
                         good.getKeyValues().put(key, kv);
                     }
-                    good.setId(good.getKeyValues().get("goodid").getValue());
+                    good.setId(good.getKeyValues().get(IndexConstant.GOOD_ID).getValue());
                     GoodCache.goodMap.put(good.getId(), good);
                     cacheNum++;
                 }

@@ -5,6 +5,7 @@ import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 
 import java.io.*;
 import java.util.*;
@@ -107,9 +108,9 @@ public class GoodIdIndexBuilder extends Thread {
                         StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
-                        if ("orderid".equals(key)) {
+                        if (IndexConstant.ORDER_ID.equals(key)) {
                             orderid = value;
-                        } else if ("goodid".equals(key)) {
+                        } else if (IndexConstant.GOOD_ID.equals(key)) {
                             goodid = value;
                             if (!orderRankMap.containsKey(goodid)) {
                                 orderRankMap.put(goodid, new TreeMap<Long, String>());
