@@ -96,7 +96,7 @@ public class GoodIdIndexBuilder extends Thread {
                         new FileWriter(Config.THIRD_DISK_PATH
                                         + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX
                                         + index));
-
+                //文件内容排序
                 String rankStr = null;
                 while ((rankStr = orderBr.readLine()) != null) {
                     String orderid = null;
@@ -122,7 +122,7 @@ public class GoodIdIndexBuilder extends Thread {
                         }
                     }
                 }
-
+                //根据排序后的文件生成一级索引
                 long position = 0;
                 Iterator<Map.Entry<String, TreeMap<Long, String>>> orderRankIterator = orderRankMap.entrySet().iterator();
                 while (orderRankIterator.hasNext()) {
@@ -146,7 +146,7 @@ public class GoodIdIndexBuilder extends Thread {
                     position += length;
                     val.clear();
                 }
-
+                //将一级索引写入磁盘，同时生成二级索引放入内存
                 int towIndexSize = (int) Math.sqrt(goodIndex.size());
                 IndexSizeCache.goodIdIndexRegionSizeMap.put(index, towIndexSize);
                 int count = 0;

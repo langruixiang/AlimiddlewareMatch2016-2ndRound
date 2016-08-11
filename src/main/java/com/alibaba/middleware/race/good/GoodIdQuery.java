@@ -58,12 +58,11 @@ public class GoodIdQuery {
                 return null;
             }
 
-            // 3.按行读取内容
+            // 3.按块读取内容
             String[] keyValue = oneIndex.split(":");
             String pos = keyValue[1];
             int length = Integer.valueOf(keyValue[2]);
-            File rankFile = new File(Config.THIRD_DISK_PATH
-                    + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
+            File rankFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
             RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
             hashRaf.seek(Long.valueOf(pos));
 

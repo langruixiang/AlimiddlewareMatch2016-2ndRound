@@ -11,7 +11,8 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * 1. 将所有未排序的buyerid一级索引文件排序并存储 2. 根据buyerid一级索引生成buyerid二级索引并缓存
+ * 1.将所有 "未排序的按照buyerid hash的order记录" 按照 "buyerid以及createtime" 排序后存储 2.
+ * 根据排序后的文件生成buyerid一级索引文件 以及 二级索引缓存
  * 
  * 存放位置：第二个硬盘
  * 
@@ -102,7 +103,7 @@ public class BuyerIdIndexBuilder extends Thread {
                                 Config.SECOND_DISK_PATH
                                         + FileConstant.SORTED_BUYER_ID_ONE_INDEX_FILE_PREFIX
                                         + index));
-
+                //文件内容排序
                 String rankStr = null;
                 while ((rankStr = orderBr.readLine()) != null) {
                     String buyerid = null;
@@ -128,7 +129,7 @@ public class BuyerIdIndexBuilder extends Thread {
                         }
                     }
                 }
-
+                //根据排序后的文件生成一级索引
                 long position = 0;
                 Iterator<Map.Entry<String, TreeMap<Long, String>>> orderRankIterator = orderRankMap.entrySet().iterator();
                 while (orderRankIterator.hasNext()) {
@@ -155,7 +156,7 @@ public class BuyerIdIndexBuilder extends Thread {
                     val.clear();
                 }
 
-
+                //将一级索引写入磁盘，同时生成二级索引放入内存
                 int twoIndexSize = (int) Math.sqrt(buyerIndex.size());
                 IndexSizeCache.buyerIdIndexRegionSizeMap.put(index, twoIndexSize);
                 long count = 0;
