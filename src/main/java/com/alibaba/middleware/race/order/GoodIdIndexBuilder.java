@@ -103,8 +103,7 @@ public class GoodIdIndexBuilder extends Thread {
 
                     StringTokenizer stringTokenizer = new StringTokenizer(rankStr, "\t");
                     while (stringTokenizer.hasMoreElements()) {
-                        // String[] keyValue =
-                        // stringTokenizer.nextToken().split(":");
+
                         StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();

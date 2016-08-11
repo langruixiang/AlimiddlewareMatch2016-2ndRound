@@ -83,9 +83,10 @@ public class GoodIdHasher extends Thread {
 
         @Override
         public void run() {
+            BufferedReader orderBr = null;
             try {
                 FileInputStream orderRecords = new FileInputStream(orderFile);
-                BufferedReader orderBr = new BufferedReader(new InputStreamReader(orderRecords));
+                orderBr = new BufferedReader(new InputStreamReader(orderRecords));
 
                 String line = null;
                 while ((line = orderBr.readLine()) != null) {
@@ -105,11 +106,18 @@ public class GoodIdHasher extends Thread {
                         }
                     }
                 }
-                orderBr.close();
                 tasksLatch.countDown();
                 System.out.println("goodid" + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                if (orderBr != null) {
+                    try {
+                        orderBr.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

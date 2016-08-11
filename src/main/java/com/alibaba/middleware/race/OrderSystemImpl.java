@@ -7,15 +7,8 @@ import java.util.concurrent.CountDownLatch;
 
 import com.alibaba.middleware.race.buyer.*;
 import com.alibaba.middleware.race.good.*;
+import com.alibaba.middleware.race.order.*;
 import com.alibaba.middleware.race.util.SwitchThread;
-
-import com.alibaba.middleware.race.order.BuyerIdOneIndexBuilder;
-import com.alibaba.middleware.race.order.BuyerIdTwoIndexBuilder;
-import com.alibaba.middleware.race.order.GoodIdHasher;
-import com.alibaba.middleware.race.order.GoodIdIndexBuilder;
-import com.alibaba.middleware.race.order.OrderIdOneIndexBuilder;
-import com.alibaba.middleware.race.order.OrderIdTwoIndexBuilder;
-import com.alibaba.middleware.race.order.OrderIdQuery;
 
 /**
  * Created by jiangchao on 2016/7/11.
@@ -61,7 +54,7 @@ public class OrderSystemImpl implements OrderSystem {
 
         // 按买家ID建立订单的一级索引文件(未排序)
         CountDownLatch buyerIdOneIndexBuilderLatch = new CountDownLatch(1);
-        BuyerIdOneIndexBuilder buyerIdOneIndexBuilder = new BuyerIdOneIndexBuilder(
+        BuyerIdHasher buyerIdOneIndexBuilder = new BuyerIdHasher(
                 orderFiles, Config.ORDER_ONE_INDEX_FILE_NUMBER,
                 buyerIdOneIndexBuilderLatch, orderFilesBeginNo);
         buyerIdOneIndexBuilder.start();
@@ -87,7 +80,7 @@ public class OrderSystemImpl implements OrderSystem {
         orderIdTwoIndexBuilder.start();
 
         // 根据buyerid生成order的二级索引(同时生成排序的一级索引文件)
-        BuyerIdTwoIndexBuilder buyerIdIndexFile = new BuyerIdTwoIndexBuilder(
+        BuyerIdIndexBuilder buyerIdIndexFile = new BuyerIdIndexBuilder(
                 buyerIdOneIndexBuilderLatch, buildIndexLatch,
                 Config.BUYER_ID_TWO_INDEX_BUILDER_MAX_CONCURRENT_NUM);
         buyerIdIndexFile.start();

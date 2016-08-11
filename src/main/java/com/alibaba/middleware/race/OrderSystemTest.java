@@ -41,9 +41,7 @@ public class OrderSystemTest {
     public void testQueryOrdersByBuyer() {
         // 测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录
         System.out.println("\n测试queryOrderByBuyer接口，查找某个买家在某个时间段的所有记录: ");
-        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(
-                1463076523, 1465018171,
-                "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
+        Iterator<Result> resultIterator = orderSystem.queryOrdersByBuyer(1463076523, 1465018171, "ap_236ed7ca-dcb9-4562-8b35-072834c45d18");
         while (resultIterator.hasNext()) {
             System.out.println("===============");
             Result result2 = resultIterator.next();
@@ -58,8 +56,7 @@ public class OrderSystemTest {
         keys.add("buyerid");
         keys.add("amount");
         System.out.println("\n测试queryOrderBySaler接口，查找某个卖家的某个商品的所有记录信息: ");
-        Iterator<Result> resultIterator2 = orderSystem.queryOrdersBySaler("",
-                "goodal_a289ad59-2660-42af-8618-018fd161c391", null);
+        Iterator<Result> resultIterator2 = orderSystem.queryOrdersBySaler("", "goodal_a289ad59-2660-42af-8618-018fd161c391", null);
         while (resultIterator2.hasNext()) {
             Result result3 = resultIterator2.next();
             System.out.println(result3.get("goodid").getValue());
@@ -70,8 +67,7 @@ public class OrderSystemTest {
     public void testSumOrdersByGood() {
         // 测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值
         System.out.println("\n测试sumOrdersByGood接口，查找某个商品的某个属性的聚合值: ");
-        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood(
-                "goodal_a289ad59-2660-42af-8618-018fd161c391", "price");
+        KeyValue keyValue = (KeyValue) orderSystem.sumOrdersByGood("goodal_a289ad59-2660-42af-8618-018fd161c391", "amount");
         System.out.println(keyValue.getKey() + ": " + keyValue.getValue());
     }
 

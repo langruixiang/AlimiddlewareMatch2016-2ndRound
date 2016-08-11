@@ -1,18 +1,12 @@
 package com.alibaba.middleware.race.buyer;
 
 import com.alibaba.middleware.race.Config;
-import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
-import com.alibaba.middleware.race.model.Buyer;
-import com.alibaba.middleware.race.model.Good;
-import com.alibaba.middleware.race.model.KeyValue;
-import com.alibaba.middleware.race.model.Order;
-import com.alibaba.middleware.race.model.Result;
+import com.alibaba.middleware.race.model.*;
 import com.alibaba.middleware.race.util.RandomAccessFileUtil;
-
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
@@ -76,13 +70,14 @@ public class BuyerIdQuery {
 
             // 1.查找二·级索引
             long position = TwoIndexCache.findBuyerIdOneIndexPosition(buyerId, starttime, endtime, index);
+            System.out.println(position);
             // 2.查找一级索引
             int count = 0;
             String oneIndex = null;
             long offset = position;
             while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
                 offset += (oneIndex.getBytes().length + 1);
-                String[] keyValue = oneIndex.split("\t");
+                String[] keyValue = oneIndex.split(":");
                 if (buyerId.equals(keyValue[0])) {
                     break;
                 }
@@ -92,45 +87,60 @@ public class BuyerIdQuery {
                     return null;
                 }
             }
-            indexRaf.close();
-            // 3.按行读取内容
-            String[] keyValue = oneIndex.split("\t");
-            String[] positionKvs = keyValue[1].split("\\|");
-
-            List<String> orderContents = new ArrayList<String>();
-            for (String pos : positionKvs) {
-                String[] posKv = pos.split(":");
-                Long createTime = Long.valueOf(posKv[0]);
-                if (createTime < starttime || createTime >= endtime) {
-                    continue;
-                }
-                String[] posinfo = posKv[1].split("_");
-                File hashFile = new File(FileNameCache.fileNameMap.get(Integer.valueOf(posinfo[0])));
-                RandomAccessFile hashRaf = new RandomAccessFile(hashFile, "r");
-                String orderContent = RandomAccessFileUtil.readLine(hashRaf, Long.valueOf(posinfo[1]));
-                orderContents.add(orderContent);
-                hashRaf.close();
+            if (oneIndex == null) {
+                indexRaf.close();
+                return null;
             }
 
-            for (String orderContent : orderContents) {
-                // 4.将字符串转成order对象集合
+
+            // 3.处理一级索引逻辑，计算最终读取的起始位置和length
+            String[] keyValue = oneIndex.split(":");
+            String[] positionKvs = keyValue[2].split("\\|");
+            long startPosition = Long.valueOf(keyValue[1]);
+            int length = 0;
+
+            for (String pos : positionKvs) {
+                String[] posKv = pos.split("_");
+                Long createTime = Long.valueOf(posKv[0]);
+                if (createTime >= endtime) {
+                    startPosition += Integer.valueOf(posKv[1]);
+                    continue;
+                }
+                if (createTime < starttime) {
+                    break;
+                }
+                length += Integer.valueOf(posKv[1]);
+            }
+
+            // 4.按块读取内容
+            File rankFile = new File(Config.SECOND_DISK_PATH
+                                     + FileConstant.SORTED_BUYER_ID_HASH_FILE_PREFIX + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
+            hashRaf.seek(startPosition);
+
+            byte[] bytes = new byte[length];
+            hashRaf.read(bytes, 0, length);
+            String orderStrs = new String(bytes);
+            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs, "\n");
+            while (stringTokenizer.hasMoreElements()) {
                 Order order = new Order();
-                StringTokenizer stringTokenizer = new StringTokenizer(orderContent, "\t");
-                while (stringTokenizer.hasMoreElements()) {
-                    StringTokenizer kvalue = new StringTokenizer(stringTokenizer.nextToken(), ":");
-                    String key = kvalue.nextToken();
-                    String value = kvalue.nextToken();
+                StringTokenizer orderStringTokenizer = new StringTokenizer(stringTokenizer.nextToken(), "\t");
+                while (orderStringTokenizer.hasMoreElements()) {
+                    StringTokenizer strs = new StringTokenizer(orderStringTokenizer.nextToken(), ":");
+                    String key = strs.nextToken();
+                    String value = strs.nextToken();
                     KeyValue kv = new KeyValue();
                     kv.setKey(key);
                     kv.setValue(value);
                     order.getKeyValues().put(key, kv);
                 }
                 if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
+                    && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
                     order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
                 }
                 orders.add(order);
             }
+            indexRaf.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

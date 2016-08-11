@@ -25,123 +25,6 @@ import java.util.regex.Pattern;
  * Created by jiangchao on 2016/7/17.
  */
 public class GoodIdQuery {
-    private static List<Order> findByGoodId(String goodId, int index) {
-        if (goodId == null)
-            return null;
-        List<Order> orders = new ArrayList<Order>();
-        try {
-
-            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-
-            // 1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-
-            // 2.查找一级索引
-            int count = 0;
-            String oneIndex = null;
-            long offset = position;
-            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
-                offset += (oneIndex.getBytes().length + 1);
-                String[] keyValue = oneIndex.split(":");
-                if (goodId.equals(keyValue[0])) {
-                    break;
-                }
-                count++;
-                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
-                    indexRaf.close();
-                    return null;
-                }
-            }
-            if (oneIndex == null) {
-                indexRaf.close();
-                return null;
-            }
-
-            // 3.按行读取内容
-            String[] keyValue = oneIndex.split(":");
-            String pos = keyValue[1];
-            int length = Integer.valueOf(keyValue[2]);
-            File rankFile = new File(Config.THIRD_DISK_PATH
-                    + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
-            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
-            hashRaf.seek(Long.valueOf(pos));
-
-            byte[] bytes = new byte[length];
-            hashRaf.read(bytes, 0, length);
-            String orderStrs = new String(bytes);
-            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs, "\n");
-            while (stringTokenizer.hasMoreElements()) {
-                Order order = new Order();
-                StringTokenizer orderStringTokenizer = new StringTokenizer(stringTokenizer.nextToken(), "\t");
-                while (orderStringTokenizer.hasMoreElements()) {
-                    StringTokenizer strs = new StringTokenizer(orderStringTokenizer.nextToken(), ":");
-                    String key = strs.nextToken();
-                    String value = strs.nextToken();
-                    KeyValue kv = new KeyValue();
-                    kv.setKey(key);
-                    kv.setValue(value);
-                    order.getKeyValues().put(key, kv);
-                }
-                if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
-                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
-                }
-                orders.add(order);
-            }
-
-            hashRaf.close();
-            indexRaf.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return orders;
-    }
-
-    public static int findOrderNumberByGoodKey(String goodId, int index) {
-        if (goodId == null)
-            return 0;
-        try {
-            File indexFile = new File(Config.THIRD_DISK_PATH
-                    + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
-            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
-
-            // 1.查找二·级索引
-            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
-
-            // 2.查找一级索引
-            int count = 0;
-            String oneIndex = null;
-            long offset = position;
-            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
-                offset += (oneIndex.getBytes().length + 1);
-                String[] keyValue = oneIndex.split(":");
-                if (goodId.equals(keyValue[0])) {
-                    break;
-                }
-                count++;
-                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
-                    indexRaf.close();
-                    return 0;
-                }
-            }
-            if (oneIndex == null) {
-                indexRaf.close();
-                return 0;
-            }
-            indexRaf.close();
-            String[] keyValue = oneIndex.split(":");
-
-            return Integer.valueOf(keyValue[3]);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
 
     public static Iterator<Result> findOrdersByGood(String salerid, String goodid, Collection<String> keys) {
         List<Result> results = new ArrayList<Result>();
@@ -319,6 +202,124 @@ public class GoodIdQuery {
             keyValue.setValue(String.valueOf(value));
         }
         return keyValue;
+    }
+
+    private static List<Order> findByGoodId(String goodId, int index) {
+        if (goodId == null)
+            return null;
+        List<Order> orders = new ArrayList<Order>();
+        try {
+
+            File indexFile = new File(Config.THIRD_DISK_PATH + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
+
+            // 1.查找二·级索引
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+
+            // 2.查找一级索引
+            int count = 0;
+            String oneIndex = null;
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
+                String[] keyValue = oneIndex.split(":");
+                if (goodId.equals(keyValue[0])) {
+                    break;
+                }
+                count++;
+                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
+                    return null;
+                }
+            }
+            if (oneIndex == null) {
+                indexRaf.close();
+                return null;
+            }
+
+            // 3.按块读取内容
+            String[] keyValue = oneIndex.split(":");
+            String pos = keyValue[1];
+            int length = Integer.valueOf(keyValue[2]);
+            File rankFile = new File(Config.THIRD_DISK_PATH
+                                     + FileConstant.SORTED_GOOD_ID_HASH_FILE_PREFIX + index);
+            RandomAccessFile hashRaf = new RandomAccessFile(rankFile, "r");
+            hashRaf.seek(Long.valueOf(pos));
+
+            byte[] bytes = new byte[length];
+            hashRaf.read(bytes, 0, length);
+            String orderStrs = new String(bytes);
+            StringTokenizer stringTokenizer = new StringTokenizer(orderStrs, "\n");
+            while (stringTokenizer.hasMoreElements()) {
+                Order order = new Order();
+                StringTokenizer orderStringTokenizer = new StringTokenizer(stringTokenizer.nextToken(), "\t");
+                while (orderStringTokenizer.hasMoreElements()) {
+                    StringTokenizer strs = new StringTokenizer(orderStringTokenizer.nextToken(), ":");
+                    String key = strs.nextToken();
+                    String value = strs.nextToken();
+                    KeyValue kv = new KeyValue();
+                    kv.setKey(key);
+                    kv.setValue(value);
+                    order.getKeyValues().put(key, kv);
+                }
+                if (order.getKeyValues().get("orderid").getValue() != null
+                    && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
+                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                }
+                orders.add(order);
+            }
+
+            hashRaf.close();
+            indexRaf.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public static int findOrderNumberByGoodKey(String goodId, int index) {
+        if (goodId == null)
+            return 0;
+        try {
+            File indexFile = new File(Config.THIRD_DISK_PATH
+                                      + FileConstant.SORTED_GOOD_ID_ONE_INDEX_FILE_PREFIX + index);
+            RandomAccessFile indexRaf = new RandomAccessFile(indexFile, "r");
+
+            // 1.查找二·级索引
+            long position = TwoIndexCache.findGoodIdOneIndexPosition(goodId, index);
+
+            // 2.查找一级索引
+            int count = 0;
+            String oneIndex = null;
+            long offset = position;
+            while ((oneIndex = RandomAccessFileUtil.readLine(indexRaf, offset)) != null) {
+                offset += (oneIndex.getBytes().length + 1);
+                String[] keyValue = oneIndex.split(":");
+                if (goodId.equals(keyValue[0])) {
+                    break;
+                }
+                count++;
+                if (count >= IndexSizeCache.goodIdIndexRegionSizeMap.get(index)) {
+                    indexRaf.close();
+                    return 0;
+                }
+            }
+            if (oneIndex == null) {
+                indexRaf.close();
+                return 0;
+            }
+            indexRaf.close();
+            String[] keyValue = oneIndex.split(":");
+
+            return Integer.valueOf(keyValue[3]);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public static boolean isNumeric(String str) {
