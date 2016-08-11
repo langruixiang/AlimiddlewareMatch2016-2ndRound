@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 
 import java.io.*;
 import java.util.Collection;
@@ -95,7 +96,7 @@ public class GoodIdHasher extends Thread {
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
 
-                        if ("goodid".equals(key)) {
+                        if (IndexConstant.GOOD_ID.equals(key)) {
                             String goodId = value;
                             int hashFileIndex = (int) (Math.abs(goodId.hashCode()) % indexFileNum);
                             synchronized (bufferedWriters[hashFileIndex]) {
@@ -107,7 +108,7 @@ public class GoodIdHasher extends Thread {
                 }
                 orderBr.close();
                 tasksLatch.countDown();
-                System.out.println("goodid" + " SingleFileBuildTask end :" + orderFile);
+                System.out.println(IndexConstant.GOOD_ID + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }

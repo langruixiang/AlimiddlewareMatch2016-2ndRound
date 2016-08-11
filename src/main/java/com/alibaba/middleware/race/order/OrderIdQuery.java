@@ -7,6 +7,7 @@ import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -56,7 +57,7 @@ public class OrderIdQuery {
         // 加入对应买家的所有属性kv
         {
             if (keys == null || buyerSearchKeys.size() > 0) {
-                String buyerId = order.getKeyValues().get("buyerid").getValue();
+                String buyerId = order.getKeyValues().get(IndexConstant.BUYER_ID).getValue();
                 Buyer buyer = BuyerQuery.findBuyerById(buyerId);
                 if (buyer != null && buyer.getKeyValues() != null) {
                     result.getKeyValues().putAll(buyer.getKeyValues());
@@ -67,7 +68,7 @@ public class OrderIdQuery {
         // 加入对应商品的所有属性kv
         {
             if (keys == null || goodSearchKeys.size() > 0) {
-                String goodId = order.getKeyValues().get("goodid").getValue();
+                String goodId = order.getKeyValues().get(IndexConstant.GOOD_ID).getValue();
                 Good good = GoodQuery.findGoodById(goodId);
                 if (good != null && good.getKeyValues() != null) {
                     result.getKeyValues().putAll(good.getKeyValues());

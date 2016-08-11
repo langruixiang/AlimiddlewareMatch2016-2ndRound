@@ -5,6 +5,7 @@ import com.alibaba.middleware.race.cache.FileNameCache;
 import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.good.GoodQuery;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
@@ -51,7 +52,7 @@ public class BuyerIdQuery {
                 result.getKeyValues().putAll(buyer.getKeyValues());
             }
             // 加入对应商品的所有属性kv
-            Good good = GoodQuery.findGoodById(order.getKeyValues().get("goodid").getValue());
+            Good good = GoodQuery.findGoodById(order.getKeyValues().get(IndexConstant.GOOD_ID).getValue());
 
             if (good != null && good.getKeyValues() != null) {
                 result.getKeyValues().putAll(good.getKeyValues());
@@ -125,9 +126,9 @@ public class BuyerIdQuery {
                     kv.setValue(value);
                     order.getKeyValues().put(key, kv);
                 }
-                if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
-                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                if (order.getKeyValues().get(IndexConstant.ORDER_ID).getValue() != null
+                        && NumberUtils.isNumber(order.getKeyValues().get(IndexConstant.ORDER_ID).getValue())) {
+                    order.setId(Long.valueOf(order.getKeyValues().get(IndexConstant.ORDER_ID).getValue()));
                 }
                 orders.add(order);
             }

@@ -7,6 +7,7 @@ import com.alibaba.middleware.race.cache.IndexSizeCache;
 import com.alibaba.middleware.race.cache.KeyCache;
 import com.alibaba.middleware.race.cache.TwoIndexCache;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.Good;
 import com.alibaba.middleware.race.model.KeyValue;
@@ -83,9 +84,9 @@ public class GoodIdQuery {
                     kv.setValue(value);
                     order.getKeyValues().put(key, kv);
                 }
-                if (order.getKeyValues().get("orderid").getValue() != null
-                        && NumberUtils.isNumber(order.getKeyValues().get("orderid").getValue())) {
-                    order.setId(Long.valueOf(order.getKeyValues().get("orderid").getValue()));
+                if (order.getKeyValues().get(IndexConstant.ORDER_ID).getValue() != null
+                        && NumberUtils.isNumber(order.getKeyValues().get(IndexConstant.ORDER_ID).getValue())) {
+                    order.setId(Long.valueOf(order.getKeyValues().get(IndexConstant.ORDER_ID).getValue()));
                 }
                 orders.add(order);
             }
@@ -194,7 +195,7 @@ public class GoodIdQuery {
             Result result = new Result();
             if (keys == null || buyerSearchKeys.size() > 0) {
                 // 加入对应买家的所有属性kv
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get(IndexConstant.BUYER_ID).getValue());
 
                 if (buyer != null && buyer.getKeyValues() != null) {
                     result.getKeyValues().putAll(buyer.getKeyValues());
@@ -289,7 +290,7 @@ public class GoodIdQuery {
 
             // 加入对应买家的所有属性kv
             if (KeyCache.buyerKeyCache.containsKey(key)) {
-                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get("buyerid").getValue());
+                Buyer buyer = BuyerQuery.findBuyerById(order.getKeyValues().get(IndexConstant.BUYER_ID).getValue());
                 if (buyer.getKeyValues().containsKey(key)) {
                     String str = buyer.getKeyValues().get(key).getValue();
                     if (flag == 0 && str.contains(".")) {

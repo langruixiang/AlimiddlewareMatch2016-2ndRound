@@ -1,5 +1,6 @@
 package com.alibaba.middleware.race.cache;
 
+import com.alibaba.middleware.race.constant.IndexConstant;
 import com.alibaba.middleware.race.model.Buyer;
 import com.alibaba.middleware.race.model.KeyValue;
 
@@ -56,7 +57,7 @@ public class BuyerCache extends Thread {
                         kv.setValue(value);
                         buyer.getKeyValues().put(key, kv);
                     }
-                    buyer.setId(buyer.getKeyValues().get("buyerid").getValue());
+                    buyer.setId(buyer.getKeyValues().get(IndexConstant.BUYER_ID).getValue());
                     BuyerCache.buyerMap.put(buyer.getId(), buyer);
                     cacheNum++;
                 }

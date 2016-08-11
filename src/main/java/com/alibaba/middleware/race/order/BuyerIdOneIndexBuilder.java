@@ -3,6 +3,7 @@ package com.alibaba.middleware.race.order;
 import com.alibaba.middleware.race.Config;
 import com.alibaba.middleware.race.OrderSystemImpl;
 import com.alibaba.middleware.race.constant.FileConstant;
+import com.alibaba.middleware.race.constant.IndexConstant;
 
 import java.io.*;
 import java.util.Collection;
@@ -99,7 +100,7 @@ public class BuyerIdOneIndexBuilder extends Thread {
                         StringTokenizer keyValue = new StringTokenizer(stringTokenizer.nextToken(), ":");
                         String key = keyValue.nextToken();
                         String value = keyValue.nextToken();
-                        if ("buyerid".equals(key)) {
+                        if (IndexConstant.BUYER_ID.equals(key)) {
                             buyerId = value;
                         } else if ("createtime".equals(key)) {
                             createtime = value;
@@ -116,7 +117,7 @@ public class BuyerIdOneIndexBuilder extends Thread {
                     }
                 }
                 tasksLatch.countDown();
-                System.out.println("buyerid" + " SingleFileBuildTask end :" + orderFile);
+                System.out.println(IndexConstant.BUYER_ID + " SingleFileBuildTask end :" + orderFile);
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {

@@ -11,16 +11,16 @@ import java.util.Map;
  */
 public class Result implements OrderSystem.Result {
 
-    Long orderid;
+    private Long orderId;
 
     Map<String, KeyValue> keyValues = new HashMap<String, KeyValue>();
 
     public Long getOrderId() {
-        return orderid;
+        return orderId;
     }
 
     public void setOrderId(Long orderId) {
-        this.orderid = orderId;
+        this.orderId = orderId;
     }
 
     public Map<String, KeyValue> getKeyValues() {
@@ -48,12 +48,12 @@ public class Result implements OrderSystem.Result {
 
     @Override
     public long orderId() {
-        return orderid;
+        return orderId;
     }
 
     @Override
     public String toString() {
-        return "Result{" + "orderid=" + orderid + ", keyValues=" + keyValues
+        return "Result{" + "orderId=" + orderId + ", keyValues=" + keyValues
                 + '}';
     }
 }
